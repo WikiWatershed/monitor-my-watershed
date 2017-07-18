@@ -1,3 +1,5 @@
+# TODO: remove unused imports
+
 from datetime import datetime, timedelta
 
 from dataloader.models import SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel
@@ -18,8 +20,13 @@ from dataloaderservices.serializers import OrganizationSerializer
 class ResultApi(APIView):
     authentication_classes = (SessionAuthentication,)
 
+    allowed_methods = ('POST',)
+
+    # Not clear what the purpose of this POST request
     def post(self, request, format=None):
-        form = ResultForm(data=request.POST)
+        # request.POST can possibly be empty
+        # always use request.data for all http methods
+        form = ResultForm(data=request.data)
         if form.is_valid():
             return Response({}, status=status.HTTP_200_OK)
 
@@ -28,19 +35,43 @@ class ResultApi(APIView):
 
 
 class ModelVariablesApi(APIView):
+    """
+    Gets a list of instrument variables
+
+    REST URL: api/equipment-variables/
+    HTTP method: GET
+
+    Supported query parameters:
+    :type   equipment_model_id: str
+    :param  equipment_model_id: id of the equipment model for which variable data is needed
+    :rtype: json string
+    :return: a list of variables
+
+    example return JSON format:
+        [
+            {'variable': 'name of the variable',
+             'instrument_raw_output_unit': 'out put unit'
+             },
+             {'variable': 'name of the variable',
+             'instrument_raw_output_unit': 'out put unit'
+             },
+        ]
+    """
     authentication_classes = (SessionAuthentication, )
 
-    def get(self, request, format=None):
-        if 'equipment_model_id' not in request.GET:
-            return Response({'error': 'Equipment Model Id not received.'})
+    allowed_methods = ('GET',)
 
-        equipment_model_id = request.GET['equipment_model_id']
+    def get(self, request, format=None):
+        if 'equipment_model_id' not in request.data:
+            return Response({'error': 'Equipment Model Id not received.'}, status=status.HTTP_400_BAD_REQEST)
+
+        equipment_model_id = request.data['equipment_model_id']
         if equipment_model_id == '':
-            return Response({'error': 'Empty Equipment Model Id received.'})
+            return Response({'error': 'Empty Equipment Model Id received.'}, status=status.HTTP_400_BAD_REQEST)
 
         equipment_model = EquipmentModel.objects.filter(pk=equipment_model_id).first()
         if not equipment_model:
-            return Response({'error': 'Equipment Model not found.'})
+            return Response({'error': 'Equipment Model not found.'}, status=status.HTTP_400_BAD_REQEST)
 
         output = equipment_model.instrument_output_variables.values('variable', 'instrument_raw_output_unit')
 
@@ -49,6 +80,8 @@ class ModelVariablesApi(APIView):
 
 class OrganizationApi(APIView):
     authentication_classes = (SessionAuthentication, )
+
+    allowed_methods = ('POST',)
 
     def post(self, request, format=None):
         organization_serializer = OrganizationSerializer(data=request.data)
@@ -64,11 +97,13 @@ class OrganizationApi(APIView):
 class ResultValuesApi(APIView):
     authentication_classes = (SessionAuthentication,)
 
-    def get(self, request, format=None):
-        if 'result_ids' not in request.GET:
-            return Response({'error': 'No result id received.'})
+    allowed_methods = ('GET',)
 
-        results = request.GET.getlist('result_ids')
+    def get(self, request, format=None):
+        if 'result_ids' not in request.data:
+            return Response({'error': 'No result id received.'}, status=status.HTTP_400_BAD_REQEST)
+
+        results = request.data.getlist('result_ids')
         values = TimeSeriesResultValue.objects.filter(result_id__in=results)
 
         output = values.instrument_output_variables.values('variable', 'instrument_raw_output_unit')
@@ -79,33 +114,41 @@ class ResultValuesApi(APIView):
 class TimeSeriesValuesApi(APIView):
     authentication_classes = (UUIDAuthentication, )
 
+    allowed_methods = ('POST',)
+
     def post(self, request, format=None):
         #  make sure that the data is in the request (sampling_feature, timestamp(?), ...) if not return error response
         # if 'sampling_feature' not in request.data or 'timestamp' not in request.data:
         if not all(key in request.data for key in ('timestamp', 'sampling_feature')):
-            raise exceptions.ParseError("Required data not found in request.")
+            return Response({'error': 'Required data not found in request.'}, status=status.HTTP_400_BAD_REQEST)
 
         # parse the received timestamp
         try:
             measurement_datetime = parse_datetime(request.data['timestamp'])
-        except ValueError:
-            raise exceptions.ParseError('The timestamp value is not valid.')
+        except exceptions.ParseError:
+            return Response({'error': 'The timestamp value is not valid.'}, status=status.HTTP_400_BAD_REQEST)
 
         if not measurement_datetime:
-            raise exceptions.ParseError('The timestamp value is not well formatted.')
+            return Response({'error': 'The timestamp value is not well formatted.'}, status=status.HTTP_400_BAD_REQEST)
 
         if not measurement_datetime.utcoffset():
-            raise exceptions.ParseError('The timestamp value requires timezone information.')
+            return Response({'error': 'The timestamp value requires timezone information.'},
+                            status=status.HTTP_400_BAD_REQEST)
 
         utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
 
         # get odm2 sampling feature if it matches sampling feature uuid sent
-        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data['sampling_feature']).first()
+        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=
+                                                          request.data['sampling_feature']).first()
         if not sampling_feature:
-            raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
+            return Response({'error': 'Sampling Feature code does not match any existing site.'},
+                            status=status.HTTP_400_BAD_REQEST)
 
-        # get all feature actions related to the sampling feature, along with the results, results variables, and actions.
+        # get all feature actions related to the sampling feature, along with the results, results variables,
+        # and actions.
         feature_actions = sampling_feature.feature_actions.prefetch_related('results__variable', 'action').all()
+        # Pabitra: Do we know how big this list (feature_actions) can be? If this can be a huge list then there may
+        # be a way to filter more before entering this for loop so that we don't have to use the if statement inside
         for feature_action in feature_actions:
             result = feature_action.results.all().first()
             is_first_value = result.value_count == 0
@@ -128,9 +171,9 @@ class TimeSeriesValuesApi(APIView):
             try:
                 result_value.save()
             except Exception as e:
-                raise exceptions.ParseError("{variable_code} value not saved {exception_message}".format(
-                    variable_code=result.variable.variable_code, exception_message=e
-                ))
+                err_msg = "{variable_code} value not saved {exception_message}"
+                err_msg = err_msg.format(variable_code=result.variable.variable_code, exception_message=e)
+                return Response({'error': err_msg}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
             result.value_count = F('value_count') + 1
             result.result_datetime = measurement_datetime

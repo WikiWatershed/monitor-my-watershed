@@ -501,6 +501,8 @@ class Action(ODM2Model):
     end_datetime = models.DateTimeField(db_column='enddatetime', blank=True, null=True)
     end_datetime_utc_offset = models.IntegerField(db_column='enddatetimeutcoffset', blank=True, null=True)
     action_description = models.TextField(db_column='actiondescription', blank=True)
+    # Since FileField is used here it seems this db field would point to a file on this disk. Otherwise, if this field
+    # supposed to store a url link then URLField is appropriate
     action_file_link = models.FileField(db_column='actionfilelink', blank=True)
 
     people = models.ManyToManyField('Affiliation', related_name='actions', through='ActionBy')
