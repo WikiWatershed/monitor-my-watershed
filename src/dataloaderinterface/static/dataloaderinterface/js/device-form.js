@@ -5,15 +5,15 @@
 
 function updateSitePosition(map, position) {
     map.panTo(position);
-    $('input[name="latitude"]').val(Math.round(position.lat() * 100000) / 100000);
-    $('input[name="longitude"]').val(Math.round(position.lng() * 100000) / 100000);
+    $('input[name="latitude"]').val(Math.round(position.lat() * 100000) / 100000).trigger('keypress');
+    $('input[name="longitude"]').val(Math.round(position.lng() * 100000) / 100000).trigger('keypress');
 }
 
 function updateSiteElevation(position) {
     var elevator = new google.maps.ElevationService();
      elevator.getElevationForLocations({'locations':[position]}, function(results, status) {
           if (status == google.maps.ElevationStatus.OK && results[0]) {
-              $('input[name="elevation_m"]').val(Math.round(results[0].elevation));
+              $('input[name="elevation_m"]').val(Math.round(results[0].elevation)).trigger('keypress');
           }
      });
 }
@@ -217,7 +217,6 @@ function initializeResultsForm() {
                 fieldsParents.find('.errorlist').remove();
                 fieldsParents.removeClass('has-error');
             }
-
         } else {
             $(this).find('#add-sensor-button').hide();
             $(this).find('#edit-sensor-button').show();
@@ -228,14 +227,20 @@ function initializeResultsForm() {
         validateResultForm().done(function(data, message, xhr) {
             if (xhr.status == 200) {
                 // valid
-                var newIndex = $('div#formset tr.result-form').length;
-                $('input[name="form-TOTAL_FORMS"]').val(newIndex + 1);
+                var rows = $('div#formset tr.result-form');
+                var highestIndex = rows.toArray().reduce(function(value, current, index, list) {
+                    var currentValue = parseInt(current.dataset.result.replace('form-', ''));
+                    return Math.max(value, currentValue);
+                }, -1);
+                var newIndex = highestIndex + 1;
+                $('input[name="form-TOTAL_FORMS"]').val(rows.length + 1);
         
                 var newRow = $($('#sensor-row').html().replace(new RegExp('__prefix__', 'g'), newIndex));
                 updateRowData(newRow);
                 bindResultEditEvent(newRow);
+                bindResultDeleteEvent(newRow);
         
-                $('div.results-table table').DataTable().row.add(newRow).draw();
+                $('div.results-table table').append(newRow);
                 $('#result-dialog').modal('toggle');
                 
             } else if (xhr.status == 206) {
@@ -316,33 +321,31 @@ function bindResultEditEvent(row) {
     });
 }
 
+function bindResultDeleteEvent(row) {
+    row.find('td[data-behaviour="delete"] button').on('click', function(event) {
+        var sensor = $(this).parents('tr');
+        $('#confirm-delete').data('to-delete', sensor).modal('toggle');
+    });
+}
+
+function initializeResultsTable() {
+    var rows = $('div.results-table tbody tr');
+    bindResultEditEvent(rows);
+    bindResultDeleteEvent(rows);
+}
+
 $(document).ready(function() {
     $('nav .menu-register-site').addClass('active');
 
     initializeResultsForm();
-
-    $('table.sensors').dataTable({
-        info: false,
-        ordering: false,
-        paging: false,
-        searching: false,
-        scrollY: '100%',
-        scrollCollapse: true
-    });
-
-    $('#confirm-delete').on('show.bs.modal', function(event) {
-        var sensor = $(event.relatedTarget).parents('tr.result-form');
-        $(event.target).data('to-delete', sensor);
-    });
+    initializeResultsTable();
 
     $('#btn-confirm-delete').on('click', function(event) {
         var dialog = $('#confirm-delete');
-        var sensor = dialog.data('to-delete');
+        // var totalForms = $('input[name="form-TOTAL_FORMS"]');
+        // totalForms.val(totalForms.val() - 1);
 
-        var totalForms = $('input[name="form-TOTAL_FORMS"]');
-        totalForms.val(totalForms.val() - 1);
-
-        $('div.results-table table').DataTable().row(sensor).remove().draw();
+        dialog.data('to-delete').addClass('deleted-row').find('input[name*="DELETE"]').prop('checked', true);
         dialog.modal('toggle');
     });
 });

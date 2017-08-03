@@ -54,14 +54,15 @@
                         <!-- Collect the nav links, forms, and other content for toggling -->
                         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                             <ul class="nav navbar-nav">
+                                {% if user.is_authenticated %}
                                 <li class="menu-sites-list"><a href="{% url 'sites_list' %}">My Sites</a></li>
+                                {% endif %}
                                 <li class="menu-browse-sites"><a href="{% url 'browse_sites' %}">Browse Sites</a></li>
-                                <li class="menu-register-site"><a href="{% url 'site_registration' %}">Register a Site</a></li>
                             </ul>
 
                             <ul class="nav navbar-nav navbar-right">
                                 {% if user.is_authenticated %}
-                                     <li><a href="#" class="user-info"><i class="fa fa-user" aria-hidden="true"></i> Logged in as {{ user }}</a></li>
+                                     <li><a href="{% url 'user_account' %}"><i class="fa fa-user" aria-hidden="true"></i> Logged in as {{ user }}</a></li>
                                     <li><a href="{% url 'logout' %}"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                                 {% else %}
                                     <li><a href="{% url 'login' %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Log In</a></li>

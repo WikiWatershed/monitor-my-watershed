@@ -6,9 +6,16 @@
     <div class="container-fluid">
         <div class="row">
             <div class="browse-sites-header mdl-shadow--2dp">
-                <div class="page-title">Browse Data Collection Sites</div>
-                <br class="hidden-xs">
-                <span class="subtitle hidden-xs">Browse all sites that have been registered in the database by all users. Clicking on a site shows it's details and provides a link to view the data collected at that site.</span>
+                <div class="page-title">
+                    <span>Browse Data Collection Sites&nbsp;</span>
+                    <i class="glyphicon glyphicon-info-sign"  data-toggle="collapse"
+                     data-target="#browseDescription" aria-expanded="true" aria-controls="#browseDescription"></i>
+                </div>
+
+                <div class="collapse" id="browseDescription">
+                    <br>
+                    <span class="subtitle">Browse all sites that have been registered in the database by all users. Clicking on a site shows it's details and provides a link to view the data collected at that site.</span>
+                </div>
             </div>
 
             <div class="map-container full-screen-map-container">
@@ -17,8 +24,8 @@
 
             <script id="sites-data" type="application/json">
                 [
-                {% for sampling_feature in sites %}
-                    {% with registration=sampling_feature|get_registration %}
+                {% for registration in registrations %}
+                    {% with sampling_feature=registration.sampling_feature %}
                     {
                         "id": "{{ sampling_feature.sampling_feature_id }}",
                         "code": "{{ sampling_feature.sampling_feature_code }}",

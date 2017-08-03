@@ -47,7 +47,7 @@ class FeatureActionQuerySet(ODM2QuerySet):
         return self.select_related('action').prefetch_related('sampling_feature')
 
     def with_results(self):
-        return self.prefetch_related('results__timeseriesresult__values', 'results__variable')
+        return self.prefetch_related('results__timeseriesresult__values', 'results__variable', 'results__unit')
 
 
 class RelatedActionManager(models.Manager):
@@ -80,10 +80,9 @@ class DataLoggerFileColumnManager(models.Manager):
 # region ODM2 Equipment Extension
 
 
-class EquipmentModelManager(models.Manager):
-    def get_queryset(self):
-        queryset = super(EquipmentModelManager, self).get_queryset()
-        return queryset.prefetch_related('model_manufacturer')
+class EquipmentModelQuerySet(ODM2QuerySet):
+    def for_display(self):
+        return self.prefetch_related('model_manufacturer')
 
 
 class InstrumentOutputVariableManager(models.Manager):

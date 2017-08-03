@@ -1,15 +1,17 @@
 from __future__ import unicode_literals
 
+import inspect
+import sys
 import uuid
 
-from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
-
 from dataloader.querysets import AffiliationQuerySet, RelatedActionManager, ResultManager, \
-    DataLoggerFileManager, EquipmentModelManager, DataLoggerFileColumnManager, InstrumentOutputVariableManager, \
+    DataLoggerFileManager, InstrumentOutputVariableManager, \
     EquipmentManager, CalibrationReferenceEquipmentManager, EquipmentUsedManager, MaintenanceActionManager, \
     RelatedEquipmentManager, CalibrationActionManager, ODM2QuerySet, ActionQuerySet, ActionByQuerySet, \
-    FeatureActionQuerySet, TimeSeriesValuesQuerySet
+    FeatureActionQuerySet, TimeSeriesValuesQuerySet, EquipmentModelQuerySet
+from django.conf import settings
+from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
 
 # TODO: function to handle the file upload folder for file fields.
@@ -120,7 +122,7 @@ class ResultValue(models.Model):
     value_datetime_utc_offset = models.IntegerField(db_column='valuedatetimeutcoffset')
 
     def __str__(self):
-        return '%s %s' % self.value_datetime, self.data_value
+        return '%s %s' % (self.value_datetime, self.data_value)
 
     def __repr__(self):
         return "<%s('%s', '%s', Result['%s', '%s'], '%s')>" % (
@@ -137,7 +139,7 @@ class ResultValueAnnotation(models.Model):
     annotation = models.ForeignKey('Annotation', db_column='annotationid')
 
     def __str__(self):
-        return '%s %s' % self.value_datetime, self.data_value
+        return '%s %s' % (self.value_datetime, self.data_value)
 
     def __repr__(self):
         return "<%s('%s', Annotation['%s', '%s'], ResultValue['%s', '%s')>" % (
@@ -190,6 +192,9 @@ class ZOffsetComponent(models.Model):
 class XIntendedComponent(models.Model):
     intended_x_spacing = models.FloatField(db_column='intendedxspacing')
     intended_x_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedxspacingunitsid', blank=True, null=True)
+
+    class Meta:
+        abstract = True
 
 
 class YIntendedComponent(models.Model):
@@ -407,7 +412,7 @@ class People(ODM2Model):
 class Organization(ODM2Model):
     organization_id = models.AutoField(db_column='organizationid', primary_key=True)
     organization_type = models.ForeignKey('OrganizationType', db_column='organizationtypecv')
-    organization_code = models.CharField(db_column='organizationcode', max_length=50)
+    organization_code = models.CharField(db_column='organizationcode', max_length=50, unique=True)
     organization_name = models.CharField(db_column='organizationname', max_length=255)
     organization_description = models.CharField(db_column='organizationdescription', blank=True, max_length=500)
     organization_link = models.CharField(db_column='organizationlink', blank=True, max_length=255)
@@ -447,7 +452,7 @@ class Affiliation(ODM2Model):
         return 'Primary contact' if self.is_primary_organization_contact else 'Secondary contact'
 
     def __str__(self):
-        return '%s (%s) - %s' % (self.person, self.primary_email, self.organization)
+        return '%s - %s' % (self.person, self.organization)
 
     def __repr__(self):
         return "<Affiliation('%s', Person['%s', '%s'], Organization['%s', '%s'], '%s', '%s', '%s')>" % (
@@ -547,7 +552,7 @@ class SamplingFeature(models.Model):
     sampling_feature_id = models.AutoField(db_column='samplingfeatureid', primary_key=True)
     sampling_feature_uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_column='samplingfeatureuuid')
     sampling_feature_type = models.ForeignKey('SamplingFeatureType', db_column='samplingfeaturetypecv')
-    sampling_feature_code = models.CharField(db_column='samplingfeaturecode', max_length=50)
+    sampling_feature_code = models.CharField(db_column='samplingfeaturecode', max_length=50, unique=True)
     sampling_feature_name = models.CharField(db_column='samplingfeaturename', blank=True, max_length=255)
     sampling_feature_description = models.CharField(db_column='samplingfeaturedescription', blank=True, max_length=500)
     sampling_feature_geo_type = models.ForeignKey('SamplingFeatureGeoType', db_column='samplingfeaturegeotypecv', blank=True, null=True)
@@ -561,6 +566,12 @@ class SamplingFeature(models.Model):
                                                        through='SamplingFeatureExtensionPropertyValue')
     external_identifiers = models.ManyToManyField('ExternalIdentifierSystem', related_name='sampling_features',
                                                   through='SamplingFeatureExternalIdentifier')
+
+    @property
+    def latest_updated_result(self):
+        return self.feature_actions.with_results()\
+            .filter(results__value_count__gt=0)\
+            .latest('results__result_datetime').results.first()
 
     def __str__(self):
         return '%s %s' % (self.sampling_feature_code, self.sampling_feature_name)
@@ -690,7 +701,7 @@ class Unit(models.Model):
     unit_link = models.CharField(db_column='unitslink', blank=True, max_length=255)
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.unit_type_id, self.unit_abbreviation, self.unit_name)
+        return '%s: %s (%s)' % (self.unit_type_id, self.unit_name, self.unit_abbreviation)
 
     def __repr__(self):
         return "<Unit('%s', '%s', '%s', '%s')>" % (
@@ -717,7 +728,7 @@ class Variable(models.Model):
                                                   through='VariableExternalIdentifier')
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.variable_name_id, self.variable_code, self.variable_type_id)
+        return '%s: %s' % (self.variable_name_id, self.variable_code)
 
     def __repr__(self):
         return "<Variable('%s', '%s', '%s', '%s')>" % (
@@ -777,7 +788,7 @@ class Result(models.Model):
 @python_2_unicode_compatible
 class DataLoggerProgramFile(models.Model):
     program_id = models.AutoField(db_column='programid', primary_key=True)
-    affiliation_id = models.ForeignKey('Affiliation', db_column='affiliationid')
+    affiliation = models.ForeignKey('Affiliation', db_column='affiliationid', related_name='data_logger_programs')
     program_name = models.CharField(db_column='programname', max_length=255)
     program_description = models.CharField(db_column='programdescription', blank=True, max_length=500)
     program_version = models.CharField(db_column='programversion', blank=True, max_length=50)
@@ -798,7 +809,7 @@ class DataLoggerProgramFile(models.Model):
 @python_2_unicode_compatible
 class DataLoggerFile(models.Model):
     data_logger_file_id = models.AutoField(db_column='dataloggerfileid', primary_key=True)
-    program = models.ForeignKey('DataLoggerProgramFile', db_column='programid')
+    program = models.ForeignKey('DataLoggerProgramFile', db_column='programid', related_name='data_logger_files')
     data_logger_file_name = models.CharField(db_column='dataloggerfilename', max_length=255)
     data_logger_file_description = models.CharField(db_column='dataloggerfiledescription', blank=True, max_length=500)
     data_logger_file_link = models.FileField(db_column='dataloggerfilelink', blank=True)
@@ -833,8 +844,6 @@ class DataLoggerFileColumn(models.Model):
     recording_interval_unit = models.ForeignKey('Unit', related_name='recording_interval_data_logger_file_columns', db_column='recordingintervalunitsid', blank=True, null=True)
     aggregation_statistic = models.ForeignKey('AggregationStatistic', related_name='data_logger_file_columns', db_column='aggregationstatisticcv', blank=True)
 
-    objects = DataLoggerFileColumnManager()
-
     def __str__(self):
         return '%s %s' % (self.column_label, self.column_description)
 
@@ -861,10 +870,10 @@ class EquipmentModel(models.Model):
     output_variables = models.ManyToManyField('Variable', related_name='instrument_models', through='InstrumentOutputVariable')
     output_units = models.ManyToManyField('Unit', related_name='instrument_models', through='InstrumentOutputVariable')
 
-    objects = EquipmentModelManager()
+    objects = EquipmentModelQuerySet.as_manager()
 
     def __str__(self):
-        return '%s: %s' % (self.model_name, self.model_description)
+        return '%s %s' % (self.model_manufacturer, self.model_name)
 
     def __repr__(self):
         return "<EquipmentModel('%s', '%s', '%s', Organization[%s, %s])>" % (
@@ -1849,7 +1858,7 @@ class PointCoverageResult(ExtendedResult, AggregatedComponent, ZOffsetComponent,
         db_table = 'pointcoverageresults'
 
 
-class ProfileResult(ExtendedResult, AggregatedComponent, XOffsetComponent, YOffsetComponent, YIntendedComponent, ZIntendedComponent, TimeIntendedComponent):
+class ProfileResult(ExtendedResult, AggregatedComponent, XOffsetComponent, YOffsetComponent, ZIntendedComponent, TimeIntendedComponent):
     class Meta:
         db_table = 'profileresults'
 
@@ -2068,3 +2077,19 @@ class TransectResultValueAnnotation(ResultValueAnnotation):
         db_table = 'transectresultvalueannotations'
 
 # endregion
+
+
+# TODO: make something more sophisticated than this later on
+sql_schema_fix = 'odm2].['   # for SQL databases
+psql_schema_fix = 'odm2"."'  # for postgres databases
+clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
+classes = [model for name, model in clsmembers if issubclass(model, models.Model)]
+database_manager = settings.DATABASES['odm2']['ENGINE']
+
+for model in classes:
+    if database_manager == u'sql_server.pyodbc':
+        model._meta.db_table = sql_schema_fix.upper() + model._meta.db_table
+    elif database_manager == u'django.db.backends.postgresql_psycopg2':
+        model._meta.db_table = psql_schema_fix + model._meta.db_table
+
+            # can add more fixes there depending on the database engine

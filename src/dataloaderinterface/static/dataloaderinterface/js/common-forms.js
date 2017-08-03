@@ -4,11 +4,15 @@
 
 function initializeSelect(select) {
     setTimeout(function () {
-        select.select2({
-            theme: "bootstrap",
-            containerCssClass : "input-sm",
-            dropdownAutoWidth: true,
-            width: 'auto'
+        select.each(function(index, selectElement) {
+            $(selectElement).select2({
+                theme: "bootstrap",
+                containerCssClass : "input-sm",
+                dropdownAutoWidth: true,
+                width: 'auto',
+                allowClear: true,
+                placeholder: $(selectElement).attr('placeholder')
+            });
         });
     });
 }

@@ -1,0 +1,28 @@
+{
+  "secret_key": "",
+  "host": "-optional",
+  "recaptcha_secret_key": "-optional",
+  "recaptcha_user_key": "-optional",
+  "email_sender": "password.reset@data.envirodiy.org",
+  "email_host": "mail.usu.edu",
+  "databases": [
+    {
+      "name": "default",
+      "schema": "",
+      "engine": "",
+      "user": "",
+      "password": "",
+      "host": "",
+      "port": ""
+    },
+    {
+      "name": "odm2",
+      "schema": "",
+      "engine": "",
+      "user": "",
+      "password": "",
+      "host": "",
+      "port": ""
+    }
+  ]
+}

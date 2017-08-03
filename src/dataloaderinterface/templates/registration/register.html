@@ -87,10 +87,12 @@
 
                                                 <div class="col-xs-12">
                                                     <div class="form-field {% if form.organization.errors %}has-error{% endif %}">
-                                                        <label class="control-label" for="id_organization"><i
-                                                                class="fa fa-building" aria-hidden="true"></i>
-                                                            Organization</label>
-                                                        {{ form.organization|add_class:"form-control input-sm select2-hidden-accessible"|attr:"placeholder: Choose an organization" }}
+                                                        <label class="control-label" for="id_organization"><i class="fa fa-building" aria-hidden="true"></i> Organization</label>
+                                                        <i id="organization-help" class="material-icons text-muted help-icon">help</i>
+                                                        <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--right" data-mdl-for="organization-help">
+                                                            {{ form.organization.help_text }}
+                                                        </div>
+                                                        {{ form.organization|add_class:"form-control input-sm select2-hidden-accessible"|attr:"placeholder: Choose your affiliated organization" }}
                                                         {{ form.organization.errors }}
                                                     </div>
                                                 </div>
@@ -154,18 +156,24 @@
                                     <div class="form-group col-lg-12 organization-fields">
                                         {% for field in organization_form %}
                                             <div class="form-field col-lg-12 {% if field.field.required %}required-field{% endif %} {% if field.errors %}has-error{% endif %}">
-                                                <label class="control-label"
-                                                       for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field.errors }}
-                                                {{ field|add_class:"form-control input-sm" }}
+                                                <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field.errors }}
+                                                {% with "placeholder:"|add:field.help_text as placeholder %}
+                                                    {{ field|add_class:"form-control input-sm"|attr:placeholder }}
+                                                {% endwith %}
                                             </div>
                                         {% endfor %}
                                     </div>
                                     <div class="clearfix"></div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button id="organization-modal-close" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                                    <button id="new-organization-button" type="button" class="btn btn-primary">Add New
-                                        Organization
+                                    <button id="organization-modal-close" data-dismiss="modal"
+                                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                                        Close
+                                    </button>
+
+                                    <button id="new-organization-button" type="button"
+                                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                                        Add New Organization
                                     </button>
                                 </div>
                             </div>

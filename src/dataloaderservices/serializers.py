@@ -1,5 +1,6 @@
+from dataloader.models import People, Organization, Affiliation, EquipmentModel, Variable, Unit, TimeSeriesResultValue, \
+    TimeSeriesResult
 from rest_framework import serializers
-from dataloader.models import People, Organization, Affiliation, EquipmentModel, Variable, Unit
 
 
 class VariableSerializer(serializers.ModelSerializer):

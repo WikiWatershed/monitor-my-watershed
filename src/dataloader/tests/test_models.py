@@ -1,6 +1,6 @@
+from dataloader.models import *
 from django.test import TestCase
 
-from dataloader.models import *
 from dataloader.tests.data import data_manager
 
 models_data = data_manager.test_data['models']['data']

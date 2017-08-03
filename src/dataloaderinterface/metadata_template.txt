@@ -1,0 +1,52 @@
+# ----------------------------------------------------------------------------------
+# WARNING: These data are provisional and subject to revision. The data are provided
+# as is with no warranty and on the condition that neither the data collector nor
+# any of the participants in or developers of http://data.envirodiy.org may be held
+# liable for any damages resulting from thier use.
+#
+# The following metadata describe the data in this file:
+# ----------------------------------------------------------------------------------
+#
+# Site Information
+# ---------------------------
+# SiteCode: {sampling_feature.sampling_feature_code}
+# SiteName: {sampling_feature.sampling_feature_name}
+# SiteDescription: {sampling_feature.sampling_feature_description}
+# Latitude: {sampling_feature.site.latitude}
+# Longitude: {sampling_feature.site.longitude}
+# Elevation: {sampling_feature.elevation_m}
+# VerticalDatum: {sampling_feature.elevation_datum_id}
+# SiteType: {sampling_feature.site.site_type_id}
+#
+# Variable and Unit Information
+# -----------------------------
+# VariableCode: {variable.variable_code}
+# VariableName: {variable.variable_name_id}
+# VariableType: {variable.variable_type_id}
+# VariableDefinition: {variable.variable_definition}
+# NoDataValue: {variable.no_data_value}
+# VariableUnitsName: {unit.unit_name}
+# VariableUnitsType: {unit.unit_type_id}
+# VariableUnitsAbbreviation: {unit.unit_abbreviation}
+#
+# Result Information
+# -----------------------------
+# ResultType: {result.result_type}
+# ProcessingLevelCode: {result.processing_level.processing_level_code}
+# ProcessingLevelDefinition: {result.processing_level.definition}
+# ProcessingLevelExplanation: {result.processing_level.explanation}
+# ResultStatus: {result.status}
+# SampledMedium: {result.sampled_medium_id}
+# ValueCount: {result.value_count}
+#
+# Instrument Deployment Information
+# ---------------------------------
+# SensorModel: {model}
+# MethodTypeCV: {action.method.method_type_id}
+# MethodCode: {action.method.method_code}
+# MethodName: {action.method.method_name}
+# MethodDescription: {action.method.method_description}
+# ResponsiblePerson: {affiliation.person}
+# Email: {affiliation.primary_email}
+# Affiliation: {affiliation.organization}
+#

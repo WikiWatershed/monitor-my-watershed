@@ -4,9 +4,16 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <section class="sites-list col-lg-12">
+            <section class="sites-list col-xs-5">
                 <div class="page-title">Registered Sites</div>
             </section>
+            <div class="col-xs-7">
+                <a href="{% url 'site_registration' %}" id="btn-new-site"
+                   class="button-link pull-right mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                    <i class="material-icons">add_circle_outline</i> Register A New Site
+                </a>
+                <br>
+            </div>
         </div>
     </div>
 
@@ -20,26 +27,11 @@
 
     <div class="container main-content">
         <div class="row">
-            <div class="col-xs-12">
-                <br>
-                <a href="{% url 'site_registration' %}">
-                    <button id="btn-add-new-site"
-                            class="mdl-button mdl-js-button mdl-button--fab
-                   mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored">
-                        <i class="material-icons">add</i>
-                    </button>
-                </a>
-
-                <div class="mdl-tooltip" data-mdl-for="btn-add-new-site">
-                    Add New Site
-                </div>
-            </div>
-
             {% for registration in object_list %}
-                <div class="col-xs-12 col-sm-3 site" data-site="{{ registration.sampling_feature.sampling_feature_id }}">
+                <div class="col-xs-12 col-sm-4 col-md-3 site" data-site="{{ registration.sampling_feature.sampling_feature_id }}">
                     <div class="mdl-card mdl-shadow--2dp site-card">
                         <div class="mdl-card__title">
-                            <h2 class="mdl-card__title-text">{{ registration.device_name }}</h2>
+                            <h2 class="mdl-card__title-text"><a href="{% url 'site_detail' registration.registration_id %}">{{ registration.sampling_feature.sampling_feature_name }}</a></h2>
                         </div>
 
                         <div class="mdl-card__supporting-text">
@@ -53,7 +45,7 @@
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td><strong>{{ registration.sampling_feature }}</strong></td>
+                                    <td><strong>{{ registration.sampling_feature.sampling_feature_name }}</strong></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -72,36 +64,38 @@
                                 </tr>
                                 </tbody>
                             </table>
-                        </div>
-
-                        <div class="mdl-card__actions mdl-card--border">
-                            <a href="{% url 'site_detail' registration.registration_id %}"
-                               class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-                                VIEW SITE
-                            </a>
+                            <br>
+                            {% if registration.sampling_feature.latest_updated_result %}
+                            <table>
+                                <tbody>
+                                <tr>
+                                    <td><i class="material-icons site-card-icon">query_builder</i></td>
+                                    <td>
+                                        <span> Latest Measurement</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td><strong>{{ registration.sampling_feature.latest_updated_result.result_datetime }}</strong></td>
+                                </tr>
+                                </tbody>
+                            </table>
+                            {% endif %}
                         </div>
 
                         <div class="mdl-card__menu">
                             <!-- Right aligned menu below button -->
                             <button id="site-card-menu-{{ forloop.counter0 }}"
-                                    class="mdl-button mdl-js-button mdl-button--icon">
-                                <i class="material-icons">more_vert</i>
+                                    class="mdl-button mdl-js-button mdl-button--icon view-on-map">
+                                <i class="material-icons">map</i>
                             </button>
-
-                            <ul class="mdl-menu mdl-menu--bottom-right mdl-js-menu mdl-js-ripple-effect"
-                                for="site-card-menu-{{ forloop.counter0 }}">
-                                <li class="mdl-menu__item view-on-map">
-                                    <span class="mdl-list__item-primary-content">
-                                        View on map
-                                    </span>
-                                </li>
-                            </ul>
+                            <div class="mdl-tooltip" data-mdl-for="site-card-menu-{{ forloop.counter0 }}">
+                                View on map
+                            </div>
                         </div>
-
                     </div>
                 </div>
             {% endfor %}
-
         </div>
 
         <script id="sites-data" type="application/json">
@@ -166,6 +160,8 @@
 
 {% block scripts %}
     {{ block.super }}
+    <script src="{% static 'dataloaderinterface/js/bootstrap-toolkit.min.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/my-sites.js' %}"></script>
+
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
 {% endblock %}

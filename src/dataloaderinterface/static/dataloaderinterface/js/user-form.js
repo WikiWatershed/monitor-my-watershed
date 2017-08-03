@@ -5,6 +5,7 @@
 
 function cleanOrganizationForm() {
     $('.organization-fields input, .organization-fields select').val('');
+    initializeSelect($('.organization-fields select'));
 }
 
 function generateErrorList(errors) {
@@ -46,7 +47,7 @@ $(document).ready(function() {
             if (xhr.status == 201) {
                 // organization created
                 var newOption = $('<option value="' + data.organization_id + '">' + data.organization_name + '</option>');
-                $('.organization-fields select[name="organization"]').append(newOption).val(data.organization_id);
+                $('.user-fields select[name="organization"]').append(newOption).val(data.organization_id);
                 $('#organization-dialog').modal('toggle');
             } else if (xhr.status == 206) {
                 // organization form error
