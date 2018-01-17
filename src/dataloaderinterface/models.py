@@ -35,6 +35,7 @@ class SiteRegistration(models.Model):
     site_type = models.CharField(max_length=765, db_column='SiteType')
 
     followed_by = models.ManyToManyField(User, related_name='followed_sites')
+    alert_listeners = models.ManyToManyField(User, related_name='+', through='SiteAlert')
 
     @property
     def sampling_feature(self):
@@ -44,25 +45,6 @@ class SiteRegistration(models.Model):
     def odm2_affiliation(self):
         return Affiliation.objects.get(pk=self.affiliation_id)
 
-    # @property
-    # def deployment_date(self):
-    #     min_datetime = self.sensors.aggregate(first_light=Min('activation_date'))
-    #     return min_datetime['first_light']
-
-    # @property
-    # def last_measurements(self):
-    #     if not self.deployment_date:
-    #         return []
-    #
-    #     measurement_ids = [long(measurement.last_measurement_id) for measurement in self.sensors.all() if measurement.last_measurement_id]
-    #     measurements = TimeSeriesResultValue.objects.filter(pk__in=measurement_ids)
-    #     return measurements
-
-    # @property
-    # def latest_measurement(self):
-    #     if not self.deployment_date:
-    #         return None
-    #     return self.sensors.aggregate(last_update=Max('last_measurement_datetime'))['last_update']
 
     def __str__(self):
         return '%s by %s from %s on %s' % (self.sampling_feature_code, self.person, self.organization, self.registration_date)
@@ -94,9 +76,13 @@ class SiteSensor(models.Model):
     last_measurement_value = models.FloatField(db_column='LastMeasurementValue', blank=True, null=True)
     last_measurement_datetime = models.DateTimeField(db_column='LastMeasurementDatetime', blank=True, null=True)
     last_measurement_utc_offset = models.IntegerField(db_column='LastMeasurementUtcOffset', blank=True, null=True)
+    last_measurement_utc_datetime = models.DateTimeField(db_column='LastMeasurementUtcDatetime', blank=True, null=True)
 
     activation_date = models.DateTimeField(db_column='ActivationDate', blank=True, null=True)
     activation_date_utc_offset = models.IntegerField(db_column='ActivationDateUtcOffset', blank=True, null=True)
+
+    class Meta:
+        ordering = ['result_id']
 
     @property
     def result(self):
@@ -160,3 +146,18 @@ class ODM2User(models.Model):
 
     def can_administer_site(self, registration):
         return self.user.is_staff or registration.user == self
+
+
+class SiteAlert(models.Model):
+    user = models.ForeignKey(User, db_column='User', related_name='site_alerts')
+    site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', related_name='alerts')
+    last_alerted = models.DateTimeField(db_column='LastAlerted', blank=True, null=True)
+    hours_threshold = models.PositiveIntegerField(db_column='HoursThreshold', default=15)
+
+    def __str__(self):
+        return '%s %s' % (self.site_registration.sampling_feature_code, self.hours_threshold)
+
+    def __repr__(self):
+        return "<SiteAlert('%s', [%s], '%s', '%s')>" % (
+            self.id, self.site_registration.sampling_feature_code, self.last_alerted, self.hours_threshold,
+        )

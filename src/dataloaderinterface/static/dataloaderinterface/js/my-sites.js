@@ -100,14 +100,20 @@ function createInfoWindowContent(siteInfo) {
 function fixViewPort() {
     var cards = $('.site-card');
 
-    var maxHeight = 0;
+    cards.height("initial");
+    cards.find(".mdl-card__title").height("initial");
+
+    var maxCardHeight = 0;
+    var maxCardHeaderHeight = 0;
     for (var i = 0; i < cards.length; i++) {
-        maxHeight = Math.max($(cards[i]).height(), maxHeight);
+        maxCardHeight = Math.max($(cards[i]).height(), maxCardHeight);
+        maxCardHeaderHeight = Math.max($(cards[i]).find(".mdl-card__title").height(), maxCardHeaderHeight);
     }
 
     // set to new max height
     for (var i = 0; i < cards.length; i++) {
-        $(cards[i]).height(maxHeight);
+        $(cards[i]).height(maxCardHeight);
+        $(cards[i]).find(".mdl-card__title").height(maxCardHeaderHeight);
     }
 }
 

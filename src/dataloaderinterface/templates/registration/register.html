@@ -27,10 +27,10 @@
                         </div>
 
                     </div>
-                    <div class="col-xs-12 col-sm-4 col-sm-offset-4">
+                    <div class="col-sm-12 col-md-6 offset-md-3">
                         <div class="panel panel-default panel-login shadow">
                             <div class="panel-heading">
-                                <h3 class="panel-title">Sign Up</h3>
+                                <h5 class="panel-title">Sign Up</h5>
                             </div>
                             <div class="panel-body">
                                 <form method="post" enctype="multipart/form-data" role="form">
@@ -38,7 +38,7 @@
                                     <fieldset class="form-fieldset">
                                         <div class="form-group user-fields">
                                             <div class="row">
-                                                <div class="col-xs-12 col-sm-6">
+                                                <div class="col-sm-12 col-sm-6">
                                                     <div class="form-field required-field {% if form.first_name.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_first_name"><i class="fa fa-user" aria-hidden="true"></i> Enter a first name</label>
                                                         {{ form.first_name|add_class:"form-control input-sm"|attr:"placeholder: First Name"|attr:"autofocus" }}
@@ -46,7 +46,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12 col-sm-6">
+                                                <div class="col-sm-12 col-sm-6">
                                                     <div class="form-field required-field {% if form.last_name.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_last_name"><i class="fa fa-user" aria-hidden="true"></i> Enter a last name</label>
                                                         {{ form.last_name|add_class:"form-control input-sm"|attr:"placeholder: Last Name" }}
@@ -54,7 +54,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="form-field required-field {% if form.email.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_email_address"><i class="fa fa-envelope" aria-hidden="true"></i> Enter your email address</label>
                                                         {{ form.email|add_class:"form-control input-sm"|attr:"placeholder: Email Address" }}
@@ -62,7 +62,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="form-field required-field {% if form.username.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_username"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Choose a username</label>
                                                         {{ form.username|add_class:"form-control input-sm"|attr:"placeholder: Username" }}
@@ -70,7 +70,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="form-field required-field {% if form.password1.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_password1"><i class="fa fa-lock" aria-hidden="true"></i> Choose a password</label>
                                                         {{ form.password1|add_class:"form-control input-sm"|attr:"placeholder: Password" }}
@@ -78,14 +78,14 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="form-field required-field {% if form.password2.errors %}has-error{% endif %}">
                                                         {{ form.password2|add_class:"form-control input-sm"|attr:"placeholder: Password Confirmation" }}
                                                         {{ form.password2.errors }}
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="form-field {% if form.organization.errors %}has-error{% endif %}">
                                                         <label class="control-label" for="id_organization"><i class="fa fa-building" aria-hidden="true"></i> Organization</label>
                                                         <i id="organization-help" class="material-icons text-muted help-icon">help</i>
@@ -97,7 +97,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div class="col-xs-12">
+                                                <div class="col-sm-12">
                                                     <div class="checkbox form-field required-field {% if form.agreement.errors %}has-error{% endif %}">
                                                         <label class="checkbox-label">{{ form.agreement|add_class:"" }}
                                                             I agree that all of the data I post to this site will be
@@ -117,7 +117,7 @@
                                                     </div>
                                                 </div>
 
-                                                {#                                                <div class="col-xs-12">#}
+                                                {#                                                <div class="col-sm-12">#}
 {#                                                    <div class="form-field">#}
 {#                                                        <div class="row">#}
 {#                                                           <div class="g-recaptcha" data-sitekey="6Lc-NxMUAAAAAOBvqgzxn1JLco58gobmC4A3jD5x" style="transform:scale(0.77);-webkit-transform:scale(0.77);transform-origin:0 0;-webkit-transform-origin:0 0;" ></div>#}

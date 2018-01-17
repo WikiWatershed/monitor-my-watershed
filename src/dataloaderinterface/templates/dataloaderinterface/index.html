@@ -27,12 +27,13 @@
     <div class="container-fluid content-section">
         <div class="container">
             <div class="row">
-                <section class="col-xs-12">
+                <section class="col-sm-12">
                     <div class="text-center section-title">How it works</div>
                     <div class="row">
-                        <div class="col-xs-10 col-xs-offset-1 col-md-8 col-md-offset-2">
-                            <div class="row" id="how-it-works">
-                                <div class="col-xs-12 col-sm-4 text-center">
+                        <div class="col-sm-12 col-lg-8 offset-lg-2">
+                            <div class="row text-center" id="how-it-works">
+
+                                <div class="col-sm-12 col-md-4 text-center">
                                     <div class="card">
                                         <h3 class="step-number">1</h3>
                                         <i class="fa fa-laptop step-icon" aria-hidden="true"></i>
@@ -40,17 +41,17 @@
                                     </div>
                                 </div>
 
-                                <div class="col-xs-12 col-sm-4 text-center">
+                                <div class="col-sm-12 col-md-4 text-center">
                                     <div class="card">
                                         <h3 class="step-number">2</h3>
                                         <i class="material-icons step-icon">settings_remote</i>
-{#                                        <i class="fa fa-wifi step-icon" aria-hidden="true"></i>#}
+                                        {#                                        <i class="fa fa-wifi step-icon" aria-hidden="true"></i>#}
                                         <h4>Deploy your data logger and start collecting data.</h4>
 
                                     </div>
                                 </div>
 
-                                <div class="col-xs-12 col-sm-4 text-center">
+                                <div class="col-sm-12 col-md-4 text-center">
                                     <div class="card">
                                         <h3 class="step-number">3</h3>
                                         <i class="fa fa-cloud-upload step-icon" aria-hidden="true"></i>
@@ -58,6 +59,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </section>
@@ -74,38 +76,48 @@
 
     <div class="container-fluid content-section">
         <div class="container">
-            <div class="col-xs-12">
+            <div class="col-sm-12">
                 <div class="text-center section-title">Explore our Companion Projects</div>
 
-                <div class="col-xs-12 col-sm-6 col-md-3 col-md-offset-3 text-center">
-                    <div class="card">
-                        <div class="explore-image-container">
-                            <img class="card-header-image" src="{% static 'dataloaderinterface/images/site_logo.png' %}"
-                                 alt="WebSDL">
+                <div class="row">
+                    <div class="col-sm-12 col-md-5 offset-md-1 col-lg-3 offset-lg-3 text-center">
+                        <div class="card">
+                            <div class="explore-image-container">
+                                <img class="card-header-image"
+                                     src="{% static 'dataloaderinterface/images/site_logo.png' %}"
+                                     alt="WebSDL">
+                            </div>
+                            <h3 class="text-left">EnviroDIY</h3>
+                            <h4 class="text-left">A community of enthusiasts sharing do-it-yourself ideas for
+                                environmental
+                                science and
+                                monitoring
+                            </h4>
+                            <h4 class="visit-link text-left"><a href="https://envirodiy.org/" target="_blank">VISIT SITE
+                                <i
+                                        class="glyphicon glyphicon-chevron-right"></i></a></h4>
                         </div>
-                        <h3 class="text-left">EnviroDIY</h3>
-                        <h4 class="text-left">A community of enthusiasts sharing do-it-yourself ideas for environmental
-                            science and
-                            monitoring
-                        </h4>
-                        <h4 class="visit-link text-left"><a href="https://envirodiy.org/" target="_blank">VISIT SITE <i
-                                class="glyphicon glyphicon-chevron-right"></i></a></h4>
                     </div>
+
+                    <div class="col-sm-12 col-md-5 col-lg-3 text-center">
+                        <div class="card">
+                            <div class="explore-image-container">
+                                <img class="card-header-image"
+                                     src="{% static 'dataloaderinterface/images/WikiWatershed_logo.png' %}"
+                                     alt="WebSDL">
+                            </div>
+                            <h3 class="text-left">WikiWatershed</h3>
+                            <h4 class="text-left">Web tools for collaboratively advancing knowledge and stewardship of
+                                fresh
+                                water</h4>
+                            <h4 class="visit-link text-left"><a href="https://wikiwatershed.org/" target="_blank">VISIT
+                                SITE
+                                <i class="glyphicon glyphicon-chevron-right"></i></a></h4>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="col-xs-12 col-sm-6 col-md-3 text-center">
-                    <div class="card">
-                        <div class="explore-image-container">
-                            <img class="card-header-image" src="{% static 'dataloaderinterface/images/WikiWatershed_logo.png' %}"
-                                 alt="WebSDL">
-                        </div>
-                        <h3 class="text-left">WikiWatershed</h3>
-                        <h4 class="text-left">Web tools for collaboratively advancing knowledge and stewardship of fresh
-                            water</h4>
-                        <h4 class="visit-link text-left"><a href="https://wikiwatershed.org/" target="_blank">VISIT SITE
-                            <i class="glyphicon glyphicon-chevron-right"></i></a></h4>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -113,8 +125,8 @@
     {% if not user.is_authenticated %}
         <div class="container-fluid section-gray content-section">
             <div class="container">
-                <div class="col-xs-12">
-                    <section class="col-xs-12 text-center">
+                <div class="col-sm-12">
+                    <section class="col-sm-12 text-center">
                         <h3>Ready to join?</h3>
                         <h5>Create an account for free.</h5>
                         <h5><a class="orange" href="{% url 'user_registration' %}">SIGN UP</a></h5>
@@ -122,12 +134,12 @@
                 </div>
             </div>
         </div>
-
     {% endif %}
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+    <script src="{% static 'dataloaderinterface/js/vendor/parallax.min.js' %}"></script>
     <script type="text/javascript">
         function TogglePlotVisibility(id) {
             var plot_id = "#plot_preview_".concat(id);
@@ -139,5 +151,5 @@
         }
     </script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="{% static 'dataloaderinterface/js/vendor/parallax.min.js' %}"></script>
+
 {% endblock %}

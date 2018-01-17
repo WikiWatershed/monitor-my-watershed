@@ -218,6 +218,7 @@ class TimeSeriesValuesApi(APIView):
             site_sensor.last_measurement_value = result_value.data_value
             site_sensor.last_measurement_datetime = result_value.value_datetime
             site_sensor.last_measurement_utc_offset = result_value.value_datetime_utc_offset
+            site_sensor.last_measurement_utc_datetime = result_value.value_datetime - timedelta(hours=result_value.value_datetime_utc_offset)
 
             if is_first_value:
                 result.valid_datetime = measurement_datetime

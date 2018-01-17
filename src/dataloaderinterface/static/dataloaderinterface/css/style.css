@@ -29,60 +29,6 @@ html > body {
     }
 }
 
-button.navbar-toggle {
-    margin-top: 23px;
-}
-
-@media (max-width: 890px) {
-    .navbar-header {
-        float: none;
-    !important;
-    }
-
-    .navbar-left, .navbar-right {
-        float: none !important;
-    }
-
-    .navbar-toggle {
-        display: block;
-    }
-
-    .navbar-collapse {
-        border-top: 1px solid transparent;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    }
-
-    .navbar-fixed-top {
-        top: 0;
-        border-width: 0 0 1px;
-    !important;
-    }
-
-    .navbar-collapse.collapse {
-        display: none !important;
-    }
-
-    .navbar-nav {
-        float: none !important;
-        margin-top: 7.5px;
-    }
-
-    .navbar-nav > li {
-        float: none;
-    !important;
-    }
-
-    .navbar-nav > li > a {
-        padding-top: 10px;
-        padding-bottom: 10px;
-    !important;
-    }
-
-    .collapse.in {
-        display: block !important;
-    }
-}
-
 .map-container {
     margin-top: 25px;
     height: 450px;
@@ -100,8 +46,16 @@ button.navbar-toggle {
     border-right: 0;
 }
 
+.my-sites-map-container {
+    margin-top: 0;
+    height: 450px;
+    border-left: 0;
+    border-right: 0;
+}
+
 .full-screen-map-container {
     margin-top: 0 !important;
+    width: 100%;
 }
 
 .detail-map-container {
@@ -161,10 +115,6 @@ div.separator {
     clear: both;
 }
 
-/*.form-field.has-error, .form-field.has-error label.control-label {*/
-/*cursor: help;*/
-/*}*/
-
 .vertical-alignment-helper {
     display: table;
     height: 100%;
@@ -183,6 +133,10 @@ div.separator {
     height: inherit;
     /* To center horizontally */
     margin: 0 auto;
+}
+
+#result-dialog .modal-content, #code-output-modal .modal-content {
+    max-width: 600px;
 }
 
 .modal-header h4 {
@@ -214,19 +168,6 @@ div.action-affiliation-fields label.control-label {
 div.form-field {
     padding-bottom: 15px;
 }
-
-/*#results-template {*/
-/*display: none;*/
-/*visibility: hidden;*/
-/*}*/
-
-/*span.remove-result {*/
-/*font-size: 1.3em;*/
-/*cursor: pointer;*/
-/*position: absolute;*/
-/*top: 14px;*/
-/*right: 30px;*/
-/*}*/
 
 .inline {
     display: inline-block;
@@ -272,6 +213,11 @@ div.registration-field span.control-label {
     font-weight: 700;
 }
 
+#id_hours_threshold {
+    display: inline-block;
+    width: 80px;
+}
+
 .plot_box {
     float: left;
     width: 100%;
@@ -309,13 +255,18 @@ svg.not-stale {
     cursor: default;
 }
 
-.buttons-toolbar .button-link {
-    margin-bottom: 20px;
-    width: 100%;
-}
-
 .button-link:hover {
     text-decoration: none;
+}
+
+.buttons-toolbar .button-link {
+    margin-bottom: 15px;
+}
+
+@media (max-width: 576px) {
+    .buttons-toolbar .button-link {
+        width: 100%;
+    }
 }
 
 .table-trigger {
@@ -336,6 +287,10 @@ svg.not-stale {
     background-color: initial;
 }
 
+table.sensors td:not([data-behaviour]) {
+    white-space: normal;
+}
+
 .variable-description {
     width: 120px;
 }
@@ -351,6 +306,7 @@ svg.not-stale {
 .variable-info td {
     padding-right: 10px;
     padding-bottom: 3px;
+    vertical-align: top
 }
 
 .variable-data {
@@ -476,7 +432,8 @@ div.form-field[data-field="site_type"] {
     order: 0;
 }
 
-div.form-field[data-field="elevation_m"], div.form-field[data-field="elevation_datum"] {
+div.form-field[data-field="elevation_m"], div.form-field[data-field="elevation_datum"],
+div.form-field[data-field="notify"], div.form-field[data-field="hours_threshold"] {
     -webkit-box-ordinal-group: 2;
     -moz-box-ordinal-group: 2;
     -ms-flex-order: 2;
@@ -525,14 +482,23 @@ ul.errorlist {
 }
 
 /*NAV BAR STYLING*/
-.navbar-inverse {
-    min-height: 80px;
+.navbar-expand-md .navbar-nav .nav-link {
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
+}
+
+.navbar-dark {
+    min-height: 81px;
+    border-bottom: 1px solid #000;
     margin-bottom: 0;
     border-radius: 0;
+    padding: 0 20px;
+    background-color: #222;
 }
 
 .navbar-nav > li > a {
-    line-height: 50px !important;
+    line-height: 70px !important;
+    height: 80px;
     border-bottom: 3px solid transparent;
     -webkit-transition: all 0.2s; /* Safari */
     transition: all 0.2s;
@@ -544,14 +510,6 @@ ul.errorlist {
 
 .navbar-nav > li > a:hover {
     border-bottom: 3px solid #FFF;
-}
-
-.navbar-collapse.in .navbar-nav li > a:hover {
-    border-bottom: 3px solid transparent;
-}
-
-.navbar-fixed-top .navbar-collapse {
-    max-height: 389px;
 }
 
 .navbar-header {
@@ -602,94 +560,40 @@ footer .separator {
 
 /*GENERAL STYLING*/
 
-#btn-follow {
-    top: -3px;
-    left: 15px;
-    position: absolute;
-}
-
-#icon-follow, #icon-unfollow {
-    position: absolute;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    -wekbit-transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+.follow-checkbox {
+    float: right;
     display: block;
-}
-
-.follow-status {
+    width: auto;
+    margin-top: -17px;
     margin-bottom: 20px;
 }
 
-.follow-status.following #btn-follow {
-    background-color: orange;
+.follow-checkbox .mdl-checkbox__box-outline {
+    top: 4px;
 }
 
-.follow-status:not(.following) #icon-unfollow {
-    opacity: 0;
-    visibility: hidden;
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-    top: 8px;
-    left: 8px;
+.page-header {
+    border-bottom: 1px solid #DDD;
+    padding: 20px;
 }
 
-.follow-status.following #icon-follow {
-    opacity: 0;
-    visibility: hidden;
-    top: 8px;
-    left: 8px;
-    -webkit-transform: rotate(225deg);
-    transform: rotate(225deg);
-}
-
-.chip-follow .fa-check-circle-o {
-    font-size: 18px;
-    vertical-align: middle;
-    display: inline-block;
-    margin-bottom: 2px;
-}
-
-.chip-follow {
-    padding: 0;
-    margin-left: 10px;
-    transition: width 0.4s;
-    -wekbit-transition: width 0.4s;
-    overflow: hidden;
-}
-
-.follow-status.following #follow-chip {
-    width: 225px;
-}
-
-.text-green {
-    color: #00bf00;
-}
-
-.follow-status:not(.following) #follow-chip {
-    width: 0;
-}
-
-.chip-follow .mdl-chip__text {
-    padding-left: 35px;
-}
-
-.my-sites-action {
-    margin-top: 32px;
-    text-align: left;
+.page-header .page-title {
+    margin-top: 10px;
 }
 
 .my-sites-action:hover {
     text-decoration: none;
 }
 
+#btn-delete-site {
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
 .center-icon {
     display: inline-block;
     vertical-align: middle;
     margin-bottom: 2px;
-}
-
-#btn-delete-site {
-    background-color: #d9534f;
-    border-color: #d43f3a;
 }
 
 .result-uuid {
@@ -736,6 +640,10 @@ dialog#data-table-dialog .mdl-dialog__content {
 
 .mdl-button--raised {
     background: rgba(255, 255, 255, 0.2);
+}
+
+button:focus {
+    outline: none;
 }
 
 .listing-table tr td {
@@ -792,10 +700,6 @@ dialog#data-table-dialog .mdl-dialog__content {
     padding: 0 15px;
 }
 
-.main-content {
-    margin-bottom: 60px;
-}
-
 .shadow {
     box-shadow: 0 4px 5px 0 rgba(0, 0, 0, .14), 0 1px 10px 0 rgba(0, 0, 0, .12), 0 2px 4px -1px rgba(0, 0, 0, .2);
 }
@@ -839,6 +743,12 @@ dialog#data-table-dialog .mdl-dialog__content {
     width: 100%;
 }
 
+.site-card .mdl-card__title-text {
+    -webkit-align-self: start;
+    -ms-flex-item-align: start;
+    align-self: start;
+}
+
 .site-card .mdl-card__title-text a {
     color: #FFF;
     font-weight: 300;
@@ -854,6 +764,11 @@ dialog#data-table-dialog .mdl-dialog__content {
     color: #FFF;
 }
 
+.mdl-menu li a {
+    color: initial;
+    text-decoration: none;
+    font-weight: normal;
+}
 .site-card {
     margin-top: 20px;
     width: auto;
@@ -882,7 +797,6 @@ i.material-icons.site-card-icon {
 }
 
 .page-title, .section-title {
-    margin: 40px auto;
     text-transform: uppercase;
     color: rgba(0, 0, 0, 0.541176);
     font-size: 18px;
@@ -903,6 +817,16 @@ i.material-icons.site-card-icon {
 
 /*LOGIN STYLING*/
 
+.panel {
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.panel .panel-heading {
+    margin: -15px;
+    margin-bottom: 15px;
+}
+
 .panel-login {
     background: rgba(0, 0, 0, 0.63);
     color: #FFF;
@@ -914,6 +838,11 @@ i.material-icons.site-card-icon {
     color: #FFF;
     border: none;
     background-color: #353535;
+}
+
+.panel-login > .panel-heading .panel-title {
+    margin: 0;
+    padding: 15px;
 }
 
 a.orange {
@@ -931,10 +860,6 @@ a.orange:hover {
 
 #btn-login {
     background-color: rgb(101, 101, 101);
-}
-
-.buttons-toolbar {
-    margin-bottom: 20px;
 }
 
 .noselect {

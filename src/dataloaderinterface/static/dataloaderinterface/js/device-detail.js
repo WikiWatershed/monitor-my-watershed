@@ -262,11 +262,11 @@ $(document).ready(function () {
         dialogPolyfill.registerDialog(dialog);
     }
 
-    $("#btn-follow").on("click", function () {
+    $("#chkFollow").on("change", function () {
         var statusContainer = $(".follow-status");
         var followForm = $("#follow-site-form");
-        var following = statusContainer.hasClass('following');
-        var tooltip = $(".mdl-tooltip[data-mdl-for='btn-follow']");
+        var following = !$(this).prop("checked");
+        // var tooltip = $(".mdl-tooltip[data-mdl-for='btn-follow']");
 
         $.ajax({
             url: $('#follow-site-api').val(),
@@ -277,8 +277,17 @@ $(document).ready(function () {
                 action: (following)? 'unfollow': 'follow'
             }}).done(function(data) {
                 statusContainer.toggleClass("following");
-                tooltip.text((following)? 'Follow': 'Unfollow');
-            });
+            // tooltip.text((following)? 'Follow': 'Unfollow');
+
+            var snackbarContainer = document.querySelector('#clipboard-snackbar');
+
+            // var msg = (following)? 'You are now following this site.' : 'This site has been unfollowed.';
+            var snackbarMsg = {
+                message: (!following)? 'You are now following this site.' : 'This site has been unfollowed.',
+                timeout: 3000
+            };
+            snackbarContainer.MaterialSnackbar.showSnackbar(snackbarMsg);
+        });
     });
 
     $(".table-trigger").click(function () {

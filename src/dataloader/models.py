@@ -349,6 +349,7 @@ class SpecimenType(ControlledVocabulary):
 class SiteType(ControlledVocabulary):
     class Meta:
         db_table = 'cv_sitetype'
+        ordering = ['name']
 
 
 class Status(ControlledVocabulary):

@@ -30,7 +30,7 @@
                             <fieldset>
                                 <br>
                                 <div class="row">
-                                    <div class="form-group col-sm-4 col-xs-12 sampling-feature-fields">
+                                    <div class="form-group col-sm-12 col-md-4 sampling-feature-fields">
                                         {% if user.is_staff %}
                                             {% for field in action_by_form %}
                                                 <div class="form-field {% if field.field.required %} required-field{% endif %}{% if field.errors %} has-error{% endif %}"
@@ -58,20 +58,64 @@
                                                 {{ field|add_class:"form-control input-sm" }}
                                             </div>
                                         {% endfor %}
+
                                         {% for field in site_form %}
                                             <div class="form-field {% if field.field.required %} required-field{% endif %}{% if field.errors %} has-error{% endif %}"
                                                  data-field="{{ field.name }}">
-                                                <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                                <i id="site-help{{ forloop.counter0 }}" class="material-icons text-muted help-icon">help</i>
+                                                <label class="control-label"
+                                                       for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                                <i id="site-help{{ forloop.counter0 }}"
+                                                   class="material-icons text-muted help-icon">help</i>
                                                 {{ field.errors }}
-                                                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left" data-mdl-for="site-help{{ forloop.counter0 }}">
+                                                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"
+                                                     data-mdl-for="site-help{{ forloop.counter0 }}">
                                                     {{ field.help_text }}
                                                 </div>
                                                 {{ field|add_class:"form-control input-sm" }}
                                             </div>
                                         {% endfor %}
+
+                                        {% for field in email_alert_form %}
+                                            {% if field.name == 'notify' %}
+                                                <div class="form-field checkbox {% if field.field.required %} required-field{% endif %}{% if field.errors %} has-error{% endif %}"
+                                                     data-field="{{ field.name }}">
+                                                    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
+                                                           for="{{ field.id_for_label }}">
+                                                        {{ field|add_class:"mdl-checkbox__input" }}
+                                                        {{ field.label }}
+
+                                                        {% if field.help_text %}
+                                                            <i id="email-alert-help-{{ forloop.counter0 }}"
+                                                               class="material-icons text-muted help-icon">help</i>
+                                                            {{ field.errors }}
+                                                            <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"
+                                                                 data-mdl-for="email-alert-help-{{ forloop.counter0 }}">
+                                                                {{ field.help_text }}
+                                                            </div>
+                                                        {% endif %}
+                                                    </label>
+                                                </div>
+                                            {% else %}
+                                                <div class="form-field {% if field.field.required %} required-field{% endif %}{% if field.errors %} has-error{% endif %} {% if not field.value %}hidden{% endif %}"
+                                                     data-field="{{ field.name }}" style="margin-top: -15px;">
+                                                    <label class="control-label"
+                                                           for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                                                    {% if field.help_text %}
+                                                        <i id="email-alert-help-{{ forloop.counter0 }}"
+                                                           class="material-icons text-muted help-icon">help</i>
+                                                        {{ field.errors }}
+                                                        <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"
+                                                             data-mdl-for="email-alert-help-{{ forloop.counter0 }}">
+                                                            {{ field.help_text }}
+                                                        </div>
+                                                    {% endif %}
+                                                    {{ field|add_class:"form-control input-sm" }}
+                                                </div>
+                                            {% endif %}
+                                        {% endfor %}
                                     </div>
-                                    <div class="form-group col-sm-8 col-xs-12 map-container">
+                                    <div class="form-group col-sm-12 col-md-8 map-container">
                                         <input type="hidden" name="zoom-level" value="{{ zoom_level }}">
                                         <div id="map"></div>
                                     </div>
@@ -98,47 +142,68 @@
                                            Add New Sensor
                                         </div>
 
+                                        <br><br>
+
                                         {{ results_formset.management_form }}
-                                        <table class="table table-stripped table-bordered sensors full-width">
-                                            <thead>
-                                            <tr>
-                                                <th class="mdl-data-table__cell--non-numeric">Equipment Model</th>
-                                                <th class="mdl-data-table__cell--non-numeric">Measured Variable</th>
-                                                <th class="mdl-data-table__cell--non-numeric">Units</th>
-                                                <th class="mdl-data-table__cell--non-numeric">Sampled Medium</th>
-                                                <th class="mdl-data-table__cell--non-numeric">Edit</th>
-                                                <th class="mdl-data-table__cell--non-numeric">Delete</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for result_form in results_formset %}
-                                                {% if result_form|has_data %}
-                                                    <tr class="result-form {% if result_form|is_deleted %} deleted-row {% endif %}" data-result="{{ result_form.prefix }}">
-                                                        <input type="hidden" name="{{ result_form.prefix }}-result_id" class="field-value" value="{{ result_form.initial.result_id }}" />
-                                                        {% for field in result_form %}
-                                                            {% if field.name != "DELETE" %}
-                                                            <td data-field="{{ field.name }}" class="mdl-data-table__cell--non-numeric">
-                                                              <span class="field-text">{{ result_form|get_field_data:field.name }}</span>
-                                                                <input type="hidden" name="{{ field.html_name }}" class="field-value" value="{{ field.value }}"/>
+
+                                        <div style="overflow: auto;">
+                                            <table class="mdl-textfield--full-width mdl-data-table mdl-shadow--2dp mdl-js-data-table sensors full-width">
+                                                <thead>
+                                                <tr class="full-width">
+                                                    <th class="mdl-data-table__cell--non-numeric">Equipment Model
+                                                    </th>
+                                                    <th class="mdl-data-table__cell--non-numeric">Measured
+                                                        Variable
+                                                    </th>
+                                                    <th class="mdl-data-table__cell--non-numeric">Units</th>
+                                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium
+                                                    </th>
+                                                    <th class="mdl-data-table__cell--non-numeric">Edit</th>
+                                                    <th class="mdl-data-table__cell--non-numeric">Delete</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                {% for result_form in results_formset %}
+                                                    {% if result_form|has_data %}
+                                                        <tr class="result-form {% if result_form|is_deleted %} deleted-row {% endif %}"
+                                                            data-result="{{ result_form.prefix }}">
+                                                            <input type="hidden"
+                                                                   name="{{ result_form.prefix }}-result_id"
+                                                                   class="field-value"
+                                                                   value="{{ result_form.initial.result_id }}"/>
+                                                            {% for field in result_form %}
+                                                                {% if field.name != "DELETE" %}
+                                                                    <td data-field="{{ field.name }}"
+                                                                        class="mdl-data-table__cell--non-numeric">
+                                                                        <span class="field-text">{{ result_form|get_field_data:field.name }}</span>
+                                                                        <input type="hidden"
+                                                                               name="{{ field.html_name }}"
+                                                                               class="field-value"
+                                                                               value="{{ field.value }}"/>
+                                                                    </td>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                            <td data-behaviour="edit"
+                                                                class="mdl-data-table__cell--non-numeric">
+                                                                <button class="mdl-button mdl-button--accent"
+                                                                        type="button">
+                                                                    <i class="material-icons center-icon">mode_edit</i>
+                                                                </button>
                                                             </td>
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                        <td data-behaviour="edit" class="mdl-data-table__cell--non-numeric">
-                                                            <button class="btn btn-primary btn-xs" type="button">
-                                                                <span class="glyphicon glyphicon-pencil"></span>
-                                                            </button>
-                                                        </td>
-                                                        <td data-behaviour="delete" class="mdl-data-table__cell--non-numeric">
-                                                            <button class="btn btn-danger btn-xs" type="button">
-                                                                <span class="glyphicon glyphicon-trash"></span>
-                                                                {{ result_form.DELETE }}
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                            </tbody>
-                                        </table>
+                                                            <td data-behaviour="delete"
+                                                                class="mdl-data-table__cell--non-numeric">
+                                                                <button class="mdl-button" style="color: #d9534f"
+                                                                        type="button">
+                                                                    <i class="material-icons center-icon">delete_forever</i>
+                                                                    {{ result_form.DELETE }}
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    {% endif %}
+                                                {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
 
                                         <script id="sensor-row" type="text/plain">
                                             <tr class="result-form" data-result="form-__prefix__">
@@ -159,13 +224,13 @@
                                                     <input type="hidden" name="form-__prefix__-sampled_medium" class="field-value" value="" />
                                                 </td>
                                                 <td data-behaviour="edit" class="mdl-data-table__cell--non-numeric">
-                                                    <button class="btn btn-primary btn-xs" type="button">
-                                                        <span class="glyphicon glyphicon-pencil"></span>
+                                                    <button class="mdl-button mdl-button--accent" type="button">
+                                                        <i class="material-icons center-icon">mode_edit</i>
                                                     </button>
                                                 </td>
                                                 <td data-behaviour="delete" class="mdl-data-table__cell--non-numeric">
-                                                    <button class="btn btn-danger btn-xs" type="button" data-toggle="modal">
-                                                        <span class="glyphicon glyphicon-trash"></span>
+                                                    <button class="mdl-button" type="button" data-toggle="modal">
+                                                        <i style="color: #d9534f;" class="material-icons center-icon">delete_forever</i>
                                                         <input type="checkbox" name="form-__prefix__-DELETE" class="field-value"/>
                                                     </button>
                                                 </td>
@@ -177,7 +242,7 @@
 
                             <br>
 
-                            <div>
+                            <div style="margin-top: 20px;">
                                 <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
                                         {% if request.resolver_match.view_name == "site_update" %}
                                    href="{% autoescape off %}{% url 'site_detail' sampling_feature_form.sampling_feature_code.value %}{% endautoescape %}"
@@ -228,7 +293,7 @@
                     </div>
                     <div class="modal-footer">
                         <button data-dismiss="modal" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                            Close
+                            Cancel
                         </button>
 
                         <button id="edit-sensor-button"
@@ -250,18 +315,19 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h4 class="modal-title">Delete sensor</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p>
-                        <span id="data-removal-warning" class="hidden">All stored data corresponding to this sensor will be deleted.<br/></span>
-                        Are you sure you want to remove this sensor?
-                    </p>
+                    <div id="data-removal-warning" class="alert alert-danger hidden">All stored data corresponding to
+                        this sensor will be deleted.<br/></div>
+                    <p>Are you sure you want to remove this sensor?</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" id="btn-confirm-delete">Delete</button>
+                    <button type="button" class="mdl-button mdl-button--raised" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="mdl-button mdl-button--raised"
+                            style="background: #d9534f; color:#FFF;" id="btn-confirm-delete">Delete
+                    </button>
                 </div>
             </div>
         </div>

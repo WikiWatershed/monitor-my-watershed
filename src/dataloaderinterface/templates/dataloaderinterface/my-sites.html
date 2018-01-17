@@ -2,28 +2,27 @@
 {% load staticfiles %}
 
 {% block content %}
-    <div class="container">
-        <div class="row">
-            <section class="sites-list col-xs-12 col-sm-5">
-                <div class="page-title">Registered Sites</div>
-            </section>
-            <div class="col-xs-12 col-sm-7 text-right">
-                <a href="{% url 'status' %}"
-                   class="button-link my-sites-action mdl-button mdl-js-button mdl-button--raised mdl-button--default mdl-js-ripple-effect">
-                    <i class="material-icons center-icon">assignment</i> Status
-                </a>
-                <a href="{% url 'site_registration' %}" id="btn-new-site"
-                   class="button-link my-sites-action mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
-                    <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
-                </a>
-                <br><br>
+    <div class="container-fluid page-header">
+        <div class="container">
+            <div class="row">
+                <section class="col-6">
+                    <div class="page-title">Registered Sites</div>
+                </section>
+
+                <div class="col-6 text-right">
+                    <a href="{% url 'status' %}"
+                       class="button-link mdl-button mdl-js-button mdl-button--default mdl-js-ripple-effect">
+                        <i class="material-icons center-icon">assignment</i> Status
+                    </a>
+                </div>
             </div>
         </div>
     </div>
+    <br><br>
 
     <div class="container">
         <div class="row">
-            <div class="full-width-map-container my-sites">
+            <div class="col-sm-12 my-sites-map-container my-sites">
                 <div id="map"></div>
             </div>
         </div>
@@ -31,164 +30,195 @@
 
     <div class="container main-content">
         <div class="row">
-            <div class="col-xs-12">
-                <h4>My sites</h4>
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-6">
+                        <h4 data-toggle="collapse" href="#mySitesCollapse"
+                        aria-expanded="false" aria-controls="mySitesCollapse"
+                            style="cursor: pointer;"
+                        >My sites <span class="badge badge-secondary">{{ sites|length }}</span></h4>
+                    </div>
+                    <div class="col-6 text-right">
+                        <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
+                           class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--accent mdl-js-ripple-effect">
+                            <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
+                        </a>
+                    </div>
+                </div>
+
+                <hr>
             </div>
             {% if sites %}
-                {% for site in sites %}
-                    <div class="col-xs-12 col-sm-4 col-md-3 site" data-site="{{ site.sampling_feature_id }}">
-                        <div class="mdl-card mdl-shadow--2dp site-card">
-                            <div class="mdl-card__title">
-                                <h2 class="mdl-card__title-text"><a href="{% autoescape off %}{% url 'site_detail' site.sampling_feature_code %}">{% endautoescape %}{{ site.sampling_feature_name }}</a></h2>
-                            </div>
+                <div class="col-12 collapse show" id="mySitesCollapse" >
+                    <div class="row">
+                        {% for site in sites %}
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 site" data-site="{{ site.sampling_feature_id }}">
+                                <div class="mdl-card mdl-shadow--2dp site-card">
+                                    <div class="mdl-card__title">
+                                        <h2 class="mdl-card__title-text"><a
+                                                href="{% autoescape off %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_name }}</a>
+                                        </h2>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><i class="material-icons site-card-icon">settings_remote</i></td>
+                                                <td>
+                                                    <span style="color:#92d050;"> Sampling Feature</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td></td>
+                                                <td>{{ site.sampling_feature_name }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <br>
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><i class="material-icons site-card-icon">today</i></td>
+                                                <td>
+                                                    <span style="color:#92d050;"> Registration Date</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td></td>
+                                                <td>{{ site.registration_date }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <br>
+                                        {% if site.latest_measurement %}
+                                            <table>
+                                                <tbody>
+                                                <tr>
+                                                    <td><i class="material-icons site-card-icon">query_builder</i></td>
+                                                    <td>
+                                                        <span style="color:#92d050;"> Latest Measurement</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td></td>
+                                                    <td>{{ site.latest_measurement }}
+                                                        ({{ site.latest_measurement|timesince }} ago)
+                                                    </td>
+                                                </tr>
+                                                </tbody>
+                                            </table>
+                                        {% endif %}
+                                    </div>
 
-                            <div class="mdl-card__supporting-text">
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="material-icons site-card-icon">settings_remote</i></td>
-                                        <td>
-                                            <span style="color:#92d050;"> Sampling Feature</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>{{ site.sampling_feature_name }}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <br>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="material-icons site-card-icon">today</i></td>
-                                        <td>
-                                            <span style="color:#92d050;"> Registration Date</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>{{ site.registration_date }}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <br>
-                                {% if site.latest_measurement %}
-                                    <table>
-                                        <tbody>
-                                        <tr>
-                                            <td><i class="material-icons site-card-icon">query_builder</i></td>
-                                            <td>
-                                                <span style="color:#92d050;"> Latest Measurement</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td>{{ site.latest_measurement }} ({{ site.latest_measurement|timesince }} ago)</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                {% endif %}
-                            </div>
-
-                            <div class="mdl-card__menu">
-                                <!-- Right aligned menu below button -->
-                                <button id="site-card-menu-{{ forloop.counter0 }}"
-                                        class="mdl-button mdl-js-button mdl-button--icon view-on-map">
-                                    <i class="material-icons">map</i>
-                                </button>
-                                <div class="mdl-tooltip" data-mdl-for="site-card-menu-{{ forloop.counter0 }}">
-                                    View on map
+                                    <div class="mdl-card__menu">
+                                        <!-- Right aligned menu below button -->
+                                        <button id="site-card-menu-{{ forloop.counter0 }}"
+                                                class="mdl-button mdl-js-button mdl-button--icon view-on-map">
+                                            <i class="material-icons">map</i>
+                                        </button>
+                                        <div class="mdl-tooltip" data-mdl-for="site-card-menu-{{ forloop.counter0 }}">
+                                            View on map
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
             {% else %}
-                <div class="col-xs-12">
+                <div class="col-sm-12">
                     <p>No sites to display</p>
                 </div>
             {% endif %}
 
-            <div class="col-xs-12">
-                <h4 style="margin-top: 40px;">Followed Sites</h4>
+            <div class="col-sm-12">
+                <h4 style="margin-top: 40px; cursor: pointer;" data-toggle="collapse" href="#followedSitesCollapse"
+                    aria-expanded="false" aria-controls="followedSitesCollapse"
+                    >Followed Sites <span class="badge badge-secondary">{{ followed_sites|length }}</span></h4>
+                <hr>
             </div>
             {% if followed_sites %}
-                {% for site in followed_sites %}
-                    <div class="col-xs-12 col-sm-4 col-md-3 site" data-site="{{ site.sampling_feature_id }}">
-                        <div class="mdl-card mdl-shadow--2dp site-card">
-                            <div class="mdl-card__title">
-                                <h2 class="mdl-card__title-text"><a href="{% autoescape on %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_name }}</a></h2>
-                            </div>
-
-                            <div class="mdl-card__supporting-text">
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="material-icons site-card-icon">settings_remote</i></td>
-                                        <td>
-                                            <span style="color:#92d050;"> Sampling Feature</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>{{ site.sampling_feature_name }}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <br>
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="material-icons site-card-icon">today</i></td>
-                                        <td>
-                                            <span style="color:#92d050;"> Registration Date</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>{{ site.registration_date }}</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                <br>
-                                {% if site.latest_measurement %}
-                                <table>
-                                    <tbody>
-                                    <tr>
-                                        <td><i class="material-icons site-card-icon">query_builder</i></td>
-                                        <td>
-                                            <span style="color:#92d050;"> Latest Measurement</span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td></td>
-                                        <td>{{ site.latest_measurement }} ({{ site.latest_measurement|timesince }} ago)</td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                                {% endif %}
-                            </div>
-                            <div class="mdl-card__menu">
-                                <!-- Right aligned menu below button -->
-                                <button id="site-card-menu-{{ forloop.counter0 }}"
-                                        class="mdl-button mdl-js-button mdl-button--icon view-on-map">
-                                    <i class="material-icons">map</i>
-                                </button>
-                                <div class="mdl-tooltip" data-mdl-for="site-card-menu-{{ forloop.counter0 }}">
-                                    View on map
+                <div class="col-12 collapse show" id="followedSitesCollapse">
+                    <div class="row">
+                        {% for site in followed_sites %}
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 site" data-site="{{ site.sampling_feature_id }}">
+                                <div class="mdl-card mdl-shadow--2dp site-card">
+                                    <div class="mdl-card__title">
+                                        <h2 class="mdl-card__title-text"><a href="{% autoescape on %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_name }}</a></h2>
+                                    </div>
+                                    <div class="mdl-card__supporting-text">
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><i class="material-icons site-card-icon">settings_remote</i></td>
+                                                <td>
+                                                    <span style="color:#92d050;"> Sampling Feature</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td></td>
+                                                <td>{{ site.sampling_feature_name }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <br>
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><i class="material-icons site-card-icon">today</i></td>
+                                                <td>
+                                                    <span style="color:#92d050;"> Registration Date</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td></td>
+                                                <td>{{ site.registration_date }}</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        <br>
+                                        {% if site.latest_measurement %}
+                                        <table>
+                                            <tbody>
+                                            <tr>
+                                                <td><i class="material-icons site-card-icon">query_builder</i></td>
+                                                <td>
+                                                    <span style="color:#92d050;"> Latest Measurement</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td></td>
+                                                <td>{{ site.latest_measurement }} <br>({{ site.latest_measurement|timesince }} ago)</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        {% endif %}
+                                    </div>
+                                    <div class="mdl-card__menu">
+                                        <!-- Right aligned menu below button -->
+                                        <button id="site-card-menu-{{ forloop.counter0 }}"
+                                                class="mdl-button mdl-js-button mdl-button--icon view-on-map">
+                                            <i class="material-icons">map</i>
+                                        </button>
+                                        <div class="mdl-tooltip" data-mdl-for="site-card-menu-{{ forloop.counter0 }}">
+                                            View on map
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        {% endfor %}
                     </div>
-                {% endfor %}
+                </div>
+
             {% else %}
-                <div class="col-xs-12">
+                <div class="col-sm-12">
                     <p>No followed sites to display</p>
                 </div>
             {% endif %}
         </div>
-
+        <br>
+        <br>
+          
         {% autoescape off %}
         <script id="sites-data" type="application/json">
             [
@@ -253,6 +283,10 @@
         </script>
     </div>
 
+    <div id="clipboard-snackbar" class="mdl-js-snackbar mdl-snackbar">
+        <div class="mdl-snackbar__text"></div>
+        <button class="mdl-snackbar__action hidden" type="button"></button>
+    </div>
 {% endblock %}
 
 {% block services_urls %}
