@@ -352,6 +352,15 @@ $(document).ready(function() {
     });
 
     $("#id_notify").change(function() {
-        $("div[data-field='hours_threshold']").toggleClass("hidden", !this.checked);
+        var hoursThresholdDataField = $("div[data-field='hours_threshold']");
+        hoursThresholdDataField.toggleClass("hidden", !this.checked);
+
+        var hoursThresholdInputField = $(hoursThresholdDataField).find('input#id_hours_threshold');
+        console.log(hoursThresholdInputField);
+        if (this.checked) {
+            hoursThresholdInputField[0].setAttribute("required", "");
+        } else {
+            hoursThresholdInputField[0].removeAttribute("required");
+        }
     });
 });
