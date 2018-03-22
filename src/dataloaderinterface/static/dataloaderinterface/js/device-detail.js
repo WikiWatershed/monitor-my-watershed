@@ -217,11 +217,17 @@ function getTimeSeriesData(sensorInfo) {
         var resultSet = influx_data.results.shift();
         if (resultSet.series && resultSet.series.length) {
             var influxSeries = resultSet.series.shift();
+            // Get the indexes from the column definitions
+            var indexes = {
+                time: influxSeries.columns.indexOf("time"),
+                value: influxSeries.columns.indexOf("DataValue"),
+                offset: influxSeries.columns.indexOf("UTCOffset")
+            };
             var values = influxSeries.values.map(function(influxValue) {
                 return {
-                    DateTime: influxValue[0].match(/^(\d{4}\-\d\d\-\d\d([tT][\d:]*)?)/).shift(),
-                    Value: influxValue[1],
-                    TimeOffset: influxValue[2]
+                    DateTime: influxValue[indexes.time].match(/^(\d{4}\-\d\d\-\d\d([tT][\d:]*)?)/).shift(),
+                    Value: influxValue[indexes.value],
+                    TimeOffset: influxValue[indexes.offset]
                 }
             });
             //
@@ -229,8 +235,6 @@ function getTimeSeriesData(sensorInfo) {
             fillValueTable($('table.data-values[data-result-id=' + sensorInfo['resultId'] + ']'), values);
             drawSparklineOnResize(sensorInfo, values);
             drawSparklinePlot(sensorInfo, values);
-
-
         } else {
              console.error('No data values were found for this site');
              console.info(series.getdatainflux);
