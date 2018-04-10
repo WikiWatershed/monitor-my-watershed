@@ -12,7 +12,7 @@ function initMap() {
         center: sitePosition,
         gestureHandling: 'greedy',
         zoom: defaultZoomLevel,
-        mapTypeId: google.maps.MapTypeId.SATELLITE
+        mapTypeId: google.maps.MapTypeId.HYBRID,
     });
 
     var marker = new google.maps.Marker({

@@ -104,8 +104,7 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td></td>
-                                                    <td>{{ site.latest_measurement }}
+                                                    <td colspan="2">{{ site.latest_measurement }}
                                                         ({{ site.latest_measurement_utc|utc_timesince }} ago)
                                                     </td>
                                                 </tr>
@@ -197,7 +196,9 @@
                                             </tr>
                                             <tr>
                                                 <td></td>
-                                                <td>{{ site.latest_measurement }} <br>({{ site.latest_measurement_utc|utc_timesince }} ago)</td>
+                                                <td>{{ site.latest_measurement }}
+                                                    <br>({{ site.latest_measurement_utc|utc_timesince }} ago)
+                                                </td>
                                             </tr>
                                             </tbody>
                                         </table>
@@ -218,7 +219,6 @@
                         {% endfor %}
                     </div>
                 </div>
-
             {% else %}
                 <div class="col-sm-12">
                     <p>No followed sites to display</p>

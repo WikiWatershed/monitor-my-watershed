@@ -22,13 +22,12 @@ function initMap() {
     var map = new google.maps.Map(document.getElementById('map'), {
         center: MAP_CENTER,
         zoom: ZOOM_LEVEL,
-        disableDefaultUI: true,
         gestureHandling: 'greedy',
         zoomControl: true,
         zoomControlOptions: {
             position: google.maps.ControlPosition.LEFT_BOTTOM
         },
-        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
         scaleControl: true
     });
 

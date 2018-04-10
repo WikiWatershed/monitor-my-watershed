@@ -23,7 +23,6 @@ function initMap() {
     const DEFAULT_SPECIFIC_ZOOM = 10;
     const DEFAULT_LATITUDE = 37.0902;
     const DEFAULT_LONGITUDE = -95.7129;
-    var mapTip = $('<div class="map-info"><span><i class="fa fa-info-circle" aria-hidden="true"></i> Click on the map to update coordinates and elevation data</span></div>');
     var mapPosition = { lat: parseFloat($('input[name="latitude"]').val()), lng: parseFloat($('input[name="longitude"]').val()) };
     var isCompletePosition = mapPosition.lat && mapPosition.lng;
     var mapZoom = parseInt($('input[name="zoom-level"]').val());
@@ -31,10 +30,9 @@ function initMap() {
     var map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: mapPosition.lat || DEFAULT_LATITUDE, lng: mapPosition.lng || DEFAULT_LONGITUDE },
         zoom: mapZoom || DEFAULT_ZOOM,
-        mapTypeId: google.maps.MapTypeId.TERRAIN,
+        mapTypeId: google.maps.MapTypeId.HYBRID,
         gestureHandling: 'greedy',
         draggableCursor: 'pointer',
-        disableDefaultUI: true,
         zoomControl: true,
         zoomControlOptions: {
           position: google.maps.ControlPosition.LEFT_BOTTOM
@@ -53,8 +51,6 @@ function initMap() {
             map.setZoom(DEFAULT_SPECIFIC_ZOOM);
         }, undefined, { timeout: 5000 });
     }
-
-    map.controls[google.maps.ControlPosition.TOP_CENTER].push(mapTip.get(0));
 
     map.addListener('click', function(event) {
         marker.setPosition(event.latLng);

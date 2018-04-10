@@ -25,10 +25,18 @@ span.map-tip {
     position: absolute;
     z-index: 1;
     background: #FFF;
-    padding: 24px;
-    margin: 15px;
+    padding: 10px;
+    margin-left: 112px;
     border-radius: 2px;
     max-width: 350px;
+    min-width: 268px;
+    margin-top: 10px;
+}
+
+.browse-sites-header .material-icons {
+    top: 7px;
+    right: 5px;
+    position: absolute;
 }
 
 .browse-sites-header .page-title {
