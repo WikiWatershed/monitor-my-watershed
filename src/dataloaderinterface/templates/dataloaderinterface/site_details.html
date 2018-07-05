@@ -260,7 +260,7 @@
                     </h6>
 
                     <div class="buttons-toolbar row">
-                        <div class="col-sm-12  {% if can_administer_site %}col-md-8{% endif %}">
+                        <div class="col-sm-12  {% if can_administer_site %}col-md-6{% endif %}">
                             <div class="alert alert-light" role="alert">
                                 <table>
                                     <tr>
@@ -281,18 +281,19 @@
                         </div>
 
                         {% if can_administer_site %}
-                        <div class="col-sm-12 col-md-4 text-right">
-                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'sensors' site.sampling_feature_code %}">
-                                <i class="material-icons center-icon">assignment</i>
-                                Manage Sensors
-                            </a>
-                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}" download>
-                                <i class="material-icons center-icon">cloud_download</i>
-                                Download Site Sensor Data
-                            </a>
-                        </div>
+                            <div class="col-sm-12 col-md-6 text-right">
+                                <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                   href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
+                                   download>
+                                    <i class="material-icons center-icon">cloud_download</i>
+                                    Download Sensor Data
+                                </a>
+                                <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                   href="{% url 'sensors' site.sampling_feature_code %}">
+                                    <i class="material-icons center-icon">assignment</i>
+                                    Manage Sensors
+                                </a>
+                            </div>
                         {% endif %}
                     </div>
                 </div>

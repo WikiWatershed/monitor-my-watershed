@@ -159,46 +159,42 @@
                 <span class="text-muted result-d-container">UUID: <small data-copy-target="result-dialog-uuid"
                                                                          id="result-dialog-uuid"></small></span>
                 <div class="mdl-dialog__content">
-                    <div class="row">
-                        <div class="form-group col-12 result-form">
-                            {% csrf_token %}
-                            {% for hidden in sensor_form.hidden_fields %}
-                                {{ hidden }}
-                            {% endfor %}
+                    <div class="row form-group result-form">
+                        {% csrf_token %}
+                        {% for hidden in sensor_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <div class="col-12">
                             {% for field in sensor_form.visible_fields %}
-                                <div class="form-field {% if field.field.required %}required-field{% endif %}">
+                                <div class="form-field {% if field.field.required %} required-field{% endif %}">
                                     <label class="control-label"
                                            for="{{ field.id_for_label }}">{{ field.label }}</label>
                                     {% with "placeholder:"|add:field.help_text as placeholder %}
-                                        {{ field|add_class:"form-control input-sm"|attr:placeholder }}
+                                        {{ field|add_class:"form-control input-sm"|attr:placeholder|attr:"height:95px" }}
                                     {% endwith %}
                                 </div>
                             {% endfor %}
                         </div>
-
                         <div class="col-12">
-                            <div class="alert alert-light mdl-card" style="width: 100%; min-height: initial;">
+                            <div class="alert alert-light mdl-card"
+                                 style="width: 100%; min-height: initial;">
                                 <strong>Don't see your sensor in the list of equipment models?</strong>
                                 <small>Click <a
                                         href="mailto:ww-data-portal-help@googlegroups.com?Subject=Request%20for%20new%20sensor">here</a>
                                     to send an email to
-                                    a system administrator with a request to add new sensors. Please provide us with the
-                                    manufacturer and make/model information for the sensor, as well as a link to a
+                                    a system administrator with a request to add new sensors. Please provide
+                                    us
+                                    with the
+                                    manufacturer and make/model information for the sensor, as well as a
+                                    link to
+                                    a
                                     website description if you can.
                                 </small>
 
                                 <div class="input-group">
                                     <input readonly id="adminEmail" type="text" class="form-control"
                                            value="ww-data-portal-help@googlegroups.com"
-                                           aria-label="Administrator's email">
-
-                                    <div class="input-group-append">
-                                        <button style="border: 1px solid #DDD; margin-left: -1px;"
-                                                class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                                                data-copy-target="adminEmail">
-                                            Copy to clipboard
-                                        </button>
-                                    </div>
+                                           aria-label="Administrator's email" data-copy-target="adminEmail">
                                 </div>
                             </div>
                         </div>

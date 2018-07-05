@@ -71,7 +71,7 @@
                             <td class="mdl-data-table__cell--non-numeric label">
                                 Placement Air Temperature
                             </td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_air_temp }}
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_air_temp|default:"Unknown" }}
                                 <small> °C</small>
                             </td>
                         </tr>
@@ -80,7 +80,7 @@
                             <td class="mdl-data-table__cell--non-numeric label">
                                 Placement Water Temperature
                             </td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_water_temp }}
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_water_temp|default:"Unknown"  }}
                                 <small> °C</small>
                             </td>
                         </tr>
@@ -124,14 +124,14 @@
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-three-quarters icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Retrieval Air Temperature</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.retrieval_air_temp }}
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.retrieval_air_temp|default:"Unknown" }}
                                 <small> °C</small>
                             </td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Retrieval Water Temperature</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.retrieval_water_temp }}
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.retrieval_water_temp|default:"Unknown"  }}
                                 <small> °C</small>
                             </td>
                         </tr>
