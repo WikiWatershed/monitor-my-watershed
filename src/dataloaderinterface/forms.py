@@ -3,14 +3,10 @@
 from django.forms import NumberInput
 from django.forms.widgets import HiddenInput
 
-from dataloader.models import SamplingFeature, Organization, Affiliation, Result, Site, EquipmentModel, Medium, \
-    OrganizationType, ActionBy, SiteType, Variable, Unit
+from dataloader.models import Organization, Affiliation, EquipmentModel, Medium, OrganizationType, SiteType, Variable, Unit
 from django import forms
-from django.forms.formsets import formset_factory
-import re
 
 from dataloaderinterface.models import SiteRegistration, SiteAlert, SiteSensor, SensorOutput
-from hydroshare.models import HydroShareResource
 
 allowed_site_types = [
     'Borehole', 'Ditch', 'Atmosphere', 'Estuary', 'House', 'Land', 'Pavement', 'Stream', 'Spring',
@@ -44,8 +40,6 @@ class SampledMediumField(forms.ModelChoiceField):
     def label_from_instance(self, obj):
         return SampledMediumField.get_custom_label(obj.name)
 
-
-# ODM2
 
 class SiteRegistrationForm(forms.ModelForm):
     affiliation_id = forms.ModelChoiceField(
@@ -88,15 +82,6 @@ class SiteRegistrationForm(forms.ModelForm):
         }
 
 
-class ActionByForm(forms.ModelForm):
-    use_required_attribute = False
-    affiliation = forms.ModelChoiceField(queryset=Affiliation.objects.all(), required=False, help_text='Select the user that deployed or manages the site', label='Deployed By')
-
-    class Meta:
-        model = ActionBy
-        fields = ['affiliation']
-
-
 class OrganizationForm(forms.ModelForm):
     use_required_attribute = False
     organization_type = forms.ModelChoiceField(queryset=OrganizationType.objects.all().exclude(name__in=['Vendor', 'Manufacturer']), required=False, help_text='Choose the type of organization')
@@ -113,57 +98,6 @@ class OrganizationForm(forms.ModelForm):
             'organization_name',
             'organization_type',
             'organization_description'
-        ]
-
-
-class SamplingFeatureForm(forms.ModelForm):
-    use_required_attribute = False
-    sampling_feature_name = forms.CharField(required=True, label='Site Name', help_text='Enter a brief but descriptive name for your site (e.g., "Delaware River near Phillipsburg")')
-
-    class Meta:
-        model = SamplingFeature
-        help_texts = {
-            'sampling_feature_code': 'Enter a brief and unique text string to identify your site (e.g., "Del_Phil")',
-            'elevation_m': 'Enter the elevation of your site in meters',
-            'elevation_datum': 'Choose the elevation datum for your site\'s elevation. If you don\'t know it, choose "MSL"'
-        }
-        fields = [
-            'sampling_feature_code',
-            'sampling_feature_name',
-            'elevation_m',
-            'elevation_datum',
-        ]
-        labels = {
-            'sampling_feature_code': 'Site Code',
-            'elevation_m': 'Elevation',
-        }
-
-
-class SiteForm(forms.ModelForm):
-    allowed_site_types = [
-        'Borehole', 'Ditch', 'Atmosphere', 'Estuary', 'House', 'Land', 'Pavement', 'Stream', 'Spring',
-        'Lake, Reservoir, Impoundment', 'Laboratory or sample-preparation area', 'Observation well', 'Soil hole',
-        'Storm sewer', 'Stream gage', 'Tidal stream', 'Water quality station', 'Weather station', 'Wetland', 'Other'
-    ]
-
-    site_type = forms.ModelChoiceField(
-        queryset=SiteType.objects.filter(name__in=allowed_site_types),
-        help_text='Select the type of site you are deploying (e.g., "Stream")',
-        widget=SiteTypeSelect
-    )
-    use_required_attribute = False
-
-    class Meta:
-        model = Site
-        help_texts = {
-            'site_type': '',
-            'latitude': 'Enter the latitude of your site in decimal degrees (e.g., 40.6893)',
-            'longitude': 'Enter the longitude of your site in decimal degrees (e.g., -75.2033)',
-        }
-        fields = [
-            'site_type',
-            'latitude',
-            'longitude',
         ]
 
 
@@ -211,42 +145,6 @@ class SiteSensorForm(forms.ModelForm):
             'height': 'Height above(+) or below(-) surface, in meters',
             'sensor_notes': 'Notes'
         }
-
-
-class ResultForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(ResultForm, self).__init__(*args, **kwargs)
-        self.empty_permitted = False
-
-    equipment_model = forms.ModelChoiceField(queryset=EquipmentModel.objects.for_display(), help_text='Choose the model of your sensor')
-    sampled_medium = SampledMediumField(queryset=Medium.objects.filter(pk__in=[
-        'Air', 'Soil', 'Sediment', 'Liquid aqueous',
-        'Equipment', 'Not applicable', 'Other'
-    ]), help_text='Choose the sampled medium')
-
-    class Meta:
-        model = Result
-        help_texts = {
-            'equipment_model': 'Choose the model of your sensor',
-            'variable': 'Choose the measured variable',
-            'unit': 'Choose the measured units',
-            'sampled_medium': 'Choose the sampled medium'
-        }
-        fields = [
-            'result_id',
-            'equipment_model',
-            'variable',
-            'unit',
-            'sampled_medium',
-        ]
-        labels = {
-            'equipment_model': 'Sensor Model',
-            'variable': 'Measured Variable',
-            'sampled_medium': 'Sampled Medium',
-        }
-
-
-ResultFormSet = formset_factory(ResultForm, extra=0, can_order=False, min_num=1, can_delete=True)
 
 
 class SiteAlertForm(forms.ModelForm):
