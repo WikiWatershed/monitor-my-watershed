@@ -42,6 +42,7 @@ class Command(BaseCommand):
     help = ''
 
     def handle(self, *args, **options):
+        # TODO: These values should go in the settings.json file and not hardcoded.
         base_url = 'http://vocabulary.odm2.org'
         api_url = '/api/v1'
         request_uri = '%s%s/{cv}/?format=json' % (base_url, api_url)
