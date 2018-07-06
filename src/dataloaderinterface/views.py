@@ -96,9 +96,9 @@ class SiteDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
+        context['data_upload_form'] = SensorDataForm()
         context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
-        user = self.request.user
-        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(self.object)
+        context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
         context['is_site_owner'] = self.request.user == self.object.django_user
         context['tsa_url'] = settings.TSA_URL
 
@@ -137,7 +137,7 @@ class SensorListUpdateView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SensorListUpdateView, self).get_context_data(**kwargs)
         context['sensor_form'] = SiteSensorForm(initial={'registration': self.object.registration_id})
-        context['data_upload_form'] = SensorDataForm()
+
         return context
 
 
