@@ -1,8 +1,7 @@
 import codecs
+import csv
 import os
 from datetime import timedelta, datetime
-import pandas as pd
-import logging
 
 from StringIO import StringIO
 
@@ -13,11 +12,11 @@ from django.http.response import HttpResponse
 from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
+from rest_framework.generics import GenericAPIView
 from unicodecsv.py2 import UnicodeWriter
 
 from dataloader.models import SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
 from django.db.models.expressions import F
-# Create your views here.
 from django.utils.dateparse import parse_datetime
 from rest_framework import exceptions
 from rest_framework import status
@@ -25,14 +24,15 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from dataloaderinterface.forms import SiteSensorForm
+from dataloaderinterface.forms import SiteSensorForm, SensorDataForm
 from dataloaderinterface.models import SiteSensor, SiteRegistration, SensorOutput, SensorMeasurement
 from dataloaderservices.auth import UUIDAuthentication
-from dataloaderservices.serializers import OrganizationSerializer, SensorSerializer
-
-from pytz import utc
+from dataloaderservices.serializers import OrganizationSerializer
 
 from leafpack.models import LeafPack
+
+# TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
+# TODO: Use generic api views for create, edit, delete, and list.
 
 
 class ModelVariablesApi(APIView):
@@ -164,6 +164,66 @@ class FollowSiteApi(APIView):
             request.user.followed_sites.remove(site)
 
         return Response({}, status.HTTP_200_OK)
+
+
+class SensorDataUploadView(GenericAPIView):
+    authentication_classes = (SessionAuthentication,)
+
+    def post(self, request, format=None):
+        if 'sensor_id' not in request.POST:
+            return Response({'id': 'No sensor id in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        sensor = SiteSensor.objects.filter(pk=request.POST['sensor_id']).first()
+        if not sensor:
+            return Response({'id': 'Sensor was not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.can_administer_site(sensor.registration):
+            return Response({'id': 'Logged user is not allowed to edit this site.'}, status=status.HTTP_403_FORBIDDEN)
+
+        form = SensorDataForm(request.POST, request.FILES)
+
+        if not form.is_valid():
+            error_data = dict(form.errors)
+            return Response(error_data, status=status.HTTP_206_PARTIAL_CONTENT)
+
+        data_file = request.FILES['data_file']
+        data_value_units = Unit.objects.get(unit_name='hour minute')
+
+        # do it in chunks so it doesn't drain the systems' memory.
+        # further improvement: we can also use pandas to read the file if this ends up being too slow.
+
+        for chunk in data_file.chunks():
+            reader = csv.reader(chunk)
+
+            for row in reader:
+                try:
+                    measurement_datetime = parse_datetime(row[0])
+                except ValueError:
+                    # invalid timestamp, ignore data point
+                    continue
+
+                if not measurement_datetime:
+                    # timestamp has a bad format
+                    continue
+
+                if measurement_datetime.utcoffset() is None:
+                    # timestamp doesn't have utc offset info.
+                    continue
+
+                utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
+                measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
+                data_value = float(row[1])
+
+                result_value = TimeSeriesResultValue.objects.get_or_create(
+                    result_id=sensor.result_id,
+                    value_datetime_utc_offset=utc_offset,
+                    value_datetime=measurement_datetime,
+                    censor_code_id='Not censored',
+                    quality_code_id='None',
+                    time_aggregation_interval=1,
+                    time_aggregation_interval_unit=data_value_units,
+                    data_value=data_value
+                )
 
 
 class CSVDataApi(View):

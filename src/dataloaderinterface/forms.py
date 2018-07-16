@@ -159,3 +159,6 @@ class SiteAlertForm(forms.ModelForm):
             'notify': 'Receive email notifications for this site',
         }
 
+
+class SensorDataForm(forms.Form):
+    data_file = forms.FileField()
