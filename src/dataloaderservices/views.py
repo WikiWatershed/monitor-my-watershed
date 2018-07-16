@@ -1,4 +1,5 @@
 import codecs
+import csv
 import os
 from datetime import timedelta, datetime
 
@@ -185,10 +186,44 @@ class SensorDataUploadView(GenericAPIView):
             error_data = dict(form.errors)
             return Response(error_data, status=status.HTTP_206_PARTIAL_CONTENT)
 
-        # NOT FINISHED
+        data_file = request.FILES['data_file']
+        data_value_units = Unit.objects.get(unit_name='hour minute')
 
+        # do it in chunks so it doesn't drain the systems' memory.
+        # further improvement: we can also use pandas to read the file if this ends up being too slow.
 
+        for chunk in data_file.chunks():
+            reader = csv.reader(chunk)
 
+            for row in reader:
+                try:
+                    measurement_datetime = parse_datetime(row[0])
+                except ValueError:
+                    # invalid timestamp, ignore data point
+                    continue
+
+                if not measurement_datetime:
+                    # timestamp has a bad format
+                    continue
+
+                if measurement_datetime.utcoffset() is None:
+                    # timestamp doesn't have utc offset info.
+                    continue
+
+                utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
+                measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
+                data_value = float(row[1])
+
+                result_value = TimeSeriesResultValue.objects.get_or_create(
+                    result_id=sensor.result_id,
+                    value_datetime_utc_offset=utc_offset,
+                    value_datetime=measurement_datetime,
+                    censor_code_id='Not censored',
+                    quality_code_id='None',
+                    time_aggregation_interval=1,
+                    time_aggregation_interval_unit=data_value_units,
+                    data_value=data_value
+                )
 
 
 class CSVDataApi(View):
