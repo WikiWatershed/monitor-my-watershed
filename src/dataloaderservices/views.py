@@ -25,7 +25,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from dataloaderinterface.forms import ResultForm, SiteSensorForm
+from dataloaderinterface.forms import SiteSensorForm
 from dataloaderinterface.models import SiteSensor, SiteRegistration, SensorOutput, SensorMeasurement
 from dataloaderservices.auth import UUIDAuthentication
 from dataloaderservices.serializers import OrganizationSerializer, SensorSerializer
@@ -33,18 +33,6 @@ from dataloaderservices.serializers import OrganizationSerializer, SensorSeriali
 from pytz import utc
 
 from leafpack.models import LeafPack
-
-
-class ResultApi(APIView):
-    authentication_classes = (SessionAuthentication,)
-
-    def post(self, request, format=None):
-        form = ResultForm(data=request.POST)
-        if form.is_valid():
-            return Response({}, status=status.HTTP_200_OK)
-
-        error_data = dict(form.errors)
-        return Response(error_data, status=status.HTTP_206_PARTIAL_CONTENT)
 
 
 class ModelVariablesApi(APIView):
