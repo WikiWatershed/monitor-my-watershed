@@ -258,44 +258,66 @@
                              src="{% static 'dataloaderinterface/images/envirodiy_logo.png' %}"
                              alt="Data Sharing Portal">
                     </h6>
+                </div>
 
-                    <div class="buttons-toolbar row">
-                        <div class="col-sm-12  {% if can_administer_site %}col-md-6{% endif %}">
-                            <div class="alert alert-light" role="alert">
-                                <table>
-                                    <tr>
-                                        <td style="padding-right: 20px; vertical-align: top;"><i
-                                                class="material-icons center-icon">info</i></td>
-                                        <td>
-                                            Only the most recent 72 hours of available data
-                                            are shown on the sparkline plots. The plots are broken when there are gaps
-                                            in the data
-                                            longer than 6 hours. Plots shaded in green have recent data. Plots shaded in
-                                            red have
-                                            not reported data in the last 72 hours.
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <br>
-                        </div>
-
-                        {% if can_administer_site %}
-                            <div class="col-sm-12 col-md-6 text-right">
-                                <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                                   href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
-                                   download>
-                                    <i class="material-icons center-icon">cloud_download</i>
-                                    Download Sensor Data
-                                </a>
-                                <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                                   href="{% url 'sensors' site.sampling_feature_code %}">
-                                    <i class="material-icons center-icon">assignment</i>
-                                    Manage Sensors
-                                </a>
-                            </div>
-                        {% endif %}
+                {% if can_administer_site %}
+                    <div class="buttons-toolbar col-12 text-right">
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                           href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
+                           download>
+                            <i class="material-icons center-icon">cloud_download</i>
+                            Download Sensor Data
+                        </a>
+                        <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                           href="{% url 'sensors' site.sampling_feature_code %}">
+                            <i class="material-icons center-icon">assignment</i>
+                            Manage Sensors
+                        </a>
                     </div>
+                {% endif %}
+
+                <div class="col-sm-12 col-lg-7">
+                    <div class="alert alert-light" role="alert">
+                        <table>
+                            <tr>
+                                <td style="padding-right: 20px; vertical-align: top;"><i
+                                        class="material-icons center-icon">info</i></td>
+                                <td>
+                                    Only the most recent 72 hours of available data
+                                    are shown on the sparkline plots. The plots are broken when there are gaps
+                                    in the data
+                                    longer than 6 hours. Plots shaded in green have recent data. Plots shaded in
+                                    red have
+                                    not reported data in the last 72 hours.
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-5">
+                    <a class="link-card" style="margin-bottom: 1em;"
+                       href="{{ tsa_url }}?sitecode={{ site.sampling_feature_code }}&view=datasets&plot=false"
+                       target="_blank">
+                        <div class="mdl-card mdl-shadow--2dp mdl-js-ripple-effect" style="width: 260px;">
+                            <span class="mdl-ripple"></span>
+                            <div class="row">
+                                <div class="col-12">
+                                    <i class="link-card-icon material-icons icon-blue">show_chart</i>
+                                    <div>
+                                        <h5 class="link-card-title">Time Series Analyst</h5>
+                                        <p class="text-muted">View data for this site.</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Related Link</small>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <i class="material-icons text-muted">open_in_new</i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
 
                 <div class="sparkline-plots col-sm-12">

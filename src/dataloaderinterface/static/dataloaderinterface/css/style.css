@@ -1308,6 +1308,7 @@ hr.dotted {
 
 .link-card {
     display: inline-block;
+    margin-bottom: 1em;
 }
 
 .link-card, .link-card:hover {
