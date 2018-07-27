@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesResultValue, EquipmentModel, Variable, \
-    Unit, Medium
+    Unit, Medium, Organization
 from dataloaderinterface.querysets import SiteRegistrationQuerySet, SensorOutputQuerySet
 
 
@@ -64,6 +64,10 @@ class SiteRegistration(models.Model):
             return None
 
         return last_updated_sensor.last_measurement
+
+    @property
+    def organization(self):
+        return Organization.objects.filter(organization_id=self.organization_id).first()
 
     @property
     def sampling_feature(self):
@@ -134,6 +138,14 @@ class SensorOutput(models.Model):
     sampled_medium = models.CharField(max_length=255, null=True)
 
     objects = SensorOutputQuerySet.as_manager()
+
+    @property
+    def variable(self):
+        return Variable.objects.filter(variable_id=self.variable_id).first()
+
+    @property
+    def unit(self):
+        return Unit.objects.filter(unit_id=self.unit_id).first()
 
     def __str__(self):
         return '%s %s %s %s %s' % (self.model_manufacturer, self.model_name, self.variable_code, self.unit_name, self.sampled_medium)
