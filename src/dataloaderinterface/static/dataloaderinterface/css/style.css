@@ -1363,3 +1363,33 @@ textarea[name="sensor_notes"] {
     height: 95px;
     min-height: 60px;
 }
+
+#upload-placeholder {
+    position: absolute;
+    right: 1em;
+    top: 10px;
+}
+
+div.file-preview {
+    height: auto;
+    border: 1px dashed #DDD;
+    padding: 1em;
+    margin: 1em;
+}
+
+i.file-icon {
+    font-size: 30px;
+    color: #66cbcb;
+    margin-right: 10px;
+}
+
+.mdl-button--file input {
+    cursor: pointer;
+    height: 100%;
+    right: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 300px;
+    z-index: 4;
+}
