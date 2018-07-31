@@ -252,16 +252,6 @@ class SensorDataUploadView(APIView):
                             time_aggregation_interval_unit=data_value_units,
                             data_value=data_value
                         )
-
-                        # Insert data value into influx instance.
-                        influx_request_url = settings.INFLUX_UPDATE_URL
-                        influx_request_body = settings.INFLUX_UPDATE_BODY.format(
-                            result_uuid=str(sensor.result_uuid).replace('-', '_'),
-                            data_value=data_value,
-                            utc_offset=results_mapping['utc_offset'],
-                            timestamp_s=long((measurement_datetime - datetime.utcfromtimestamp(0)).total_seconds())
-                        )
-                        requests.post(influx_request_url, influx_request_body.encode())
                         print('data value added!')
                     except KeyError as ke:
                         print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
@@ -292,7 +282,8 @@ class SensorDataUploadView(APIView):
         message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
         sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
         addresses = [request.user.email]
-        # send_mail(subject, message, sender, addresses)
+        if send_mail(subject, message, sender, addresses, fail_silently=True):
+            print('email sent!')
         return Response({'message': 'file has been processed successfully'}, status.HTTP_200_OK)
 
 
