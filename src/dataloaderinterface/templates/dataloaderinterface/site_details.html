@@ -293,11 +293,6 @@
                                     <i class="material-icons center-icon">assignment</i>
                                     Manage Sensors
                                 </a>
-                                <form method="POST" action="{% url 'data_file_upload' site.registration_id %}" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    {{ data_upload_form }}
-                                    <input type="submit" class="mdl-button mdl-button--raised" value="Upload" id="btn-upload-file">
-                                </form>
                             </div>
                         {% endif %}
                     </div>
@@ -418,6 +413,48 @@
                         {% endif %}
                     </div>
                 </div>
+
+                {% if can_administer_site %}
+                    <div class="col-12"><hr></div>
+
+                    <div class="col-sm-12 col-md-6">
+                        <form id="form-file-upload"
+                              class="mdl-card mdl-card--border mdl-shadow--2dp full-width text-left"
+                              action="{% url 'data_file_upload' site.registration_id %}" enctype="multipart/form-data"
+                              method="POST" style="min-height: auto;">
+                            {% csrf_token %}
+                            <input type="hidden" value="Upload">
+                            <div class="mdl-card__title mdl-card--expand">
+                                Upload a data file (.csv)
+                            </div>
+
+                            <div class="mdl-card__actions mdl-card--border">
+                                <button id="upload-placeholder"
+                                        class="mdl-button--file mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--2dp">
+                                    <i class="material-icons">attach_file</i>
+                                    <input type="file" name="data_file" id="id_data_file" accept=".csv">
+                                </button>
+
+                                <div class="file-preview grid" style="grid-template-columns: auto 150px;">
+                                    <small id="file-preview-default" class="text-muted" style="align-self: center;">
+                                        No file chosen.
+                                    </small>
+                                    <table id="file-preview-name" style="display: none; align-self: center;">
+                                        <tr>
+                                            <td style="width: 40px;"><i class="fa fa-file-o file-icon center-icon"
+                                                                        aria-hidden="true"></i></td>
+                                            <td><span>File name.csv</span></td>
+                                        </tr>
+                                    </table>
+                                    <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                                            id="btn-upload-file" disabled style="margin: 0; align-self: center;">
+                                        <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                {% endif %}
             </div>
         </div>
 
