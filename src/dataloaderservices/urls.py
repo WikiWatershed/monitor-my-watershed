@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^api/delete-leafpack/$', DeleteLeafpackApi.as_view(), name='delete_leafpack_service'),
     url(r'^api/organization/$', OrganizationApi.as_view(), name='organization_service'),
     url(r'^api/output-variables/$', OutputVariablesApi.as_view(), name='output_variables_service'),
-    url(r'^api/data-file-upload/$', SensorDataUploadView.as_view(), name='data_file_upload')
+    url(r'^api/data-file-upload/(?P<registration_id>.*?)$', SensorDataUploadView.as_view(), name='data_file_upload')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

@@ -7,6 +7,8 @@ from StringIO import StringIO
 
 import requests
 from django.conf import settings
+from django.core.mail import send_mail
+from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 from django.http.response import HttpResponse
 from django.views.generic.base import View
@@ -166,19 +168,43 @@ class FollowSiteApi(APIView):
         return Response({}, status.HTTP_200_OK)
 
 
-class SensorDataUploadView(GenericAPIView):
+class SensorDataUploadView(APIView):
     authentication_classes = (SessionAuthentication,)
+    header_row_indicators = ('Sampling Feature', 'Data Logger', 'Date and Time')
 
-    def post(self, request, format=None):
-        if 'sensor_id' not in request.POST:
-            return Response({'id': 'No sensor id in the request.'}, status=status.HTTP_400_BAD_REQUEST)
+    def should_skip_row(self, row):
+        if row[0].startswith(self.header_row_indicators):
+            return True
 
-        sensor = SiteSensor.objects.filter(pk=request.POST['sensor_id']).first()
-        if not sensor:
-            return Response({'id': 'Sensor was not found.'}, status=status.HTTP_404_NOT_FOUND)
+    def build_results_dict(self, data_file):
+        results = {'utc_offset': 0, 'site_uuid': '', 'results': {}}
+        is_first_row = True
 
-        if not request.user.can_administer_site(sensor.registration):
-            return Response({'id': 'Logged user is not allowed to edit this site.'}, status=status.HTTP_403_FORBIDDEN)
+        for index, row in enumerate(csv.reader(data_file)):
+            if row[0].startswith('Sampling Feature'):
+                # two cases here: it's the first row and we parse it, or it isn't and we stop
+                if not is_first_row:
+                    break
+
+                results['site_uuid'] = row[0].replace('Sampling Feature: ', '')
+                # build dict with the rest of the columns
+                results['results'] = {uuid: uuid_index for uuid_index, uuid in enumerate(row[1:], start=1)}
+
+            elif row[0].startswith('Date and Time'):
+                results['utc_offset'] = int(row[0].replace('Date and Time in UTC', ''))
+            is_first_row = False
+        return results
+
+    def post(self, request, *args, **kwargs):
+        if 'registration_id' not in kwargs:
+            return Response({'error': 'No registration specified'}, status=status.HTTP_400_BAD_REQUEST)
+
+        registration = SiteRegistration.objects.prefetch_related('sensors').filter(pk=kwargs['registration_id']).first()
+        if not registration:
+            return Response({'error:': 'Registration not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.can_administer_site(registration):
+            return Response({'error': 'Not allowed to edit this site'}, status=status.HTTP_403_FORBIDDEN)
 
         form = SensorDataForm(request.POST, request.FILES)
 
@@ -187,43 +213,87 @@ class SensorDataUploadView(GenericAPIView):
             return Response(error_data, status=status.HTTP_206_PARTIAL_CONTENT)
 
         data_file = request.FILES['data_file']
+        results_mapping = self.build_results_dict(data_file)
+
         data_value_units = Unit.objects.get(unit_name='hour minute')
+        sensors = registration.sensors.all()
 
-        # do it in chunks so it doesn't drain the systems' memory.
-        # further improvement: we can also use pandas to read the file if this ends up being too slow.
-
-        for chunk in data_file.chunks():
-            reader = csv.reader(chunk)
-
-            for row in reader:
+        reader = csv.reader(data_file)
+        for row in reader:
+            if self.should_skip_row(row):
+                continue
+            else:
+                # process data series
                 try:
                     measurement_datetime = parse_datetime(row[0])
                 except ValueError:
-                    # invalid timestamp, ignore data point
+                    print('invalid date {}'.format(row[0]))
                     continue
 
                 if not measurement_datetime:
-                    # timestamp has a bad format
+                    print('invalid date format {}'.format(row[0]))
                     continue
 
-                if measurement_datetime.utcoffset() is None:
-                    # timestamp doesn't have utc offset info.
-                    continue
+                measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=results_mapping['utc_offset'])
 
-                utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
-                measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
-                data_value = float(row[1])
+                for sensor in sensors:
+                    uuid = str(sensor.result_uuid)
+                    data_value = row[results_mapping['results'][uuid]]
 
-                result_value = TimeSeriesResultValue.objects.get_or_create(
-                    result_id=sensor.result_id,
-                    value_datetime_utc_offset=utc_offset,
+                    try:
+                        # Create data value
+                        TimeSeriesResultValue.objects.create(
+                            result_id=sensor.result_id,
+                            value_datetime_utc_offset=results_mapping['utc_offset'],
+                            value_datetime=measurement_datetime,
+                            censor_code_id='Not censored',
+                            quality_code_id='None',
+                            time_aggregation_interval=1,
+                            time_aggregation_interval_unit=data_value_units,
+                            data_value=data_value
+                        )
+
+                        # Insert data value into influx instance.
+                        influx_request_url = settings.INFLUX_UPDATE_URL
+                        influx_request_body = settings.INFLUX_UPDATE_BODY.format(
+                            result_uuid=str(sensor.result_uuid).replace('-', '_'),
+                            data_value=data_value,
+                            utc_offset=results_mapping['utc_offset'],
+                            timestamp_s=long((measurement_datetime - datetime.utcfromtimestamp(0)).total_seconds())
+                        )
+                        requests.post(influx_request_url, influx_request_body.encode())
+                        print('data value added!')
+                    except KeyError as ke:
+                        print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
+                        continue
+                    except IntegrityError as ie:
+                        print('value {} for {} not created'.format(data_value, uuid))
+                        continue
+
+        print('updating sensor metadata')
+        for sensor in sensors:
+            uuid = str(sensor.result_uuid)
+            data_value = row[results_mapping['results'][uuid]]
+
+            # delete last measurement object
+            last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
+            if last_measurement and last_measurement.value_datetime > measurement_datetime:
+                last_measurement.delete()
+                SensorMeasurement.objects.create(
+                    sensor=sensor,
                     value_datetime=measurement_datetime,
-                    censor_code_id='Not censored',
-                    quality_code_id='None',
-                    time_aggregation_interval=1,
-                    time_aggregation_interval_unit=data_value_units,
+                    value_datetime_utc_offset=timedelta(hours=results_mapping['utc_offset']),
                     data_value=data_value
                 )
+
+        # send email informing the data upload is done
+        print('sending email')
+        subject = 'Data Sharing Portal data upload completed'
+        message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
+        sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
+        addresses = [request.user.email]
+        # send_mail(subject, message, sender, addresses)
+        return Response({'message': 'file has been processed successfully'}, status.HTTP_200_OK)
 
 
 class CSVDataApi(View):

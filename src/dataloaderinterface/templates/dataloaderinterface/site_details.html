@@ -293,6 +293,11 @@
                                     <i class="material-icons center-icon">assignment</i>
                                     Manage Sensors
                                 </a>
+                                <form method="POST" action="{% url 'data_file_upload' site.registration_id %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    {{ data_upload_form }}
+                                    <input type="submit" class="mdl-button mdl-button--raised" value="Upload" id="btn-upload-file">
+                                </form>
                             </div>
                         {% endif %}
                     </div>
