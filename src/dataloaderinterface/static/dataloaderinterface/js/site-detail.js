@@ -235,8 +235,8 @@ $(document).ready(function () {
     }
 
     $("#id_data_file").change(function() {
-        $("#file-preview-name").find("span").text(this.files[0].name);
-        $("#file-preview-name").show();
+        $(".selected-file > span").text(this.files[0].name);
+        $(".selected-file").show();
         $("#file-preview-default").hide();
         $("#btn-upload-file").prop("disabled", false);
     });

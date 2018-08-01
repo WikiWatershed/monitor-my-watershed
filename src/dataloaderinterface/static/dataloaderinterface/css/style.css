@@ -1353,6 +1353,8 @@ hr.dotted {
 
 .grid {
     display: grid;
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
 }
 
 .follow-status {
@@ -1372,9 +1374,7 @@ textarea[name="sensor_notes"] {
 
 div.file-preview {
     height: auto;
-    border: 1px dashed #DDD;
     padding: 1em;
-    margin: 1em;
 }
 
 i.file-icon {

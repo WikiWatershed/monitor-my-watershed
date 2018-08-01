@@ -435,22 +435,19 @@
                                     <input type="file" name="data_file" id="id_data_file" accept=".csv">
                                 </button>
 
-                                <div class="file-preview grid" style="grid-template-columns: auto 150px;">
+                                <div class="file-preview grid">
                                     <small id="file-preview-default" class="text-muted" style="align-self: center;">
                                         No file chosen.
                                     </small>
-                                    <table id="file-preview-name" style="display: none; align-self: center;">
-                                        <tr>
-                                            <td style="width: 40px;">
-                                                <i class="fa fa-file-o file-icon center-icon" aria-hidden="true"></i>
-                                            </td>
-                                            <td><span>File name.csv</span></td>
-                                        </tr>
-                                    </table>
-                                    <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                                            id="btn-upload-file" disabled style="margin: 0; align-self: center;">
-                                        <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
-                                    </button>
+                                    <div class="selected-file grid"
+                                         style="display:none; grid-template-columns: 30px 1fr 150px;">
+                                        <i style="align-self: center;" class="fa fa-file-o file-icon" aria-hidden="true"></i>
+                                        <span style="align-self: center;">File name.csv</span>
+                                        <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                                                id="btn-upload-file" disabled style="margin: 0; align-self: center;">
+                                            <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </form>
