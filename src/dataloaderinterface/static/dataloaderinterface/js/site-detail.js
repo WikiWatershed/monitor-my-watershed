@@ -247,7 +247,7 @@ $(document).ready(function () {
             formParams = form.serializeArray();
 
         var file = $("#id_data_file")[0].files[0];
-        formData.append(file.name, file);
+        formData.append("data_file", file);
 
         $.each(formParams, function (i, val) {
             formData.append(val.name, val.value);
@@ -270,12 +270,6 @@ $(document).ready(function () {
             //     }
             //     return myXhr;
             // },
-            success: function (data) {
-                console.log(data);
-            },
-            error: function (error) {
-               console.log(error);
-            },
             async: true,
             cache: false,
             contentType: false,
