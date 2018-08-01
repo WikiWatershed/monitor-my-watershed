@@ -270,6 +270,10 @@ $(document).ready(function () {
             //     }
             //     return myXhr;
             // },
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
         }).done(function (response) {
             console.log(response);
         }).fail(function (error) {
