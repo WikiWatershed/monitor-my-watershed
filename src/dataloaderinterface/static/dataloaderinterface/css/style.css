@@ -1354,6 +1354,8 @@ hr.dotted {
 
 .grid {
     display: grid;
+    grid-column-gap: 10px;
+    grid-row-gap: 10px;
 }
 
 .follow-status {
@@ -1363,4 +1365,32 @@ hr.dotted {
 textarea[name="sensor_notes"] {
     height: 95px;
     min-height: 60px;
+}
+
+#upload-placeholder {
+    position: absolute;
+    right: 1em;
+    top: 10px;
+}
+
+div.file-preview {
+    height: auto;
+    padding: 1em;
+}
+
+i.file-icon {
+    font-size: 30px;
+    color: #66cbcb;
+    margin-right: 10px;
+}
+
+.mdl-button--file input {
+    cursor: pointer;
+    height: 100%;
+    right: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    width: 300px;
+    z-index: 4;
 }

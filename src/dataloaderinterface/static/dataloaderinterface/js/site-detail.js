@@ -233,4 +233,55 @@ $(document).ready(function () {
         var sensorInfo = sensors[index].dataset;
         getTimeSeriesData(sensorInfo);
     }
+
+    $("#id_data_file").change(function() {
+        $(".selected-file > span").text(this.files[0].name);
+        $(".selected-file").show();
+        $("#file-preview-default").hide();
+        $("#btn-upload-file").prop("disabled", false);
+    });
+
+    $("#btn-upload-file").click(function () {
+        var form = $("#form-file-upload"),
+            formData = new FormData(),
+            formParams = form.serializeArray();
+
+        var file = $("#id_data_file")[0].files[0];
+        formData.append("data_file", file);
+
+        $.each(formParams, function (i, val) {
+            formData.append(val.name, val.value);
+        });
+
+        var url = form.attr("action");
+
+        // Change text to Uploading...
+        $("#btn-upload-file").prop("disabled", true);
+        $("#btn-upload-file").find("span").text("Uploading...");
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: formData,
+            // xhr: function () {
+            //     var myXhr = $.ajaxSettings.xhr();
+            //     if (myXhr.upload) {
+            //
+            //     }
+            //     return myXhr;
+            // },
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false,
+        }).done(function (response) {
+            console.log(response);
+        }).fail(function (error) {
+            console.log(error);
+        }).always(function () {
+            // Restore state
+            $("#btn-upload-file").prop("disabled", false);
+            $("#btn-upload-file").find("span").text("Upload");
+        });
+    });
 });
