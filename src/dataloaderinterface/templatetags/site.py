@@ -40,6 +40,16 @@ def round_float(value, argv):
         return value
 
 
+@register.filter(name='abs')
+def abs_filter(value):
+    return abs(value)
+
+
+@register.filter(name='to_string')
+def to_string(value):
+    return '{0:g}'.format(value)
+
+
 @register.filter("divide")
 def divide(value, arg):
     try:

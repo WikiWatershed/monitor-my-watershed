@@ -40,14 +40,12 @@
                                    class="no-hover mdl-textfield--full-width mdl-data-table mdl-shadow--2dp mdl-js-data-table sensors full-width">
                                 <thead>
                                 <tr class="full-width">
-                                    <th class="mdl-data-table__cell--non-numeric">Equipment Make-Model
-                                    </th>
-                                    <th class="mdl-data-table__cell--non-numeric">Measured
-                                        Variable
-                                    </th>
+                                    <th class="mdl-data-table__cell--non-numeric">Equipment Make-Model</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Measured Variable</th>
                                     <th class="mdl-data-table__cell--non-numeric">Units</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium
-                                    </th>
+                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Height above(+) or below(-) surface</th>
+
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
                                 </tr>
@@ -81,6 +79,10 @@
 
                                         <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
                                             <span class="field-text">{{ sensor.sensor_output.sampled_medium }}</span>
+                                        </td>
+                                        <td data-field="height" class="mdl-data-table__cell--non-numeric">
+
+                                            <span class="field-text">{{ sensor.height }} {% if sensor.height %}m{% endif %}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">
