@@ -354,7 +354,9 @@ $(document).ready(function () {
     defaultSensorsMessage();
 
     $("#id_data_file").change(function() {
-        $(".selected-file > span").text(this.files[0].name);
+        $(".selected-file span.file-name").text(this.files[0].name);
+        $(".selected-file span.file-size").text(" (" + formatBytes(this.files[0].size)+ ")");
+
         $(".selected-file").show();
         $("#file-preview-default").hide();
         $("#btn-upload-file").prop("disabled", false);
@@ -390,8 +392,10 @@ $(document).ready(function () {
             processData: false
         }).done(function (response) {
             console.log(response);
+            snackbarMsg("Data was uploaded successfully.")
         }).fail(function (error) {
             console.log(error);
+            snackbarMsg("Failed to upload data.");
         }).always(function () {
             // Restore state
             uploadFileButton.prop("disabled", false);
