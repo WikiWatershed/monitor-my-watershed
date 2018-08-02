@@ -215,6 +215,9 @@ class SensorDataUploadView(APIView):
         data_file = request.FILES['data_file']
         results_mapping = self.build_results_dict(data_file)
 
+        if registration.sampling_feature.sampling_feature_uuid != results_mapping['site_uuid']:
+            return Response({'error': 'This file corresponds to another site.'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
         data_value_units = Unit.objects.get(unit_name='hour minute')
         sensors = registration.sensors.all()
 
@@ -269,6 +272,10 @@ class SensorDataUploadView(APIView):
         print('updating sensor metadata')
         for sensor in sensors:
             uuid = str(sensor.result_uuid)
+            if uuid not in results_mapping['results']:
+                print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
+                continue
+
             last_data_value = row[results_mapping['results'][uuid]['index']]
 
             # create last measurement object
