@@ -124,6 +124,7 @@ class SensorListUpdateView(DetailView):
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
     slug_url_kwarg = 'sampling_feature_code'
+    context_object_name = 'site_registration'
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
