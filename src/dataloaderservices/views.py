@@ -188,7 +188,7 @@ class SensorDataUploadView(APIView):
 
                 results['site_uuid'] = row[0].replace('Sampling Feature: ', '')
                 # build dict with the rest of the columns
-                results['results'] = {uuid: uuid_index for uuid_index, uuid in enumerate(row[1:], start=1)}
+                results['results'] = {uuid: {'index': uuid_index, 'values': []} for uuid_index, uuid in enumerate(row[1:], start=1)}
 
             elif row[0].startswith('Date and Time'):
                 results['utc_offset'] = int(row[0].replace('Date and Time in UTC', ''))
@@ -238,7 +238,16 @@ class SensorDataUploadView(APIView):
 
                 for sensor in sensors:
                     uuid = str(sensor.result_uuid)
-                    data_value = row[results_mapping['results'][uuid]]
+                    if uuid not in results_mapping['results']:
+                        print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
+                        continue
+
+                    data_value = row[results_mapping['results'][uuid]['index']]
+
+                    results_mapping['results'][uuid]['values'].append((
+                        long((measurement_datetime - datetime.utcfromtimestamp(0)).total_seconds()),  # -> timestamp
+                        data_value  # -> data value (duh)
+                    ))
 
                     try:
                         # Create data value
@@ -253,28 +262,41 @@ class SensorDataUploadView(APIView):
                             data_value=data_value
                         )
                         print('data value added!')
-                    except KeyError as ke:
-                        print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
-                        continue
                     except IntegrityError as ie:
-                        print('value {} for {} not created'.format(data_value, uuid))
+                        print('value not created for {}'.format(uuid))
                         continue
 
         print('updating sensor metadata')
         for sensor in sensors:
             uuid = str(sensor.result_uuid)
-            data_value = row[results_mapping['results'][uuid]]
+            last_data_value = row[results_mapping['results'][uuid]['index']]
 
-            # delete last measurement object
+            # create last measurement object
             last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
-            if last_measurement and last_measurement.value_datetime > measurement_datetime:
+            if last_measurement and last_measurement.value_datetime < measurement_datetime:
                 last_measurement.delete()
                 SensorMeasurement.objects.create(
                     sensor=sensor,
                     value_datetime=measurement_datetime,
                     value_datetime_utc_offset=timedelta(hours=results_mapping['utc_offset']),
-                    data_value=data_value
+                    data_value=last_data_value
                 )
+
+            # Insert data values into influx instance.
+            influx_request_url = settings.INFLUX_UPDATE_URL
+            influx_series_template = settings.INFLUX_UPDATE_BODY
+
+            all_values = results_mapping['results'][uuid]['values']  # -> [(timestamp, data_value), ]
+            influx_request_body = '\n'.join(
+                [influx_series_template.format(
+                    result_uuid=uuid.replace('-', '_'),
+                    data_value=value,
+                    utc_offset=results_mapping['utc_offset'],
+                    timestamp_s=timestamp
+                ) for timestamp, value in all_values]
+            )
+
+            requests.post(influx_request_url, influx_request_body.encode())
 
         # send email informing the data upload is done
         print('sending email')
