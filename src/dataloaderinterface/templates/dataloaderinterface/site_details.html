@@ -423,10 +423,12 @@
                                                 {% endif %}
                                                 </td>
                                             </tr>
-                                            <tr>
-                                                <td><strong>Notes:</strong></td>
-                                                <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_notes|default:'-' }}</td>
-                                            </tr>
+                                            {% if sensor.sensor_notes %}
+                                                <tr>
+                                                    <td><strong>Notes:</strong></td>
+                                                    <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_notes }}</td>
+                                                </tr>
+                                            {% endif %}
                                             {% if can_administer_site %}
                                                 <tr>
                                                     <td><strong>UUID:</strong></td>
