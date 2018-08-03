@@ -392,13 +392,15 @@ $(document).ready(function () {
             processData: false
         }).done(function (response) {
             console.log(response);
-            snackbarMsg("Data was uploaded successfully.")
+            snackbarMsg("Data was uploaded successfully!");
+            uploadFileButton.prop("disabled", false);
         }).fail(function (error) {
             console.log(error);
-            snackbarMsg("Failed to upload data.");
+            snackbarMsg("Failed to upload data. " + error.responseJSON.error);
+            uploadFileButton.prop("disabled", true);
+            $("#id_data_file").val(null);
         }).always(function () {
             // Restore state
-            uploadFileButton.prop("disabled", false);
             uploadFileButton.find("span").text("Upload");
         });
     });
