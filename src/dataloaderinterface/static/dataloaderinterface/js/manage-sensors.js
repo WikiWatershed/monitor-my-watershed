@@ -17,7 +17,7 @@ function defaultSensorsMessage() {
 }
 
 function updateRowData(row) {
-    var fields = $('div#result-dialog div.result-form input, div#result-dialog div.result-form select');
+    var fields = $("div#result-dialog div.result-form").find("input, select, textarea");
 
     for (var index = 0; index < fields.length; index++) {
         var field = $(fields.get(index));
@@ -28,7 +28,7 @@ function updateRowData(row) {
         if (field.hasClass('form-control')) {
             var selectedOption = field.find('option:selected');
             var dataColumn = row.find('td[data-field="' + fieldName + '"]');
-            dataColumn.find('.field-text').text(selectedOption.text());
+            dataColumn.find('.field-text').text(selectedOption.text()||field.val());
         }
     }
 }
