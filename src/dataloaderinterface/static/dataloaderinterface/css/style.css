@@ -253,6 +253,14 @@ div.registration-data .material-icons {
     vertical-align: middle;
 }
 
+div.registration-data > table tr td:first-child {
+    min-width: 165px;
+}
+
+table.shade-first-col tr td:first-child {
+    background: #fafafa;
+}
+
 div.registration-field {
     padding: .7em 1em;
 }
