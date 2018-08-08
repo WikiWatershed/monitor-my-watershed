@@ -404,15 +404,15 @@
                                     <div class="full-width mdl-card__supporting-text">
                                         <table class="mdl-data-table mdl-js-data-table full-width no-hover shade-first-col">
                                             <tr>
-                                                <td><strong>Medium:</strong></td>
+                                                <td>Medium</td>
                                                 <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_output.sampled_medium }}</td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Sensor:</strong></td>
+                                                <td>Sensor</td>
                                                 <td class="mdl-data-table__cell--non-numeric">{{ sensor.make_model }}</td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Height:</strong></td>
+                                                <td>Height</td>
                                                 <td class="mdl-data-table__cell--non-numeric">
                                                 {% if sensor.height %}
                                                     {{ sensor.height|abs|to_string }} meter{{ sensor.height|abs|pluralize }}
@@ -425,13 +425,13 @@
                                             </tr>
                                             {% if sensor.sensor_notes %}
                                                 <tr>
-                                                    <td><strong>Notes:</strong></td>
+                                                    <td>Notes</td>
                                                     <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_notes }}</td>
                                                 </tr>
                                             {% endif %}
                                             {% if can_administer_site %}
                                                 <tr>
-                                                    <td><strong>UUID:</strong></td>
+                                                    <td>UUID</td>
                                                     <td class="mdl-data-table__cell--non-numeric">
                                                 <span id="uuid-{{ sensor.result_id }}"
                                                       data-copy-target="uuid-{{ sensor.result_id }}">{{ sensor.result_uuid }}</span>
