@@ -48,11 +48,6 @@
     </div>
 {% endblock %}
 
-{% block services_urls %}
-    {{ block.super }}
-    <input id="model-variables-api" type="hidden" value="{% url 'model_variables_service' %}">
-{% endblock %}
-
 {% block styles %}
     {{ block.super }}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>

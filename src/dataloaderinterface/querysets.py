@@ -44,7 +44,7 @@ class SiteRegistrationQuerySet(models.QuerySet):
 
         return self.prefetch_related(Prefetch(
             lookup='sensors',
-            queryset=sensor_model.objects.filter(variable_code__in=self.status_variables),
+            queryset=sensor_model.objects.filter(sensor_output__variable_code__in=self.status_variables),
             to_attr='status_sensors'))
 
     def with_ownership_status(self, user_id):
