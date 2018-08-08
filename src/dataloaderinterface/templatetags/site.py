@@ -12,7 +12,7 @@ def get_site_sensor(site, variable_code):
     if not isinstance(site, SiteRegistration) or not site.status_sensors:
         return
 
-    return next((sensor for sensor in site.status_sensors if sensor.variable_code==variable_code), None)
+    return next((sensor for sensor in site.status_sensors if sensor.sensor_output.variable_code==variable_code), None)
 
 
 @register.filter(name='can_administer_site')

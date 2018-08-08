@@ -215,7 +215,7 @@ class SensorDataUploadView(APIView):
         data_file = request.FILES['data_file']
         results_mapping = self.build_results_dict(data_file)
 
-        if registration.sampling_feature.sampling_feature_uuid != results_mapping['site_uuid']:
+        if str(registration.sampling_feature.sampling_feature_uuid) != results_mapping['site_uuid']:
             return Response({'error': 'This file corresponds to another site.'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         data_value_units = Unit.objects.get(unit_name='hour minute')
@@ -264,7 +264,6 @@ class SensorDataUploadView(APIView):
                             time_aggregation_interval_unit=data_value_units,
                             data_value=data_value
                         )
-                        print('data value added!')
                     except IntegrityError as ie:
                         print('value not created for {}'.format(uuid))
                         continue
@@ -280,8 +279,8 @@ class SensorDataUploadView(APIView):
 
             # create last measurement object
             last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
-            if last_measurement and last_measurement.value_datetime < measurement_datetime:
-                last_measurement.delete()
+            if not last_measurement or last_measurement and last_measurement.value_datetime < measurement_datetime:
+                last_measurement and last_measurement.delete()
                 SensorMeasurement.objects.create(
                     sensor=sensor,
                     value_datetime=measurement_datetime,
