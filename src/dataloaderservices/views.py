@@ -279,8 +279,8 @@ class SensorDataUploadView(APIView):
 
             # create last measurement object
             last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
-            if last_measurement and last_measurement.value_datetime < measurement_datetime:
-                last_measurement.delete()
+            if not last_measurement or last_measurement and last_measurement.value_datetime < measurement_datetime:
+                last_measurement and last_measurement.delete()
                 SensorMeasurement.objects.create(
                     sensor=sensor,
                     value_datetime=measurement_datetime,
