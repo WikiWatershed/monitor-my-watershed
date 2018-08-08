@@ -254,7 +254,7 @@ div.registration-data .material-icons {
 }
 
 div.registration-data > table tr td:first-child {
-    min-width: 170px;
+    white-space: nowrap;
 }
 
 table.shade-first-col tr td:first-child {
