@@ -547,4 +547,8 @@ def upload_hydroshare_resource_files(resource, files):  # type: (Resource, [obje
     for file_ in files:
         file_name = file_[0]
         content = file_[1]
+
+        if '.csv' not in file_name:
+            file_name += '.csv'
+
         resource.upload_file(file_name, content)

@@ -330,18 +330,16 @@ class CSVDataApi(View):
         example request to download csv data for multiple series:
                 curl -X GET http://localhost:8000/api.csv-values/?result_ids=100,101,102
         """
-
+        result_ids = []
         if 'result_id' in request.GET:
-            result_ids = [request.GET['result_id']]
+            result_ids = [request.GET.get('result_id', [])]
         elif 'result_ids' in request.GET:
             result_ids = request.GET['result_ids'].split(',')
-        else:
-            return Response({'error': 'Result ID(s) not found.'})
 
         result_ids = filter(lambda x: len(x) > 0, result_ids)
 
         if not len(result_ids):
-            return Response({'error': 'Result ID not found.'})
+            return Response({'error': 'Result ID(s) not found.'})
 
         try:
             filename, csv_file = CSVDataApi.get_csv_file(result_ids, request=request)
@@ -353,16 +351,28 @@ class CSVDataApi(View):
         return response
 
     @staticmethod
-    def get_csv_file(result_ids, request=None):
+    def get_csv_file(result_ids, request=None):  # type: (list, any) -> (str, StringIO)
         """
         Gathers time series data for the passed in result id's to generate a csv file for download
         """
 
-        time_series_result = TimeSeriesResult.objects\
-            .prefetch_related('values') \
-            .prefetch_related('result__feature_action__action__people')\
-            .select_related('result__feature_action__sampling_feature', 'result__variable')\
-            .filter(pk__in=result_ids)
+        try:
+            # Some duck typing here to check if `result_ids` is an iterable,
+            # and if it's not, filter using 'pk__in'
+            iter(result_ids)
+            time_series_result = TimeSeriesResult.objects \
+                .prefetch_related('values') \
+                .prefetch_related('result__feature_action__action__people') \
+                .select_related('result__feature_action__sampling_feature', 'result__variable') \
+                .filter(pk__in=result_ids)
+        except TypeError:
+            # If exception is raised, `result_ids` is not an iterable,
+            # so filter using 'pk'
+            time_series_result = TimeSeriesResult.objects \
+                .prefetch_related('values') \
+                .prefetch_related('result__feature_action__action__people') \
+                .select_related('result__feature_action__sampling_feature', 'result__variable') \
+                .filter(pk=result_ids)
 
         if not time_series_result:
             raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
@@ -374,7 +384,13 @@ class CSVDataApi(View):
         csv_writer.writerows(CSVDataApi.get_data_values(time_series_result))
 
         result = time_series_result.first().result
-        if len(result_ids) > 1:
+
+        try:
+            resultids_len = len(result_ids)
+        except TypeError:
+            resultids_len = 1
+
+        if resultids_len > 1:
             filename = "{}_TimeSeriesResults".format(result.feature_action.sampling_feature.sampling_feature_code)
         else:
             filename = "{0}_{1}_{2}".format(result.feature_action.sampling_feature.sampling_feature_code,
