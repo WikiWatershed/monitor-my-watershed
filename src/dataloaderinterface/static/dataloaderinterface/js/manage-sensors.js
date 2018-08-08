@@ -396,7 +396,13 @@ $(document).ready(function () {
             uploadFileButton.prop("disabled", false);
         }).fail(function (error) {
             console.log(error);
-            snackbarMsg("Failed to upload data. " + error.responseJSON.error);
+            try {
+                snackbarMsg("Failed to upload data. " + error.responseJSON.error)
+            }
+            catch (err) {
+                snackbarMsg("Failed to upload data.")
+            }
+
             uploadFileButton.prop("disabled", true);
             $("#id_data_file").val(null);
         }).always(function () {
