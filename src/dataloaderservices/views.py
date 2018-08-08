@@ -609,12 +609,6 @@ class TimeSeriesValuesApi(APIView):
             if is_first_value:
                 result.valid_datetime = measurement_datetime
                 result.valid_datetime_utc_offset = utc_offset
-                site_sensor.activation_date = measurement_datetime
-                site_sensor.activation_date_utc_offset = utc_offset
-
-                site_sensor.save(update_fields=[
-                    'activation_date', 'activation_date_utc_offset'
-                ])
 
                 if not site_sensor.registration.deployment_date:
                     site_sensor.registration.deployment_date = measurement_datetime
