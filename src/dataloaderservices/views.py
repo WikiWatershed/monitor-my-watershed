@@ -500,7 +500,8 @@ class CSVDataApi(View):
             # and unreadable.
             metadata += CSVDataApi.read_file('variable_and_unit_information.txt').format(
                 variable=tsr.result.variable,
-                unit=tsr.result.unit
+                unit=tsr.result.unit,
+                sensor=site_sensor
             )
 
         # Write Source Information data

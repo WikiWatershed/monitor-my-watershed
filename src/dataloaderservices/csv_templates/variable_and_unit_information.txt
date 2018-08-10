@@ -8,4 +8,5 @@
 # VariableUnitsName: {unit.unit_name}
 # VariableUnitsType: {unit.unit_type_id}
 # VariableUnitsAbbreviation: {unit.unit_abbreviation}
+# VerticalOffset: {sensor.height}
 #

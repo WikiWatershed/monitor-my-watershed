@@ -1,5 +1,4 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
-from enum import Enum
 import re
 import requests
 from oauthlib.oauth2 import InvalidGrantError
@@ -7,7 +6,6 @@ from hs_restclient import HydroShareAuthOAuth2, HydroShareAuthBasic
 from adapter import HydroShareAdapter
 from . import HydroShareUtilityBaseClass, ImproperlyConfiguredError
 from django.shortcuts import redirect
-from django.conf import settings
 import logging as logger
 
 
@@ -18,7 +16,9 @@ SELF_SIGNED_CERTIFICATE = 'self-signed-certificate'
 
 
 class AuthUtil(HydroShareUtilityBaseClass):
-    """Main authentication class. Use 'AuthUtilFactory' to create instances of this class."""
+    """
+    Main authentication class. Use 'AuthUtilFactory' to create instances of this class.
+    """
     def __init__(self, implementation):
         self.__implementation = implementation
 
@@ -97,7 +97,7 @@ class OAuthUtil(AuthUtilImplementor):
         if redirect_uri:
             self.__redirect_uri = redirect_uri
 
-        if None in [self.__client_id, self.__client_secret, self.__redirect_uri]:
+        if not all([self.__client_id, self.__client_secret, self.__redirect_uri]):
             raise ImproperlyConfiguredError()
 
         self.token_type = token_type
@@ -182,14 +182,13 @@ class OAuthUtil(AuthUtilImplementor):
         return redirect(url)
 
     @staticmethod
-    def authorize_client_callback(request, response_type=None):
+    def authorize_client_callback(request, response_type=None):  # type: (str, str) -> dict
         """
         Callback handler after a user authorizes the client (data.envirodiy.org).
         :param request: a Django HttpRequest
         :param response_type: a string representing the oauth response_type
         :return: a dictionary representing the token
         """
-        # type: (str, str) -> dict
         if response_type:
             auth = OAuthUtil(response_type=response_type)
         else:
