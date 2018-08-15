@@ -17,7 +17,7 @@ function defaultSensorsMessage() {
 }
 
 function updateRowData(row) {
-    var fields = $('div#result-dialog div.result-form input, div#result-dialog div.result-form select');
+    var fields = $("div#result-dialog div.result-form").find("input, select, textarea");
 
     for (var index = 0; index < fields.length; index++) {
         var field = $(fields.get(index));
@@ -28,7 +28,7 @@ function updateRowData(row) {
         if (field.hasClass('form-control')) {
             var selectedOption = field.find('option:selected');
             var dataColumn = row.find('td[data-field="' + fieldName + '"]');
-            dataColumn.find('.field-text').text(selectedOption.text());
+            dataColumn.find('.field-text').text(selectedOption.text()||field.val());
         }
     }
 }
@@ -152,6 +152,8 @@ function initializeResultsForm() {
             clear_filters();
             form.find('input[name="id"]').val('');
             form.find('input[name="output_variable"]').val('');
+            form.find('input[name="height"]').val('');
+            form.find('textarea[name="sensor_notes"]').val('');
 
             dialog.find('.mdl-dialog__title').text("Add New Sensor");
             dialog.find('#add-sensor-button').show();
@@ -263,7 +265,7 @@ function initializeResultsForm() {
 }
 
 function make_sensor_api_request(api_url) {
-    var output_data = $('#result-dialog div.result-form input, #result-dialog div.result-form select').toArray().reduce(function(dict, field) {
+    var output_data = $('#result-dialog div.result-form input, #result-dialog div.result-form select, #result-dialog div.result-form textarea').toArray().reduce(function(dict, field) {
         dict[field.name] = field.value;
         return dict;
     }, {});
@@ -290,9 +292,11 @@ function fillFormData(row) {
     }
 
     form.find('input[name="id"]').val(rowData['id']);
-    form.find('input[name="output_variable"]').val(rowData['sensor_output']);
+    form.find('input[name="output_variable"]').val(rowData['output_variable']);
     form.find('input[name="result_id"]').val(rowData['result_id']);
     form.find('input[name="result_uuid"]').val(rowData['result_uuid']);
+    form.find('input[name="height"]').val(rowData['height']);
+    form.find('textarea[name="sensor_notes"]').val(rowData['sensor_notes']);
 
     $('#result-dialog').data('row', row);
 }
@@ -348,4 +352,62 @@ $(document).ready(function () {
     });
 
     defaultSensorsMessage();
+
+    $("#id_data_file").change(function() {
+        $(".selected-file span.file-name").text(this.files[0].name);
+        $(".selected-file span.file-size").text(" (" + formatBytes(this.files[0].size)+ ")");
+
+        $(".selected-file").show();
+        $("#file-preview-default").hide();
+        $("#btn-upload-file").prop("disabled", false);
+    });
+
+    $("#btn-upload-file").click(function () {
+        var form = $("#form-file-upload"),
+            formData = new FormData(),
+            formParams = form.serializeArray();
+
+        var file = $("#id_data_file")[0].files[0];
+        formData.append("data_file", file);
+
+        $.each(formParams, function (i, val) {
+            formData.append(val.name, val.value);
+        });
+
+        var url = form.attr("action");
+
+        // Change text to Uploading...
+        var uploadFileButton = $("#btn-upload-file");
+
+        uploadFileButton.prop("disabled", true);
+        uploadFileButton.find("span").text("Uploading...");
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: formData,
+            async: true,
+            cache: false,
+            contentType: false,
+            processData: false
+        }).done(function (response) {
+            console.log(response);
+            snackbarMsg("Data was uploaded successfully!");
+            uploadFileButton.prop("disabled", false);
+        }).fail(function (error) {
+            console.log(error);
+            try {
+                snackbarMsg("Failed to upload data. " + error.responseJSON.error)
+            }
+            catch (err) {
+                snackbarMsg("Failed to upload data.")
+            }
+
+            uploadFileButton.prop("disabled", true);
+            $("#id_data_file").val(null);
+        }).always(function () {
+            // Restore state
+            uploadFileButton.find("span").text("Upload");
+        });
+    });
 });

@@ -87,7 +87,7 @@
                         <div class="registration-data col-sm-12 col-md-6">
                             {# Deployment fields #}
 
-                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width">
+                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width shade-first-col">
                                 <tr>
                                     <td class="mdl-data-table__cell--non-numeric">
                                         <i class="fa fa-user-o" aria-hidden="true"></i> Deployment By
@@ -183,6 +183,13 @@
                                     <td class="mdl-data-table__cell--non-numeric">{{ site.closest_town|default:"-" }}</td>
                                 </tr>
 
+                                <tr>
+                                    <td class="mdl-data-table__cell--non-numeric">
+                                        <i class="material-icons" aria-hidden="true">notes</i> Notes
+                                    </td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ site.site_notes|default:"-" }}</td>
+                                </tr>
+
                                 {% if can_administer_site %}
                                     <tr>
                                         <td class="mdl-data-table__cell--non-numeric">
@@ -258,38 +265,66 @@
                              src="{% static 'dataloaderinterface/images/envirodiy_logo.png' %}"
                              alt="Data Sharing Portal">
                     </h6>
+                </div>
 
-                    <div class="buttons-toolbar row">
-                        <div class="col-sm-12  {% if can_administer_site %}col-md-8{% endif %}">
-                            <div class="alert alert-light" role="alert">
-                                <table>
-                                    <tr>
-                                        <td style="padding-right: 20px; vertical-align: top;"><i
-                                                class="material-icons center-icon">info</i></td>
-                                        <td>
-                                            Only the most recent 72 hours of available data
-                                            are shown on the sparkline plots. The plots are broken when there are gaps
-                                            in the data
-                                            longer than 6 hours. Plots shaded in green have recent data. Plots shaded in
-                                            red have
-                                            not reported data in the last 72 hours.
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                            <br>
-                        </div>
-
-                        {% if can_administer_site %}
-                        <div class="col-sm-12 col-md-4 text-right">
-                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'sensors' site.sampling_feature_code %}">
-                                <i class="material-icons center-icon">assignment</i>
-                                Manage Sensors
-                            </a>
-                        </div>
-                        {% endif %}
+                {% if can_administer_site %}
+                    <div class="buttons-toolbar col-12 text-right">
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                           href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
+                           download>
+                            <i class="material-icons center-icon">cloud_download</i>
+                            Download Sensor Data
+                        </a>
+                        <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                           href="{% url 'sensors' site.sampling_feature_code %}">
+                            <i class="material-icons center-icon">assignment</i>
+                            Manage Sensors
+                        </a>
                     </div>
+                {% endif %}
+
+                <div class="col-sm-12 col-lg-7">
+                    <div class="alert alert-light" role="alert">
+                        <table>
+                            <tr>
+                                <td style="padding-right: 20px; vertical-align: top;"><i
+                                        class="material-icons center-icon">info</i></td>
+                                <td>
+                                    Only the most recent 72 hours of available data
+                                    are shown on the sparkline plots. The plots are broken when there are gaps
+                                    in the data
+                                    longer than 6 hours. Plots shaded in green have recent data. Plots shaded in
+                                    red have
+                                    not reported data in the last 72 hours.
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-5">
+                    <a class="link-card" style="margin-bottom: 1em;"
+                       href="{{ tsa_url }}?sitecode={{ site.sampling_feature_code }}&view=datasets&plot=false"
+                       target="_blank">
+                        <div class="mdl-card mdl-shadow--2dp mdl-js-ripple-effect" style="width: 260px;">
+                            <span class="mdl-ripple"></span>
+                            <div class="row">
+                                <div class="col-12">
+                                    <i class="link-card-icon material-icons icon-blue">show_chart</i>
+                                    <div>
+                                        <h5 class="link-card-title">Time Series Analyst</h5>
+                                        <p class="text-muted">View data for this site.</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Related Link</small>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <i class="material-icons text-muted">open_in_new</i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
 
                 <div class="sparkline-plots col-sm-12">
@@ -323,7 +358,7 @@
                                                 </div>
 
                                                 {#  Download data button  #}
-                                                <a href="{% url 'csv_data_service' %}?result_id={{ sensor.result_id }}">
+                                                <a href="{% url 'csv_data_service' %}?result_id={{ sensor.result_id }}" download>
                                                     <span id="download-trigger-{{ forloop.counter0 }}"
                                                           class="fa fa-cloud-download download-trigger pull-right text-black"></span>
                                                 </a>
@@ -367,18 +402,36 @@
                                     </div>
 
                                     <div class="full-width mdl-card__supporting-text">
-                                        <table class="mdl-data-table mdl-js-data-table full-width no-hover">
+                                        <table class="mdl-data-table mdl-js-data-table full-width no-hover shade-first-col">
                                             <tr>
-                                                <td><strong>Medium:</strong></td>
+                                                <td>Medium</td>
                                                 <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_output.sampled_medium }}</td>
                                             </tr>
                                             <tr>
-                                                <td><strong>Sensor:</strong></td>
+                                                <td>Sensor</td>
                                                 <td class="mdl-data-table__cell--non-numeric">{{ sensor.make_model }}</td>
                                             </tr>
+                                            <tr>
+                                                <td>Height</td>
+                                                <td class="mdl-data-table__cell--non-numeric">
+                                                {% if sensor.height %}
+                                                    {{ sensor.height|abs|to_string }} meter{{ sensor.height|abs|pluralize }}
+                                                    {% if sensor.height < 0 %} below surface
+                                                    {% elif sensor.height > 0 %} above surface
+                                                    {% endif %}
+                                                {% else %}-
+                                                {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% if sensor.sensor_notes %}
+                                                <tr>
+                                                    <td>Notes</td>
+                                                    <td class="mdl-data-table__cell--non-numeric">{{ sensor.sensor_notes }}</td>
+                                                </tr>
+                                            {% endif %}
                                             {% if can_administer_site %}
                                                 <tr>
-                                                    <td><strong>UUID:</strong></td>
+                                                    <td>UUID</td>
                                                     <td class="mdl-data-table__cell--non-numeric">
                                                 <span id="uuid-{{ sensor.result_id }}"
                                                       data-copy-target="uuid-{{ sensor.result_id }}">{{ sensor.result_uuid }}</span>

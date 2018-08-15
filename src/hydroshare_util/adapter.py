@@ -5,6 +5,7 @@ from hs_restclient import HydroShare, DEFAULT_HOSTNAME, HydroShareNotAuthorized,
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
 
+
 class HydroShareAdapter(HydroShare):
     def __init__(self, hostname=DEFAULT_HOSTNAME, port=None, use_https=True, verify=True,
                  auth=None, default_headers=None):
@@ -23,20 +24,12 @@ class HydroShareAdapter(HydroShare):
             timeout = kwargs.get('timeout', None)
 
         if self._default_headers and headers:
-            headers = headers
             headers.update(self._default_headers)
         elif self._default_headers:
             headers = self._default_headers
 
-        try:
-            request = self.session.request(method, url, params=params, data=data, files=files, headers=headers,
-                                           stream=stream, verify=self.verify, timeout=timeout)
-        except requests.ConnectionError:
-            self._initializeSession()
-            request = self.session.request(method, url, params=params, data=data, files=files, headers=headers,
-                                           stream=stream, verify=self.verify, timeout=timeout)
-
-        return request
+        return self.session.request(method, url, params=params, data=data, files=files, headers=headers,
+                                       stream=stream, verify=self.verify, timeout=timeout, **kwargs)
 
     def getSystemMetadata(self, pid, **kwargs):
         """
@@ -118,3 +111,21 @@ class HydroShareAdapter(HydroShare):
                 raise HydroShareHTTPException((url, 'GET', r.status_code))
 
         return r.json()
+
+    def updateKeywords(self, pid, keywords):  # type: (str, set) -> object
+        url = "{url_base}/resource/{pid}/scimeta/elements/".format(url_base=self.url_base, pid=pid)
+
+        subjects = []
+        for keyword in keywords:
+            subjects.append({"value": keyword})
+
+        r = self.session.request('PUT', url, json={"subjects": subjects})
+        if r.status_code != 202:
+            if r.status_code == 403:
+                raise HydroShareNotAuthorized(('PUT', url))
+            elif r.status_code == 404:
+                raise HydroShareNotFound((pid,))
+            else:
+                raise HydroShareHTTPException((url, 'PUT', r.status_code, keywords))
+        else:
+            return r.json().get('subjects', dict())

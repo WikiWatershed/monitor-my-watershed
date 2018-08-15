@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
-from django.db.models.aggregates import Count, Min
+from django.db.models.aggregates import Min
 
-from dataloader.models import Result
 from dataloaderinterface.models import SiteRegistration
 
 
@@ -10,8 +9,8 @@ class Command(BaseCommand):
 
     def update_sensors_activation_date(self, site):
         for sensor in site.sensors.all():
-            series_result = sensor.result.timeseriesresult
-            if series_result.values.count() == 0:
+            series_result = sensor.result.timeseriesresult  # ouch is this incredibly slow
+            if series_result.values.count() == 0:  # lol even more so
                 continue
 
             earliest_value = series_result.values.earliest('value_datetime')

@@ -20,6 +20,10 @@ class Macroinvertebrate(models.Model):
         db_table = 'macroinvertebrate'
 
     scientific_name = models.CharField(max_length=255, unique=True)
+    # 'latin_name' is basically the same as 'scientific_name', but it
+    # can be blank. This was added to resolve an issue with displaying
+    # names on the website.
+    latin_name = models.CharField(max_length=255, default='', blank=True)
     common_name = models.CharField(max_length=255, unique=True)
     family_of = models.ForeignKey('Macroinvertebrate',
                                   on_delete=models.CASCADE,
@@ -40,8 +44,14 @@ class Macroinvertebrate(models.Model):
     def is_ept(self):
         return self.scientific_name.lower() in ['ephemeroptera', 'plecoptera', 'tricoptera']
 
+    @property
+    def display_name(self):
+        return self.__str__()
+
     def __str__(self):
-        return '{0} ({1})'.format(self.common_name.title(), self.scientific_name.title())
+        if not len(self.latin_name):
+            return '{0}'.format(self.common_name, self.latin_name)
+        return '{0} ({1})'.format(self.common_name, self.latin_name)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.family_of is not None and len(self.families.all()):
@@ -70,10 +80,10 @@ class LeafPack(models.Model):
     retrieval_date = models.DateField()
     leafpack_placement_count = models.IntegerField()
     leafpack_retrieval_count = models.IntegerField()
-    placement_air_temp = models.FloatField()
-    placement_water_temp = models.FloatField()
-    retrieval_air_temp = models.FloatField()
-    retrieval_water_temp = models.FloatField()
+    placement_air_temp = models.FloatField(blank=True, null=True)
+    placement_water_temp = models.FloatField(blank=True, null=True)
+    retrieval_air_temp = models.FloatField(blank=True, null=True)
+    retrieval_water_temp = models.FloatField(blank=True, null=True)
     had_storm = models.NullBooleanField()
     had_flood = models.NullBooleanField()
     had_drought = models.NullBooleanField()

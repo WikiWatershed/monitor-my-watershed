@@ -87,7 +87,7 @@ class HydroShareResourceBaseView(UpdateView):
         context['date_format'] = settings.DATETIME_FORMAT
         return context
 
-    def upload_hydroshare_files(self, resource):
+    def upload_hydroshare_files(self, resource):  # type: (Resource) -> None
 
         hydroshare_resource = self.object or self.get_object()
         site = SiteRegistration.objects.get(hydroshare_resource=hydroshare_resource)
@@ -110,6 +110,41 @@ class HydroShareResourceBaseView(UpdateView):
 
         if len(file_uploads):
             upload_hydroshare_resource_files(resource, file_uploads)
+
+    def update_keywords(self, resource, hydroshare_resource=None, site=None):  # type: (Resource, HydroShareResource, SiteRegistration) -> None
+        # Clear the resources keywords
+        resource.keywords = set()
+
+        if site is None:
+            site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
+
+        if hydroshare_resource is None:
+            hydroshare_resource = HydroShareResource.objects.filter(site_registration=site.registration_id, visible=True).first()  # type: HydroShareResource
+
+        # Add 'WikiWatershed' keyword to all resources
+        resource.keywords.add('WikiWatershed')
+
+        # Check if 'TS' (Time Series) is a selected data type, and add variable names as keywords if True
+        if 'TS' in hydroshare_resource.data_types:
+            # Add 'EnviroDIY' keyword to resource if sharing time series data
+            resource.keywords.add('EnviroDIY')
+
+            sensors = SiteSensor.objects.filter(registration=site)
+            if len(sensors):
+                # Add sensor variable names as keywords
+                for sensor in sensors:
+                    output = sensor.sensor_output
+                    if output is not None and output.variable_name is not None:
+                        resource.keywords.add(output.variable_name)
+
+        # Add the 'Leaf Pack' keyword if sharing leaf pack experiment data
+        if 'LP' in hydroshare_resource.data_types and len(site.leafpack_set.all()) > 0:
+            resource.keywords.add('Leaf Pack')
+
+        if hydroshare_resource.pk is not None:
+            # if 'hydroshare_resource' has a primary key, then 'resource' has already been created
+            # and it's 'update_keywords()' method can be invoked.
+            resource.update_keywords()
 
     def get(self, request, *args, **kwargs):
         # # uncomment to force a hydroshare resource file update.
@@ -168,64 +203,47 @@ class HydroShareResourceCreateView(HydroShareResourceBaseView, HydroShareResourc
     def create_resource(self, site, form):
         hs_account = self.request.user.hydroshare_account
 
-        resource = HydroShareResource(site_registration=site,
-                                      hs_account=hs_account,
-                                      data_types=",".join(form.cleaned_data['data_types']),
-                                      update_freq=form.cleaned_data['update_freq'],
-                                      sync_type=form.cleaned_data['schedule_type'],
-                                      is_enabled=True,
-                                      title=form.cleaned_data['title'],
-                                      last_sync_date=timezone.now())
+        hydroshare_resource = HydroShareResource(site_registration=site,
+                                                 hs_account=hs_account,
+                                                 data_types=",".join(form.cleaned_data['data_types']),
+                                                 update_freq=form.cleaned_data['update_freq'],
+                                                 sync_type=form.cleaned_data['schedule_type'],
+                                                 is_enabled=True,
+                                                 title=form.cleaned_data['title'],
+                                                 last_sync_date=timezone.now())
 
         token_json = hs_account.get_token()
         client = AuthUtil.authorize(token=token_json).get_client()
-        hs_resource = Resource(client)
+        resource = Resource(client)
 
-        hs_resource.owner = Resource.DEFAULT_OWNER
-        hs_resource.resource_type = Resource.COMPOSITE_RESOURCE
-        hs_resource.creator = '{0} {1}'.format(self.request.user.first_name, self.request.user.last_name)
-        hs_resource.abstract = form.cleaned_data['abstract']
-        hs_resource.title = form.cleaned_data['title']
-        hs_resource.public = True
+        resource.owner = Resource.DEFAULT_OWNER
+        resource.resource_type = Resource.COMPOSITE_RESOURCE
+        resource.creator = '{0} {1}'.format(self.request.user.first_name, self.request.user.last_name)
+        resource.abstract = form.cleaned_data['abstract']
+        resource.title = form.cleaned_data['title']
+        resource.public = True
 
         coverage = PointCoverage(name=site.sampling_feature_name, latitude=site.latitude, longitude=site.longitude)
-        hs_resource.add_coverage(coverage)
+        resource.add_coverage(coverage)
 
-        # Add 'WikiWatershed' keyword to all resources
-        hs_resource.keywords.add('WikiWatershed')
-
-        # Check if 'TS' (Time Series) is a selected data type, and add variable names as keywords if True
-        if 'TS' in resource.data_types:
-            # Add 'EnviroDIY' keyword to resource if sharing time series data
-            hs_resource.keywords.add('EnviroDIY')
-
-            sensors = SiteSensor.objects.filter(registration=site)
-
-            if len(sensors):
-                # Add sensor variable names as keywords
-                for sensor in sensors:
-                    output = sensor.sensor_output
-                    if output is not None and output.variable_name is not None:
-                        hs_resource.keywords.add(output.variable_name)
-
-        # Add the 'Leaf Pack' keyword if sharing leaf pack experiment data
-        if 'LP' in resource.data_types and len(site.leafpack_set.all()) > 0:
-            hs_resource.keywords.add('Leaf Pack')
+        # Add keywords to the resource
+        self.update_keywords(resource, hydroshare_resource=hydroshare_resource, site=site)
 
         try:
             """
             NOTE: The UUID returned when creating a resource on hydroshare.org is externally generated and should only 
             be used as a reference to an external datasource that is not part of the ODM2DataSharingPortal ecosystem.
             """
-            resource.ext_id = hs_resource.create()
-            resource.title = hs_resource.title
+            hydroshare_resource.ext_id = resource.create()
+            hydroshare_resource.title = resource.title
         except HydroShareHTTPException as e:
             return JsonResponse({"error": e.message,
                                  "message": "There was a problem with hydroshare.org and your resource was not created. You might want to see if www.hydroshare.org is working and try again later."},
                                 status=e.status_code)
 
-        resource.save()
-        return hs_resource
+        hydroshare_resource.save()
+
+        return resource
 
     def post(self, request, *args, **kwargs):
         """
@@ -318,28 +336,34 @@ class HydroShareResourceUpdateView(HydroShareResourceViewMixin, HydroShareResour
 
         if form.is_valid():
             site = SiteRegistration.objects.get(pk=form.cleaned_data['site_registration'])
-            resource = self.get_object()
+            hydroshare_resource = self.get_object()  # type: HydroShareResource
 
-            if 'update_files' in request.POST and resource.is_enabled:
+            if 'update_files' in request.POST and hydroshare_resource.is_enabled:
                 # get hydroshare resource info using hydroshare_util; this will get authentication info needed to
                 # upload files to the resource.
-                hs_resource = self.get_hs_resource(resource)
+                resource = self.get_hs_resource(hydroshare_resource)  # type: Resource
 
                 # Upload the most recent resource files
                 try:
-                    self.upload_hydroshare_files(hs_resource)
+                    # update hs_resource's keywords
+                    self.update_keywords(resource, hydroshare_resource=hydroshare_resource, site=site)
+
+                    # update the files
+                    self.upload_hydroshare_files(resource)
                 except Exception as e:
                     return JsonResponse({'error': e.message}, status=500)
 
                 # update last sync date on resource
-                resource.last_sync_date = timezone.now()
+                hydroshare_resource.last_sync_date = timezone.now()
             else:
-                resource.data_types = ",".join(form.cleaned_data['data_types'])
-                resource.update_freq = form.cleaned_data['update_freq']
-                resource.sync_type = form.cleaned_data['schedule_type']
-                resource.is_enabled = not form.cleaned_data["pause_sharing"]
+                hydroshare_resource.data_types = ",".join(form.cleaned_data['data_types'])
+                hydroshare_resource.update_freq = form.cleaned_data['update_freq']
+                hydroshare_resource.sync_type = form.cleaned_data['schedule_type']
+                hydroshare_resource.is_enabled = not form.cleaned_data["pause_sharing"]
 
-            resource.save()
+                hydroshare_resource.save()
+
+
 
             success_url = reverse('site_detail', kwargs={'sampling_feature_code': site.sampling_feature_code})
             if self.request.is_ajax():
@@ -523,4 +547,8 @@ def upload_hydroshare_resource_files(resource, files):  # type: (Resource, [obje
     for file_ in files:
         file_name = file_[0]
         content = file_[1]
+
+        if '.csv' not in file_name:
+            file_name += '.csv'
+
         resource.upload_file(file_name, content)

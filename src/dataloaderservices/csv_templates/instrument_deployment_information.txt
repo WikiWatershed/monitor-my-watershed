@@ -1,0 +1,11 @@
+# Instrument Deployment Information
+# ---------------------------------
+# SensorModel: {model}
+# MethodTypeCV: {action.method.method_type_id}
+# MethodCode: {action.method.method_code}
+# MethodName: {action.method.method_name}
+# MethodDescription: {action.method.method_description}
+# ResponsiblePerson: {affiliation.person}
+# Email: {affiliation.primary_email}
+# Affiliation: {affiliation.organization}
+#

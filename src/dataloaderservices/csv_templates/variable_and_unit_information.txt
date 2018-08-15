@@ -1,0 +1,12 @@
+# Variable and Unit Information
+# -----------------------------
+"# VariableCode: {variable.variable_code}"
+"# VariableName: {variable.variable_name_id}"
+"# VariableType: {variable.variable_type_id}"
+"# VariableDefinition: {variable.variable_definition}"
+"# NoDataValue: {variable.no_data_value}"
+"# VariableUnitsName: {unit.unit_name}"
+"# VariableUnitsType: {unit.unit_type_id}"
+"# VariableUnitsAbbreviation: {unit.unit_abbreviation}"
+"# VerticalOffset: {sensor.height}"
+#

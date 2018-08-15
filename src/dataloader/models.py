@@ -198,7 +198,7 @@ class XIntendedComponent(models.Model):
 
 
 class YIntendedComponent(models.Model):
-    intended_y_spacing = models.FloatField(db_column='intendedyspacing')
+    intended_y_spacing = models.FloatField(db_column='intendedyspacing', blank=True, null=True)
     intended_y_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedyspacingunitsid', blank=True, null=True)
 
     class Meta:
@@ -206,7 +206,7 @@ class YIntendedComponent(models.Model):
 
 
 class ZIntendedComponent(models.Model):
-    intended_z_spacing = models.FloatField(db_column='intendedzspacing')
+    intended_z_spacing = models.FloatField(db_column='intendedzspacing', blank=True, null=True)
     intended_z_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedzspacingunitsid', blank=True, null=True)
 
     class Meta:
@@ -214,7 +214,7 @@ class ZIntendedComponent(models.Model):
 
 
 class TimeIntendedComponent(models.Model):
-    intended_time_spacing = models.FloatField(db_column='intendedtimespacing')
+    intended_time_spacing = models.FloatField(db_column='intendedtimespacing', blank=True, null=True)
     intended_time_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedtimespacingunitsid', blank=True, null=True)
 
     class Meta:

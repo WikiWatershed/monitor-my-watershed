@@ -36,7 +36,7 @@ class Command(BaseCommand):
         for row in reader:
             taxon_name = row.get('TaxonName', '')
 
-            if not len(taxon_name):
+            if taxon_name == '':
                 continue
 
             if '#' == taxon_name[0]:
@@ -59,7 +59,7 @@ class Command(BaseCommand):
             if taxon is None:
                 taxon = Macroinvertebrate()
 
-            taxon.scientific_name = taxon_name
+            taxon.scientific_name = taxon.latin_name = taxon_name
             taxon.common_name = common_name
             taxon.itis_serial_number = itis_serial_num
             taxon.url = url

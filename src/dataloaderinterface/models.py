@@ -1,21 +1,16 @@
 from __future__ import unicode_literals
 
 # Create your models here.
-import uuid
 
 from datetime import timedelta, datetime
 from uuid import uuid4
 
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils import timezone
-from django.db.models.aggregates import Min, Max
-
-from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesResultValue, EquipmentModel, Variable, \
-    Unit, Medium
 from django.db import models
 from django.conf import settings
-# from django.core.exceptions import ValidationError
+from django.core.exceptions import ObjectDoesNotExist
 
+from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesResultValue, EquipmentModel, Variable, \
+    Unit, Medium, Organization
 from dataloaderinterface.querysets import SiteRegistrationQuerySet, SensorOutputQuerySet
 
 
@@ -29,17 +24,13 @@ class SiteRegistration(models.Model):
     django_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
     affiliation_id = models.IntegerField(db_column='AffiliationID')
 
-    person = models.CharField(max_length=765, db_column='Person')  # DEPRECATED
+    person_id = models.IntegerField(db_column='PersonID', null=True)
+    person_first_name = models.CharField(max_length=255, db_column='PersonFirstName', blank=True, null=True)
+    person_last_name = models.CharField(max_length=255, db_column='PersonLastName', blank=True, null=True)
 
-    person_id = models.IntegerField(db_column='PersonID', null=True)  # NEW: TEMPORARILY NULLABLE
-    person_first_name = models.CharField(max_length=255, db_column='PersonFirstName', blank=True, null=True)  # NEW: TEMPORARILY NULLABLE
-    person_last_name = models.CharField(max_length=255, db_column='PersonLastName', blank=True, null=True)  # NEW
-
-    organization = models.CharField(max_length=255, db_column='Organization', blank=True, null=True)  # DEPRECATED
-
-    organization_id = models.IntegerField(db_column='OrganizationID', null=True)  # NEW
-    organization_code = models.CharField(db_column='OrganizationCode', max_length=50, blank=True, null=True)  # NEW
-    organization_name = models.CharField(max_length=255, db_column='OrganizationName', blank=True, null=True)  # NEW
+    organization_id = models.IntegerField(db_column='OrganizationID', null=True)
+    organization_code = models.CharField(db_column='OrganizationCode', max_length=50, blank=True, null=True)
+    organization_name = models.CharField(max_length=255, db_column='OrganizationName', blank=True, null=True)
 
     sampling_feature_id = models.IntegerField(db_column='SamplingFeatureID', null=True)
     sampling_feature_code = models.CharField(max_length=50, unique=True, db_column='SamplingFeatureCode')
@@ -56,6 +47,8 @@ class SiteRegistration(models.Model):
     sub_basin = models.CharField(max_length=255, db_column='SubBasin', blank=True, null=True)
     closest_town = models.CharField(max_length=255, db_column='ClosestTown', blank=True, null=True)
 
+    site_notes = models.TextField(db_column='SiteNotes', blank=True, null=True)
+
     followed_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_sites')
     alert_listeners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='+', through='SiteAlert')
 
@@ -71,6 +64,10 @@ class SiteRegistration(models.Model):
             return None
 
         return last_updated_sensor.last_measurement
+
+    @property
+    def organization(self):
+        return Organization.objects.filter(organization_id=self.organization_id).first()
 
     @property
     def sampling_feature(self):
@@ -90,8 +87,8 @@ class SiteRegistration(models.Model):
         return '%s' % self.sampling_feature_code
 
     def __repr__(self):
-        return "<SiteRegistration('%s', '%s', '%s', '%s')>" % (
-            self.registration_id, self.registration_date, self.sampling_feature_code, self.person
+        return "<SiteRegistration('%s', '%s', '%s')>" % (
+            self.registration_id, self.registration_date, self.sampling_feature_code
         )
 
 
@@ -142,6 +139,14 @@ class SensorOutput(models.Model):
 
     objects = SensorOutputQuerySet.as_manager()
 
+    @property
+    def variable(self):
+        return Variable.objects.filter(variable_id=self.variable_id).first()
+
+    @property
+    def unit(self):
+        return Unit.objects.filter(unit_id=self.unit_id).first()
+
     def __str__(self):
         return '%s %s %s %s %s' % (self.model_manufacturer, self.model_name, self.variable_code, self.unit_name, self.sampled_medium)
 
@@ -157,27 +162,9 @@ class SiteSensor(models.Model):
     result_id = models.IntegerField(db_column='ResultID', unique=True, null=True)
     result_uuid = models.UUIDField(db_column='ResultUUID', unique=True, null=True)
 
-    sensor_output = models.ForeignKey('SensorOutput', related_name='sensor_instances', null=True)  # NEW: TEMPORARILY NULLABLE
-
-    activation_date = models.DateTimeField(db_column='ActivationDate', blank=True, null=True)
-    activation_date_utc_offset = models.IntegerField(db_column='ActivationDateUtcOffset', blank=True, null=True)
-
-    model_name = models.CharField(db_column='ModelName', max_length=255, null=True)  # DEPRECATED
-    model_manufacturer = models.CharField(db_column='ModelManufacturer', max_length=255, null=True)  # DEPRECATED
-
-    variable_name = models.CharField(max_length=255, db_column='VariableName', null=True)  # DEPRECATED
-    variable_code = models.CharField(max_length=50, db_column='VariableCode', null=True)  # DEPRECATED
-
-    unit_name = models.CharField(max_length=255, db_column='UnitsName', null=True)  # DEPRECATED
-    unit_abbreviation = models.CharField(max_length=255, db_column='UnitAbbreviation', null=True)  # DEPRECATED
-
-    sampled_medium = models.CharField(db_column='SampledMedium', max_length=255, null=True)  # DEPRECATED
-
-    last_measurement_id = models.IntegerField(db_column='LastMeasurementID', unique=True, blank=True, null=True)  # DEPRECATED
-    last_measurement_value = models.FloatField(db_column='LastMeasurementValue', blank=True, null=True)  # DEPRECATED
-    last_measurement_datetime = models.DateTimeField(db_column='LastMeasurementDatetime', blank=True, null=True)  # DEPRECATED
-    last_measurement_utc_offset = models.IntegerField(db_column='LastMeasurementUtcOffset', blank=True, null=True)  # DEPRECATED
-    last_measurement_utc_datetime = models.DateTimeField(db_column='LastMeasurementUtcDatetime', blank=True, null=True)  # DEPRECATED
+    height = models.FloatField(blank=True, null=True)
+    sensor_notes = models.TextField(blank=True, null=True)
+    sensor_output = models.ForeignKey('SensorOutput', related_name='sensor_instances', null=True)
 
     class Meta:
         ordering = ['result_id']
@@ -187,32 +174,12 @@ class SiteSensor(models.Model):
         return Result.objects.filter(pk=self.result_id).first()
 
     @property
-    def equipment_model(self):
-        return EquipmentModel.objects.filter(model_name=self.model_name).first()
-
-    @property
-    def variable(self):
-        return Variable.objects.filter(variable_code=self.variable_code).first()
-
-    @property
-    def unit(self):
-        return Unit.objects.filter(unit_name=self.unit_name).first()
-
-    @property
-    def medium(self):
-        return Medium.objects.filter(name=self.sampled_medium).first()
-
-    @property
     def make_model(self):
         return "{0}_{1}".format(self.sensor_output.model_manufacturer, self.sensor_output.model_name)
 
-    # @property
-    # def last_measurement(self):
-    #     return TimeSeriesResultValue.objects.filter(pk=self.last_measurement_id).first()
-
     @property
     def sensor_identity(self):
-        return "{0}_{1}_{2}".format(self.registration.sampling_feature_code, self.variable_code, self.result_id)
+        return "{0}_{1}_{2}".format(self.registration.sampling_feature_code, self.sensor_output.variable_code, self.result_id)
 
     @property
     def influx_url(self):
@@ -226,29 +193,12 @@ class SiteSensor(models.Model):
         )
 
     def __str__(self):
-        return '%s %s' % (self.sensor_identity, self.unit_abbreviation)
+        return '%s' % (self.sensor_identity)
 
     def __repr__(self):
         return "<SiteSensor('%s', [%s], '%s')>" % (
             self.id, self.registration, self.result_id
         )
-
-
-class ODM2User(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    affiliation_id = models.IntegerField()
-    hydroshare_account = models.OneToOneField('hydroshare.HydroShareAccount', db_column='hs_account_id', null=True, blank=True)
-
-    @property
-    def affiliation(self):
-        return Affiliation.objects.get(pk=self.affiliation_id)
-
-    def can_administer_site(self, registration):
-        return self.user.is_staff or registration.user == self
-
-    class Meta:
-        verbose_name = "ODM2 User"
-        verbose_name_plural = "ODM2 Users"
 
 
 class SiteAlert(models.Model):

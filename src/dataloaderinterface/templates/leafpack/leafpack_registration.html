@@ -64,14 +64,14 @@
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.placement_air_temp.id_for_label }}">{{ form.placement_air_temp.label }}</label>
-                                        {{ form.placement_air_temp|add_class:"form-control d-inline" }}
+                                        <label for="{{ form.placement_air_temp.id_for_label }}" class="control-label">{{ form.placement_air_temp.label }}</label>
+                                        {% render_field form.placement_air_temp class="form-control d-inline" placeholder="Unknown" %}
                                         <small>°C</small>
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.placement_water_temp.id_for_label }}">{{ form.placement_water_temp.label }}</label>
-                                        {{ form.placement_water_temp|add_class:"form-control d-inline" }}
+                                        <label for="{{ form.placement_water_temp.id_for_label }}" class="control-label">{{ form.placement_water_temp.label }}</label>
+                                        {% render_field form.placement_water_temp class="form-control d-inline" placeholder="Unknown" %}
                                         <small>°C</small>
                                     </div>
 
@@ -141,14 +141,14 @@
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.retrieval_air_temp.id_for_label }}">{{ form.retrieval_air_temp.label }}</label>
-                                        {{ form.retrieval_air_temp|add_class:"form-control d-inline" }}
+                                        <label for="{{ form.retrieval_air_temp.id_for_label }}" class="control-label">{{ form.retrieval_air_temp.label }}</label>
+                                        {% render_field  form.retrieval_air_temp class="form-control d-inline" placeholder="Unknown" %}
                                         <small>°C</small>
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.retrieval_water_temp.id_for_label }}">{{ form.retrieval_water_temp.label }}</label>
-                                        {{ form.retrieval_water_temp|add_class:"form-control d-inline" }}
+                                        <label for="{{ form.retrieval_water_temp.id_for_label }}" class="control-label">{{ form.retrieval_water_temp.label }}</label>
+                                        {% render_field  form.retrieval_water_temp class="form-control d-inline" placeholder="Unknown" %}
                                         <small>°C</small>
                                     </div>
                                 </div>

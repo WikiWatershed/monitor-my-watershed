@@ -39,6 +39,16 @@
     {% block forced_scripts %}
 
     {% endblock %}
+
+    <!-- Global Site Tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-47047573-13"></script>
+    <script> window.dataLayer = window.dataLayer || [];
+    function gtag() {
+        dataLayer.push(arguments);
+    }
+    gtag('js', new Date());
+    gtag('config', 'UA-47047573-13', {'anonymize_ip': true});
+    </script>
 </head>
 
 <body>
@@ -66,6 +76,10 @@
                     {% endif %}
                     <li class="nav-item menu-browse-sites">
                         <a class="nav-link" href="{% url 'browse_sites' %}">Browse Sites</a>
+                    </li>
+                    <li class="nav-item menu-browse-sites">
+                        <a class="nav-link" href="data.wikiwatershed.org/tsa" target="_blank">Time Series Analyst <i
+                                class="material-icons" style="font-size: 14px;">open_in_new</i></a>
                     </li>
                 </ul>
 

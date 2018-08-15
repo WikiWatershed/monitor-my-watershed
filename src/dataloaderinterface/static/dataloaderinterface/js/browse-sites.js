@@ -333,9 +333,7 @@ $(document).ready(function () {
 
                 markers[i].setVisible(visible);
 
-                if (!someVisible && visible) {
-                    someVisible = true;
-                }
+                someVisible = someVisible || (!someVisible && visible)
             }
         }
 

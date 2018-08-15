@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from dataloaderinterface.models import HydroShareResource
-from dataloaderinterface.views import upload_hydroshare_resource_files
+from hydroshare.models import HydroShareResource
+from hydroshare.views import upload_hydroshare_resource_files
 from hydroshare_util.resource import Resource
 from hydroshare_util.auth import AuthUtil
 from django.utils.termcolors import colorize

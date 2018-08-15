@@ -1,49 +1,23 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
-from uuid import uuid4
-import json
-import requests
-import re
-import logging
-from oauthlib.oauth2.rfc6749.errors import TokenExpiredError
+from datetime import timedelta
 
 from django.conf import settings
-from django.db.models.aggregates import Max
-from django.db.models.expressions import F
-from django.db.models.query import Prefetch
-from django.utils.safestring import mark_safe
-
-from dataloaderservices.views import CSVDataApi
-
-from dataloader.models import FeatureAction, Result, ProcessingLevel, TimeSeriesResult, SamplingFeature, \
-    SpatialReference, \
-    ElevationDatum, SiteType, ActionBy, Action, Method, DataLoggerProgramFile, DataLoggerFile, \
-    InstrumentOutputVariable, DataLoggerFileColumn, TimeSeriesResultValue
-from leafpack.models import LeafPack, LeafPackBug, Macroinvertebrate
 from django.contrib import messages
-from django.contrib.auth import login, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.utils import timezone
-from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponseRedirect, Http404, HttpResponse, JsonResponse, HttpResponseServerError
 from django.shortcuts import render, redirect
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, ModelFormMixin
 from django.views.generic.list import ListView
-from django.core.management import call_command
 
-from dataloaderinterface.forms import SamplingFeatureForm, ResultFormSet, SiteForm, \
-    OrganizationForm, ActionByForm, SiteAlertForm, SiteRegistrationForm, SiteSensorForm
-
-from dataloaderinterface.models import SiteRegistration, SiteSensor, SiteAlert
+from dataloader.models import ElevationDatum, SiteType
+from dataloaderinterface.models import SiteRegistration
+from dataloaderinterface.forms import SiteAlertForm, SiteRegistrationForm, SiteSensorForm, SensorDataForm
 from hydroshare.models import HydroShareResource, HydroShareAccount
-
-# from leafpack.views import get_leafpack_csv
-
+from leafpack.models import LeafPack
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -122,9 +96,9 @@ class SiteDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
+        context['data_upload_form'] = SensorDataForm()
         context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
-        user = self.request.user
-        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(self.object)
+        context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
         context['is_site_owner'] = self.request.user == self.object.django_user
         context['tsa_url'] = settings.TSA_URL
 
@@ -150,6 +124,7 @@ class SensorListUpdateView(DetailView):
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
     slug_url_kwarg = 'sampling_feature_code'
+    context_object_name = 'site_registration'
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
@@ -163,6 +138,7 @@ class SensorListUpdateView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SensorListUpdateView, self).get_context_data(**kwargs)
         context['sensor_form'] = SiteSensorForm(initial={'registration': self.object.registration_id})
+
         return context
 
 

@@ -82,11 +82,13 @@ class LeafPackForm(forms.ModelForm):
     )
 
     placement_air_temp = forms.FloatField(
-        label='Placement Air Temperature'
+        label='Placement Air Temperature',
+        required=False,
     )
 
     placement_water_temp = forms.FloatField(
-        label='Placement Water Temperature'
+        label='Placement Water Temperature',
+        required=False,
     )
 
     retrieval_date = forms.DateField(
@@ -99,11 +101,13 @@ class LeafPackForm(forms.ModelForm):
     )
 
     retrieval_air_temp = forms.FloatField(
-        label='Retrieval Air Temperature'
+        label='Retrieval Air Temperature',
+        required=False,
     )
 
     retrieval_water_temp = forms.FloatField(
-        label='Retrieval Water Temperature'
+        label='Retrieval Water Temperature',
+        required=False,
     )
 
     had_storm = forms.NullBooleanField(
@@ -161,7 +165,7 @@ class LeafPackBugForm(forms.ModelForm):
             # Does the model instance have children?
             self.has_children = len(self.instance.bug.families.all()) > 0
 
-            self.fields['bug_count'].label = self.instance.bug.common_name + ' (' + self.instance.bug.scientific_name + ')'
+            self.fields['bug_count'].label = self.instance.bug.display_name
 
 
 class LeafPackBugFormFactory(forms.BaseFormSet):

@@ -61,18 +61,12 @@
                 </div>
                 {{ form.site_type|add_class:"form-control input-sm" }}
             </div>
-            {#TODO: DECIDE ON TOOLTIPS#}
+
             <div class="form-field {% if form.stream_name.field.required %} required-field{% endif %}{% if form.stream_name.errors %} has-error{% endif %}"
                  data-field="{{ form.stream_name.name }}">
                 <label class="control-label"
                        for="{{ form.stream_name.id_for_label }}">{{ form.stream_name.label }}</label>
-{#                <i id="stream-name-help"#}
-{#                   class="material-icons text-muted help-icon">help</i>#}
                 {{ form.stream_name.errors }}
-{#                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"#}
-{#                     data-mdl-for="stream-name-help">#}
-{#                    {{ form.stream_name.help_text }}#}
-{#                </div>#}
                 {{ form.stream_name|add_class:"form-control input-sm" }}
             </div>
 
@@ -80,13 +74,7 @@
                  data-field="{{ form.major_watershed.name }}">
                 <label class="control-label"
                        for="{{ form.major_watershed.id_for_label }}">{{ form.major_watershed.label }}</label>
-{#                <i id="major-watershed-help"#}
-{#                   class="material-icons text-muted help-icon">help</i>#}
                 {{ form.major_watershed.errors }}
-{#                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"#}
-{#                     data-mdl-for="major-watershed-help">#}
-{#                    {{ form.major_watershed.help_text }}#}
-{#                </div>#}
                 {{ form.major_watershed|add_class:"form-control input-sm" }}
             </div>
 
@@ -94,13 +82,7 @@
                  data-field="{{ form.sub_basin.name }}">
                 <label class="control-label"
                        for="{{ form.sub_basin.id_for_label }}">{{ form.sub_basin.label }}</label>
-{#                <i id="sub-basin-help"#}
-{#                   class="material-icons text-muted help-icon">help</i>#}
                 {{ form.sub_basin.errors }}
-{#                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"#}
-{#                     data-mdl-for="sub-basin-help">#}
-{#                    {{ form.sub_basin.help_text }}#}
-{#                </div>#}
                 {{ form.sub_basin|add_class:"form-control input-sm" }}
             </div>
 
@@ -108,14 +90,22 @@
                  data-field="{{ form.closest_town.name }}">
                 <label class="control-label"
                        for="{{ form.closest_town.id_for_label }}">{{ form.closest_town.label }}</label>
+                {{ form.closest_town.errors }}
+                {{ form.closest_town|add_class:"form-control input-sm" }}
+            </div>
+
+            <div class="form-field {% if form.site_notes.field.required %} required-field{% endif %}{% if form.site_notes.errors %} has-error{% endif %}"
+                 data-field="{{ form.site_notes.name }}">
+                <label class="control-label"
+                       for="{{ form.site_notes.id_for_label }}">{{ form.site_notes.label }}</label>
 {#                <i id="closest-town-help"#}
 {#                   class="material-icons text-muted help-icon">help</i>#}
-                {{ form.closest_town.errors }}
+                {{ form.site_notes.errors }}
 {#                <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"#}
 {#                     data-mdl-for="closest-town-help">#}
 {#                    {{ form.closest_town.help_text }}#}
 {#                </div>#}
-                {{ form.closest_town|add_class:"form-control input-sm" }}
+                {{ form.site_notes|add_class:"form-control" }}
             </div>
 
             <div class="form-field checkbox {% if email_alert_form.notify.field.required %} required-field{% endif %}{% if email_alert_form.notify.errors %} has-error{% endif %}"
@@ -159,6 +149,7 @@
                     {{ email_alert_form.suffix }}
                 </label>
             </div>
+
         </div>
         <div class="form-group col-sm-12 col-md-6 location-fields">
             <div class="row">

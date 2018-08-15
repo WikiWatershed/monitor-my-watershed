@@ -12,7 +12,7 @@ def get_site_sensor(site, variable_code):
     if not isinstance(site, SiteRegistration) or not site.status_sensors:
         return
 
-    return next((sensor for sensor in site.status_sensors if sensor.variable_code==variable_code), None)
+    return next((sensor for sensor in site.status_sensors if sensor.sensor_output.variable_code==variable_code), None)
 
 
 @register.filter(name='can_administer_site')
@@ -40,6 +40,16 @@ def round_float(value, argv):
         return value
 
 
+@register.filter(name='abs')
+def abs_filter(value):
+    return abs(value)
+
+
+@register.filter(name='to_string')
+def to_string(value):
+    return '{0:g}'.format(value)
+
+
 @register.filter("divide")
 def divide(value, arg):
     try:
@@ -57,3 +67,8 @@ def date_format(value, arg):
         return date_filter(value, arg=arg)
 
     return str(value)
+
+
+@register.filter("join_sensor__result_ids")
+def join_sensor_ids(sensors):
+    return ','.join([str(sensor.result_id) for sensor in sensors])

@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch.dispatcher import receiver
 
 from dataloader.models import SamplingFeature, Site, Annotation, SamplingFeatureAnnotation, SpatialReference, Action, \
-    Method, Result, ProcessingLevel, TimeSeriesResult
+    Method, Result, ProcessingLevel, TimeSeriesResult, Unit
 from dataloaderinterface.models import SiteRegistration, SiteSensor
 
 
@@ -119,7 +119,12 @@ def handle_sensor_post_save(sender, instance, created, update_fields=None, **kwa
 
     if created:
         action.action_by.create(affiliation=instance.registration.odm2_affiliation, is_action_lead=True)
-        TimeSeriesResult.objects.create(result=result_queryset.first(), aggregation_statistic_id='Average')
+        TimeSeriesResult.objects.create(
+            result=result_queryset.first(),
+            aggregation_statistic_id='Average',
+            z_location=instance.height,
+            z_location_unit=Unit.objects.filter(unit_name='meter').first()
+        )
 
     else:
         result_queryset.update(
@@ -127,6 +132,8 @@ def handle_sensor_post_save(sender, instance, created, update_fields=None, **kwa
             unit_id=instance.sensor_output.unit_id,
             sampled_medium_id=instance.sensor_output.sampled_medium
         )
+        TimeSeriesResult.objects.filter(result_id=instance.result_id).update(z_location=instance.height)
+
 
 
 @receiver(post_delete, sender=SiteSensor)

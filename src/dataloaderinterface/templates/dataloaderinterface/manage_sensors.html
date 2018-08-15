@@ -4,7 +4,7 @@
 {% load widget_tweaks %}
 
 {% block page_title %}
-    <title>Manage Sensors at {{ siteregistration.sampling_feature_code }}</title>
+    <title>Manage Sensors at {{ site_registration.sampling_feature_code }}</title>
 {% endblock %}
 
 {% block content %}
@@ -13,8 +13,8 @@
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
             <div class="page-title">Manage Sensors at
-                <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
-                    {{ siteregistration.sampling_feature_code }}</a>
+                <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
+                    {{ site_registration.sampling_feature_code }}</a>
             </div>
             <fieldset class="form-fieldset">
                 <div class="row">
@@ -39,13 +39,16 @@
                                    class="no-hover mdl-textfield--full-width mdl-data-table mdl-shadow--2dp mdl-js-data-table sensors full-width">
                                 <thead>
                                 <tr class="full-width">
-                                    <th class="mdl-data-table__cell--non-numeric">Equipment Make-Model
-                                    </th>
-                                    <th class="mdl-data-table__cell--non-numeric">Measured
-                                        Variable
-                                    </th>
+                                    <th class="mdl-data-table__cell--non-numeric">Equipment Make-Model</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Measured Variable</th>
                                     <th class="mdl-data-table__cell--non-numeric">Units</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium
+                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium</th>
+                                    <th class="mdl-data-table__cell--non-numeric">
+                                        <span id="col-label-height">Height</span>
+                                        <div class="mdl-tooltip" data-mdl-for="col-label-height">
+                                            Height above(+) or below(-) surface.
+                                        </div>
+
                                     </th>
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
@@ -57,12 +60,14 @@
                                         data-id="{{ sensor.id }}"
                                         data-result_id="{{ sensor.result_id }}"
                                         data-result_uuid="{{ sensor.result_uuid }}"
-                                        data-sensor_output="{{ sensor.sensor_output_id }}"
+                                        data-output_variable="{{ sensor.sensor_output_id }}"
                                         data-sensor_manufacturer="{{ sensor.sensor_output.model_manufacturer }}"
                                         data-sensor_model="{{ sensor.sensor_output.model_id }}"
                                         data-variable="{{ sensor.sensor_output.variable_id }}"
                                         data-unit="{{ sensor.sensor_output.unit_id }}"
-                                        data-sampled_medium="{{ sensor.sensor_output.sampled_medium }}">
+                                        data-sampled_medium="{{ sensor.sensor_output.sampled_medium }}"
+                                        data-sensor_notes="{{ sensor.sensor_notes }}"
+                                        data-height="{{ sensor.height }}">
 
                                         <td data-field="sensor_model" class="mdl-data-table__cell--non-numeric">
                                             <span class="field-text">{{ sensor.sensor_output.model_name }}</span>
@@ -78,6 +83,9 @@
 
                                         <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
                                             <span class="field-text">{{ sensor.sensor_output.sampled_medium }}</span>
+                                        </td>
+                                        <td data-field="height" class="mdl-data-table__cell--non-numeric">
+                                            <span class="field-text">{{ sensor.height|default:"" }} {% if sensor.height %}m{% endif %}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">
@@ -95,24 +103,17 @@
                                     </tr>
                                 {% endfor %}
                                 <tr class="no-sensors-row bg-white {% if object.sensors.count > 0 %}hidden{% endif %}">
-                                    <td colspan="6" class="text-center">No sensors have been added.</td>
+                                    <td colspan="7" class="text-center">No sensors have been added.</td>
                                 </tr>
                                 </tbody>
                             </table>
                         </div>
 
-                        <br><br>
-
-                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                           href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
-                            Back to site details
-                        </a>
-
                         <script id="sensor-row" type="text/plain">
                             <tr class="result-form"
-                                    data-id="" data-result_id="" data-result_uuid="" data-sensor_output=""
+                                    data-id="" data-result_id="" data-result_uuid="" data-output_variable=""
                                     data-sensor_manufacturer="" data-sensor_model="" data-variable=""
-                                    data-unit="" data-sampled_medium="">
+                                    data-unit="" data-sampled_medium="" data-sensor_notes="" data-height="">
 
                                 <td data-field="sensor_model" class="mdl-data-table__cell--non-numeric">
                                     <span class="field-text"></span>
@@ -129,6 +130,11 @@
                                 <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
                                     <span class="field-text"></span>
                                 </td>
+
+                                <td data-field="height" class="mdl-data-table__cell--non-numeric">
+                                    <span class="field-text"></span>
+                                </td>
+
                                 <td data-behaviour="edit"
                                     class="mdl-data-table__cell--non-numeric">
                                     <button class="mdl-button mdl-button--accent"
@@ -145,6 +151,54 @@
                             </tr>
                         </script>
                     </div>
+
+                    <div class="col-sm-12 col-md-6">
+                        <br><br>
+                        <form id="form-file-upload"
+                              class="mdl-card mdl-card--border mdl-shadow--2dp full-width text-left"
+                              action="{% url 'data_file_upload' site_registration.registration_id %}"
+                              enctype="multipart/form-data"
+                              method="POST" style="min-height: auto;">
+                            {% csrf_token %}
+                            <input type="hidden" value="Upload">
+                            <div class="mdl-card__title mdl-card--expand">
+                                Upload a data file (.csv)
+                            </div>
+
+                            <div class="mdl-card__actions mdl-card--border">
+                                <button id="upload-placeholder"
+                                        class="mdl-button--file mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--2dp">
+                                    <i class="material-icons">attach_file</i>
+                                    <input type="file" name="data_file" id="id_data_file" accept=".csv">
+                                </button>
+
+                                <div class="file-preview grid">
+                                    <small id="file-preview-default" class="text-muted" style="align-self: center;">
+                                        No file chosen.
+                                    </small>
+                                    <div class="selected-file grid"
+                                         style="display:none; grid-template-columns: 30px 1fr 150px;">
+                                        <i style="align-self: center;" class="fa fa-file-o file-icon"
+                                           aria-hidden="true"></i>
+                                        <span style="align-self: center;"><span class="file-name">File name.csv</span><span class="file-size small text-muted"></span></span>
+                                        <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
+                                                id="btn-upload-file" disabled style="margin: 0; align-self: center;">
+                                            <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-12">
+                        <br><br>
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                           href="
+                                   {% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
+                            Back to site details
+                        </a>
+                    </div>
                 </div>
             </fieldset>
         </div>
@@ -157,46 +211,42 @@
                 <span class="text-muted result-d-container">UUID: <small data-copy-target="result-dialog-uuid"
                                                                          id="result-dialog-uuid"></small></span>
                 <div class="mdl-dialog__content">
-                    <div class="row">
-                        <div class="form-group col-12 result-form">
-                            {% csrf_token %}
-                            {% for hidden in sensor_form.hidden_fields %}
-                                {{ hidden }}
-                            {% endfor %}
+                    <div class="row form-group result-form">
+                        {% csrf_token %}
+                        {% for hidden in sensor_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                        <div class="col-12">
                             {% for field in sensor_form.visible_fields %}
-                                <div class="form-field {% if field.field.required %}required-field{% endif %}">
+                                <div class="form-field {% if field.field.required %} required-field{% endif %}">
                                     <label class="control-label"
                                            for="{{ field.id_for_label }}">{{ field.label }}</label>
                                     {% with "placeholder:"|add:field.help_text as placeholder %}
-                                        {{ field|add_class:"form-control input-sm"|attr:placeholder }}
+                                        {{ field|add_class:"form-control input-sm"|attr:placeholder|attr:"height:95px" }}
                                     {% endwith %}
                                 </div>
                             {% endfor %}
                         </div>
-
                         <div class="col-12">
-                            <div class="alert alert-light mdl-card" style="width: 100%; min-height: initial;">
+                            <div class="alert alert-light mdl-card"
+                                 style="width: 100%; min-height: initial;">
                                 <strong>Don't see your sensor in the list of equipment models?</strong>
                                 <small>Click <a
                                         href="mailto:ww-data-portal-help@googlegroups.com?Subject=Request%20for%20new%20sensor">here</a>
                                     to send an email to
-                                    a system administrator with a request to add new sensors. Please provide us with the
-                                    manufacturer and make/model information for the sensor, as well as a link to a
+                                    a system administrator with a request to add new sensors. Please provide
+                                    us
+                                    with the
+                                    manufacturer and make/model information for the sensor, as well as a
+                                    link to
+                                    a
                                     website description if you can.
                                 </small>
 
                                 <div class="input-group">
                                     <input readonly id="adminEmail" type="text" class="form-control"
                                            value="ww-data-portal-help@googlegroups.com"
-                                           aria-label="Administrator's email">
-
-                                    <div class="input-group-append">
-                                        <button style="border: 1px solid #DDD; margin-left: -1px;"
-                                                class="mdl-button mdl-js-button mdl-js-ripple-effect"
-                                                data-copy-target="adminEmail">
-                                            Copy to clipboard
-                                        </button>
-                                    </div>
+                                           aria-label="Administrator's email" data-copy-target="adminEmail">
                                 </div>
                             </div>
                         </div>
