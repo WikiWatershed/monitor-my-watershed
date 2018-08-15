@@ -1,0 +1,20 @@
+# Variable and Method Information
+# ---------------------------
+# VariableCode: {variable_code}
+# VariableName: {v.variable_name}
+# ValueType: {v.variable_type_id}
+# DataType: {v.variable_type}
+# GeneralCategory: {r.result_type_id}
+# SampleMedium: {r.sampled_medium}
+# VariableUnitsName: {u.unit_name}
+# VariableUnitsType: {u.unit_type_id}
+# VariableUnitsAbbreviation: {u.unit_abbreviation}
+# NoDataValue: {v.no_data_value}
+# TimeSupport: {r.timeseriesresult.intended_time_spacing}
+# TimeSupportUnitsAbbreviation: {r.timeseriesresult.intended_time_spacing}
+# TimeSupportUnitsName: {r.timeseriesresult.intended_time_spacing_unit}
+# TimeSupportUnitsType: {r.timeseriesresult.intended_time_spacing_unit_id}
+# MethodDescription: {r.feature_action.action.method.method_description}
+# MethodLink: {r.feature_action.action.method.method_link}
+"# SensorNotes: {s.sensor_notes}"
+#

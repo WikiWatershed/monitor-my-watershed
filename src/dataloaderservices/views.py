@@ -461,7 +461,7 @@ class CSVDataApi(View):
             return fin.read()
 
     @staticmethod
-    def generate_metadata(time_series_results, request=None):  # type: (QuerySet) -> str
+    def generate_metadata(time_series_results, request=None):  # type: (QuerySet, any) -> str
         metadata = str()
 
         # Get the first TimeSeriesResult object and use it to get values for the
@@ -469,29 +469,48 @@ class CSVDataApi(View):
         tsr = time_series_results.first()
         site_sensor = SiteSensor.objects.select_related('registration').filter(result_id=tsr.result.result_id).first()
         metadata += CSVDataApi.read_file('site_information.txt').format(
-            sampling_feature=site_sensor.registration.sampling_feature
+            site=site_sensor.registration
         ).encode('utf-8')
 
-        # Write Variable and Method Information data
-        metadata += "# Variable and Method Information\n#---------------------------\n"
-        variablemethodinfo_template = CSVDataApi.read_file('variable_and_method_information_template.txt')
-        varcodes = [tsr.result.variable for tsr in time_series_results]
-        varcodes = CSVDataApi.clean_variable_codes(varcodes)
         time_series_results_as_list = [tsr for tsr in time_series_results]
-        for i in range(0, len(time_series_results_as_list)):
-            # Yeah, so this is enumerating like this because of the need to append "-#"
-            # to variable codes when there are duplicate variable codes. This is so the
-            # column names can be distinguished easily. This rather ugly solution is
-            # so the CSV files can be formatted as requested by the gods.
-            tsr = time_series_results_as_list[i]
-            varcode = varcodes[i]
 
+        if len(time_series_results_as_list) == 1:
+            # If there is only one time series result, use the normal variable and method info template
+            variablemethodinfo_template = CSVDataApi.read_file('variable_and_method_template.txt')
+            tsr = next(iter(time_series_results_as_list))
             metadata += variablemethodinfo_template.format(
-                variable_code=varcode,
+                variable_code=tsr.result.variable,
                 r=tsr.result,
                 v=tsr.result.variable,
-                u=tsr.result.unit
+                u=tsr.result.unit,
+                s=site_sensor
             )
+        else:
+            # If there are more than one time series result, use the compact
+            # version of the variable and method info template.
+
+            # Write Variable and Method Information data
+            metadata += "# Variable and Method Information\n#---------------------------\n"
+            variablemethodinfo_template = CSVDataApi.read_file('variable_and_method_template_compact.txt')
+            varcodes = [tsr.result.variable for tsr in time_series_results]
+            varcodes = CSVDataApi.clean_variable_codes(varcodes)
+            for i in range(0, len(time_series_results_as_list)):
+                # Yeah, so this is enumerating like this because of the need to append "-#"
+                # to variable codes when there are duplicate variable codes. This is so the
+                # column names can be distinguished easily.
+                tsr = time_series_results_as_list[i]
+
+                # Why use `varcodes[i]` instead of simply `tsr.result.variable`? Because
+                # there is a possibility of having duplicate variable codes, and
+                # `varcodes` is passed into `CSVDataApi.clean_variable_codes(*arg)`
+                # which does additional formatting to the variable code names.
+                metadata += variablemethodinfo_template.format(
+                    variable_code=varcodes[i],
+                    r=tsr.result,
+                    v=tsr.result.variable,
+                    u=tsr.result.unit
+                )
+
         metadata += "#\n"
 
         if len(time_series_results) == 1:
