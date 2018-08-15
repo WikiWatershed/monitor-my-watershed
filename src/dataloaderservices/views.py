@@ -500,6 +500,9 @@ class CSVDataApi(View):
                 # column names can be distinguished easily.
                 tsr = time_series_results_as_list[i]
 
+                sensor = SiteSensor.objects.select_related('registration').filter(
+                    result_id=tsr.result.result_id).first()
+
                 # Why use `varcodes[i]` instead of simply `tsr.result.variable`? Because
                 # there is a possibility of having duplicate variable codes, and
                 # `varcodes` is passed into `CSVDataApi.clean_variable_codes(*arg)`
@@ -508,7 +511,8 @@ class CSVDataApi(View):
                     variable_code=varcodes[i],
                     r=tsr.result,
                     v=tsr.result.variable,
-                    u=tsr.result.unit
+                    u=tsr.result.unit,
+                    s=sensor
                 )
 
         metadata += "#\n"
@@ -517,6 +521,7 @@ class CSVDataApi(View):
             # If there's only one timeseriesresult, add the variable and unit information block.
             # When there are multiple timeseriesresults, this part of the CSV becomes cluttered
             # and unreadable.
+            tsr = time_series_results.first()
             metadata += CSVDataApi.read_file('variable_and_unit_information.txt').format(
                 variable=tsr.result.variable,
                 unit=tsr.result.unit,
