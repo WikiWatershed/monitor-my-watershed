@@ -85,7 +85,7 @@
                                             <span class="field-text">{{ sensor.sensor_output.sampled_medium }}</span>
                                         </td>
                                         <td data-field="height" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.height|default:"" }} {% if sensor.height %}m{% endif %}</span>
+                                            <span class="field-text">{% if sensor.height != None %}{{ sensor.height }} m{% endif %}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">

@@ -411,18 +411,17 @@
                                                 <td>Sensor</td>
                                                 <td class="mdl-data-table__cell--non-numeric">{{ sensor.make_model }}</td>
                                             </tr>
+                                            {% if sensor.height != None %}
                                             <tr>
                                                 <td>Height</td>
                                                 <td class="mdl-data-table__cell--non-numeric">
-                                                {% if sensor.height %}
                                                     {{ sensor.height|abs|to_string }} meter{{ sensor.height|abs|pluralize }}
                                                     {% if sensor.height < 0 %} below surface
-                                                    {% elif sensor.height > 0 %} above surface
+                                                    {% else %} above surface
                                                     {% endif %}
-                                                {% else %}-
-                                                {% endif %}
                                                 </td>
                                             </tr>
+                                            {% endif %}
                                             {% if sensor.sensor_notes %}
                                                 <tr>
                                                     <td>Notes</td>
