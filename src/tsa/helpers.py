@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 
 from dataloader.models import Organization, Variable, Unit, Result
+from dataloaderinterface.models import SiteSensor, SensorMeasurement
 from tsa.models import DataSeries
 
 
@@ -14,14 +15,66 @@ class TimeSeriesAnalystHelper(object):
     influx_get_url = '{database_server}:8086/query?u=web_client&p=password&db=envirodiy' \
                      '&q=SELECT%20time,%20DataValue::field,%20UTCOffset::field%20FROM%20{influx_identifier}'
 
+    def create_series_from_sensor(self, sensor):
+        sensor_queryset = SiteSensor.objects.filter(pk=sensor.pk)
+        self.create_series_from_sensors(sensor_queryset)
+
     def create_series_from_sensors(self, sensors):
         server_data = retrieve_server_data()
         odm2_metadata = self.get_sensors_odm2_metadata(sensors)
         series_objects = [self.generate_data_series(sensor, odm2_metadata, server_data) for sensor in sensors]
         DataSeries.objects.bulk_create(series_objects)
 
+    def update_series_from_sensor(self, sensor):
+        # welp, i could've made the update and create in one method
+        # if i hadn't started it with the `rebuild_tsa_catalog` command functionality in mind.
+
+        data_series_queryset = DataSeries.objects.filter(result_uuid=sensor.result_uuid)
+        if not data_series_queryset.count():
+            self.create_series_from_sensor(sensor)
+            return
+
+        odm2_metadata = self.get_sensors_odm2_metadata(SiteSensor.objects.filter(pk=sensor.pk))
+        last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
+        data_series_queryset.update(
+            variable_code=sensor.sensor_output.variable_code,
+            variable_name=sensor.sensor_output.variable_name,
+            variable_units_name=sensor.sensor_output.unit_name,
+            variable_units_type=odm2_metadata['unit_types'][sensor.sensor_output.unit_id],
+            variable_units_abbreviation=sensor.sensor_output.unit_abbreviation,
+            sample_medium=sensor.sensor_output.sampled_medium,
+            general_category=odm2_metadata['variable_types'][sensor.sensor_output.variable_id],
+            utc_offset=get_utc_offset(sensor),
+            number_observations=odm2_metadata['values_count'][sensor.result_id],
+            date_last_updated=last_measurement and last_measurement.value_datetime,
+            is_active=get_is_active(sensor)
+        )
+
+    def update_series_from_site(self, registration):
+        result_uuids = [uuid[0] for uuid in registration.sensors.values_list('result_uuid')]
+        data_series_queryset = DataSeries.objects.filter(result_uuid__in=result_uuids)
+        if not data_series_queryset.count():
+            self.create_series_from_sensors(registration.sensors.all())
+            return
+
+        odm2_metadata = self.get_registration_odm2_metadata(registration)
+        data_series_queryset.update(
+            site_code=registration.sampling_feature_code,
+            site_name=registration.sampling_feature_name,
+            latitude=registration.latitude,
+            longitude=registration.longitude,
+            site_type=registration.site_type,
+            source_organization=registration.organization_name or '',
+            source_description=odm2_metadata['organization_description'],
+        )
+
+    def delete_series_for_sensor(self, sensor):
+        DataSeries.objects.filter(result_uuid=sensor.result_uuid).delete()
+
     def generate_data_series(self, sensor, odm2_metadata, server_data):
         registration = sensor.registration
+        last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
+
         return DataSeries(
             result_uuid=str(sensor.result_uuid),
             influx_identifier=get_influx_identifier(sensor),
@@ -35,7 +88,6 @@ class TimeSeriesAnalystHelper(object):
             variable_code=sensor.sensor_output.variable_code,
             variable_name=sensor.sensor_output.variable_name,
             variable_level=get_variable_level(sensor),
-            method_description=None,
             variable_units_name=sensor.sensor_output.unit_name,
             variable_units_type=odm2_metadata['unit_types'][sensor.sensor_output.unit_id],
             variable_units_abbreviation=sensor.sensor_output.unit_abbreviation,
@@ -51,7 +103,7 @@ class TimeSeriesAnalystHelper(object):
             begin_datetime=registration.registration_date,
             utc_offset=get_utc_offset(sensor),
             number_observations=odm2_metadata['values_count'][sensor.result_id],
-            date_last_updated=sensor.last_measurement.value_datetime,
+            date_last_updated=last_measurement and last_measurement.value_datetime,
             is_active=get_is_active(sensor),
             get_data_url=self.wofpy_get_url.format(
                 server=server_data['server'],
@@ -91,6 +143,11 @@ class TimeSeriesAnalystHelper(object):
             }
         }
 
+    def get_registration_odm2_metadata(self, registration):
+        organization = Organization.objects.filter(organization_id=registration.organization_id).first()
+        return {
+            'organization_description': organization and organization.organization_description or '',
+        }
 
 def retrieve_server_data():
     server_data = {'server': None, 'database_server': None}
