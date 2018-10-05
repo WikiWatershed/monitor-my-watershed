@@ -863,13 +863,7 @@ span.table-trigger, span.tsa-trigger, span.download-trigger {
     overflow: hidden;
 }
 
-#mySites .site-card .mdl-card__title {
-    padding-right: 60px;
-    background-color: #f37d51;
-    color: #FFF;
-}
-
-#followedSites .site-card .mdl-card__title {
+#followedSites .site-card .mdl-card__title, #mySites .site-card .mdl-card__title {
     padding-right: 60px;
     background-color: #4fc0df;
     color: #FFF;
@@ -1143,12 +1137,8 @@ label.checkbox-label {
     color: #fff;
 }
 
-div#followedSites .mdl-card tr:first-child {
+div#followedSites .mdl-card tr:first-child, div#mySites .mdl-card tr:first-child {
     color: #4fc0df;
-}
-
-div#mySites .mdl-card tr:first-child {
-    color: #f37d51;
 }
 
 div#mySites .mdl-card__title,

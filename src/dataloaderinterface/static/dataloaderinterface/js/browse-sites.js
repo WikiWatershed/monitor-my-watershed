@@ -74,28 +74,7 @@ function initMap() {
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
-    var icons = {
-        followed: {
-            url: "/static/dataloaderinterface/images/marker-blue-dotted.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        owned: {
-            url: "/static/dataloaderinterface/images/marker-red-dotted.png",
-            size: new google.maps.Size(36, 62),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 62)
-        },
-        unfollowed: {
-            url: "/static/dataloaderinterface/images/marker-blue.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
+    var skinnyIcons = {
         blue: {
             url: "/static/dataloaderinterface/images/marker-blue-skinny-bright.png",
             size: new google.maps.Size(36, 63),
@@ -126,11 +105,42 @@ function initMap() {
         }
     };
 
+    var fatIcons = {
+        blue: {
+            url: "/static/dataloaderinterface/images/marker-blue-fat-bright.png",
+            size: new google.maps.Size(36, 49),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(18, 44),
+            scaledSize: new google.maps.Size(36, 49)
+        },
+        green: {
+            url: "/static/dataloaderinterface/images/marker-green-fat-bright.png",
+            size: new google.maps.Size(36, 49),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(18, 44),
+            scaledSize: new google.maps.Size(36, 49)
+        },
+        orange: {
+            url: "/static/dataloaderinterface/images/marker-orange-fat-bright.png",
+            size: new google.maps.Size(36, 49),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(18, 44),
+            scaledSize: new google.maps.Size(36, 49)
+        },
+        red: {
+            url: "/static/dataloaderinterface/images/marker-red-fat-bright.png",
+            size: new google.maps.Size(36, 49),
+            origin: new google.maps.Point(0, 0),
+            anchor: new google.maps.Point(18, 44),
+            scaledSize: new google.maps.Size(36, 49)
+        }
+    };
+
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
-            icon: icons[site.dataAge || "red"],
+            icon: site.status == "owned" ? skinnyIcons[site.dataAge]: fatIcons[site.dataAge],
             title: site.name
         });
 

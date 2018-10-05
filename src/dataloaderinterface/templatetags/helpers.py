@@ -52,7 +52,7 @@ def divide(value, arg):
 @register.filter("data_age")
 def data_age(value):
     if not value:
-        return ''
+        return 'red'
 
     val = datetime.utcnow() - value
 
