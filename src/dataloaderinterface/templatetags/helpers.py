@@ -47,3 +47,20 @@ def divide(value, arg):
         return int(value) / int(arg) if int(arg) != 0 else 0
     except (ValueError, ZeroDivisionError):
         return None
+
+
+@register.filter("data_age")
+def data_age(value):
+    if not value:
+        return ''
+
+    val = datetime.utcnow() - value
+
+    if val < timedelta(hours=6):
+        return "blue"
+    elif val < timedelta(hours=72):
+        return "green"
+    elif val < timedelta(hours=336):
+        return "orange"
+    else:
+        return "red"

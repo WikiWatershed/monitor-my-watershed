@@ -63,7 +63,8 @@
                     "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                     "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
                     "dataType": "{% if site.sensors.all %}EnviroDIY,{% endif %}{% if site.leafpack_set.all %}Leaf Pack{% endif %}",
-                    "status": "{{ site.ownership_status }}"
+                    "status": "{{ site.ownership_status }}",
+                    "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}"
                     }{% if not forloop.last %},{% endif %}
                 {% endfor %}
                 ]
