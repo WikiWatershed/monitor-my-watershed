@@ -80,6 +80,17 @@ html > body {
     height: 410px;
 }
 
+.mapControlUI {
+    background-color: #FFF;
+    border: 2px solid #FFF;
+    border-radius: 2px;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    margin: 10px;
+    user-select: none;
+}
+
 .detail-map-container {
     margin-bottom: 30px;
     height: 440px;
@@ -95,7 +106,7 @@ html > body {
 
 .my-sites-map-container {
     margin-top: 0;
-    height: 450px;
+    height: 530px;
     border-left: 0;
     border-right: 0;
 }

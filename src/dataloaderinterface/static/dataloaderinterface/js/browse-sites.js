@@ -74,73 +74,13 @@ function initMap() {
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
-    var skinnyIcons = {
-        blue: {
-            url: "/static/dataloaderinterface/images/marker-blue-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        green: {
-            url: "/static/dataloaderinterface/images/marker-green-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        orange: {
-            url: "/static/dataloaderinterface/images/marker-orange-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        red: {
-            url: "/static/dataloaderinterface/images/marker-red-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        }
-    };
-
-    var fatIcons = {
-        blue: {
-            url: "/static/dataloaderinterface/images/marker-blue-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        green: {
-            url: "/static/dataloaderinterface/images/marker-green-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        orange: {
-            url: "/static/dataloaderinterface/images/marker-orange-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        red: {
-            url: "/static/dataloaderinterface/images/marker-red-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        }
-    };
+    var icons = getMarkerIcons();
 
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
-            icon: site.status == "owned" ? skinnyIcons[site.dataAge]: fatIcons[site.dataAge],
+            icon: site.status == "owned" ? icons.skinny[site.dataAge]: icons.fat[site.dataAge],
             title: site.name
         });
 
@@ -165,6 +105,7 @@ function initMap() {
         markers.push(marker);
     });
 
+    appendLegend(map);
     appendExtraUI();
 }
 
@@ -174,11 +115,7 @@ function appendExtraUI() {
 
     // Set CSS for the control border.
     var resultslUI = document.createElement('div');
-    resultslUI.style.backgroundColor = '#fff';
-    resultslUI.style.border = '2px solid #fff';
-    resultslUI.style.borderRadius = '3px';
-    resultslUI.style.boxShadow = '0 1px 1px rgba(0,0,0,.3)';
-    resultslUI.style.margin = '1em';
+    resultslUI.classList.add("mapControlUI");
     resultslUI.style.width = "250px";
     resultslUI.style.fontSize = "14px";
     resultsDiv.appendChild(resultslUI);
@@ -192,80 +129,6 @@ function appendExtraUI() {
     resultslUI.appendChild(controlText);
 
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(resultsDiv);
-
-    // Append legend:
-    var legendDiv = document.createElement('div');
-
-    // Set CSS for the control border.
-    var legendUI = document.createElement('div');
-    legendUI.style.backgroundColor = '#fff';
-    legendUI.style.border = '2px solid #fff';
-    legendUI.style.borderRadius = '3px';
-    legendUI.style.boxShadow = '0 1px 1px rgba(0,0,0,.3)';
-    legendUI.style.margin = '1em';
-    legendUI.style.maxWidth = "190px";
-    legendUI.style.fontSize = "12px";
-    legendDiv.appendChild(legendUI);
-
-    // Set CSS for the control interior.
-    var legendText = document.createElement('div');
-    legendText.style.padding = "1em";
-    legendText.innerHTML = `
-        <strong data-toggle="collapse" href="#legendCollapse"
-            aria-expanded="true" aria-controls="legendCollapse"
-            style="cursor: pointer;">
-            <i class="material-icons icon-arrow" style="vertical-align: middle;">keyboard_arrow_down</i>
-            <span style="vertical-align: middle;">Legend</span>
-        </strong>
-        <div class="collapse show" id="legendCollapse">
-            <hr>
-            <p style="font-size: 12px;">Data Age:</p>
-            <table class="legend-table">
-                <tbody>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-blue-fat-bright.png" 
-                        alt="Marker for data within last 6 hours"></td>
-                        <td>Has data within the last 6 hours</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-green-fat-bright.png" 
-                        alt="Marker for data within last 72 hours"></td>
-                        <td>Has data within the last 72 hours</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-orange-fat-bright.png" 
-                        alt="Marker for data within last 2 weeks"></td>
-                        <td>Has data within the last 2 weeks</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-red-fat-bright.png" 
-                        alt="Marker for data out of date"></td>
-                        <td>Out of date</td>
-                    </tr>
-                </tbody>
-            </table>
-            <br>
-            <p style="font-size: 12px;">Ownership:</p>
-            <table class="legend-table">
-                <tr>
-                    <td>
-                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-blue-skinny-bright.png" 
-                        alt="Marker for sites you own">
-                    </td>
-                    <td>Sites you own</td>
-                </tr>
-                <tr>
-                    <td>
-                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-blue-fat-bright.png" 
-                        alt="Marker for sites you do not own">
-                    </td>
-                    <td>Sites you do not own</td>
-                </tr>
-            </table>
-        </div>`;
-
-    legendUI.appendChild(legendText);
-    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(legendDiv);
 }
 
 $(document).ready(function () {

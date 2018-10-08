@@ -126,11 +126,13 @@
 
 {% block styles %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/marker-icons.css' %}">
     <link rel="stylesheet" href="{% static 'dataloaderinterface/css/browse-sites.css' %}">
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+    <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/browse-sites.js' %}"></script>
     <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
 {% endblock %}

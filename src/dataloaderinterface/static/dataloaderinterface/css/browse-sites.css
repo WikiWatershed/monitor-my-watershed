@@ -100,13 +100,3 @@ body {
 #map {
     border: 0;
 }
-
-.legend-marker {
-    width: 20px;
-    margin-right: 15px;
-}
-
-table.legend-table td, table.legend-table th {
-    padding-bottom: 4px;
-    vertical-align: middle;
-}

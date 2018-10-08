@@ -159,8 +159,8 @@
                     </div>
                 {% else %}
                     <div class="col-sm-12">
-                        <p><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>No
-                            sites to display</p>
+                        <p class="text-muted"><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>
+                            No sites to display</p>
                     </div>
                 {% endif %}
 
@@ -282,8 +282,8 @@
                     </div>
                 {% else %}
                     <div class="col-sm-12">
-                        <p><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>No
-                            followed sites to display</p>
+                        <p class="text-muted"><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>
+                            No followed sites to display</p>
                     </div>
                 {% endif %}
             </div>
@@ -365,13 +365,14 @@
 
 {% block styles %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/marker-icons.css' %}">
     <link rel="stylesheet" href="{% static 'dataloaderinterface/css/my-sites.css' %}">
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
     <script src="{% static 'dataloaderinterface/js/bootstrap-toolkit.min.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/my-sites.js' %}"></script>
-
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
 {% endblock %}
