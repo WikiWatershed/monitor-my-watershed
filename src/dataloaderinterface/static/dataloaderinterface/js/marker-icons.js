@@ -4,7 +4,6 @@
 var legendCollapsed = localStorage.getItem("legendCollapsed");
 legendCollapsed = legendCollapsed == null ? "show" : legendCollapsed;
 
-console.log(legendCollapsed);
 function getMarkerIcons() {
     var skinnyIcons = {
         blue: {

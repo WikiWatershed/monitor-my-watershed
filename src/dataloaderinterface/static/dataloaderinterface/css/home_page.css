@@ -26,6 +26,17 @@
     transition: all 0.2s ease;
 }
 
+.card a, .lead a {
+    color: #336666;
+    font-weight: normal;
+}
+
+.card ul {
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+    font-weight: 300;
+    font-size: 16px;
+}
+
 .step-number {
     display: inline-block;
     border-radius: 50%;
@@ -119,7 +130,7 @@ div.image-container {
 }
 
 .visit-link a {
-    color: #336666;
+    font-weight: bold;
 }
 
 .card-header-image {

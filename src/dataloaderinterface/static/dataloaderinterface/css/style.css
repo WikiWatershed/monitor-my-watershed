@@ -1166,7 +1166,7 @@ div#followedSites .mdl-card__title > .mdl-card__title-text {
 
 div#mySites .mdl-card__menu,
 div#followedSites .mdl-card__menu {
-    top: 8px !important; /* centers the material design icon */
+    top: 8px !important;  /* centers the material design icon */
 }
 
 .login-page-headline {
@@ -1193,6 +1193,7 @@ div#followedSites .mdl-card__menu {
     border-left: 3px solid #87c7c7;
     margin-left: 20px;
     padding-left: 20px;
+    padding-bottom: 40px;
 }
 
 .form-leafpack .step-icon {
