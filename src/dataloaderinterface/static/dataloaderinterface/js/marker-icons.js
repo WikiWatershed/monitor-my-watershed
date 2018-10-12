@@ -4,52 +4,19 @@
 var legendCollapsed = localStorage.getItem("legendCollapsed");
 legendCollapsed = legendCollapsed == null ? "show" : legendCollapsed;
 
-function getMarkerIcons() {
-    var skinnyIcons = {
-        blue: {
-            url: "/static/dataloaderinterface/images/marker-blue-skinny-bright.png",
+function getMarkerIcon(type, color, dataTypes) {
+    type = type != "owned" ? "fat" : "skinny";
+    if (dataTypes[0] == "Leaf Pack") {
+        color = "orangered";
+    }
+    var icon = {
+        skinny: {
             size: new google.maps.Size(36, 63),
             origin: new google.maps.Point(0, 0),
             anchor: new google.maps.Point(18, 58),
             scaledSize: new google.maps.Size(36, 63)
         },
-        green: {
-            url: "/static/dataloaderinterface/images/marker-green-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        orange: {
-            url: "/static/dataloaderinterface/images/marker-orange-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        red: {
-            url: "/static/dataloaderinterface/images/marker-red-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        yellow: {
-            url: "/static/dataloaderinterface/images/marker-yellow-skinny-bright.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        darkgreen: {
-            url: "/static/dataloaderinterface/images/marker-darkgreen-skinny-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        lightgreen: {
-            url: "/static/dataloaderinterface/images/marker-lightgreen-skinny-bright.png",
+        fat: {
             size: new google.maps.Size(36, 49),
             origin: new google.maps.Point(0, 0),
             anchor: new google.maps.Point(18, 44),
@@ -57,59 +24,8 @@ function getMarkerIcons() {
         }
     };
 
-    var fatIcons = {
-        blue: {
-            url: "/static/dataloaderinterface/images/marker-blue-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        green: {
-            url: "/static/dataloaderinterface/images/marker-green-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        orange: {
-            url: "/static/dataloaderinterface/images/marker-orange-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        red: {
-            url: "/static/dataloaderinterface/images/marker-red-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        yellow: {
-            url: "/static/dataloaderinterface/images/marker-yellow-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        darkgreen: {
-            url: "/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        },
-        lightgreen: {
-            url: "/static/dataloaderinterface/images/marker-lightgreen-fat-bright.png",
-            size: new google.maps.Size(36, 49),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 44),
-            scaledSize: new google.maps.Size(36, 49)
-        }
-    };
-
-    return {skinny: skinnyIcons, fat: fatIcons}
+    icon[type].url = "/static/dataloaderinterface/images/marker-" + color + "-" + type + "-bright.png";
+    return icon[type];
 }
 
 function appendLegend(map) {
@@ -119,7 +35,7 @@ function appendLegend(map) {
     // Set CSS for the control border.
     var legendUI = document.createElement('div');
     legendUI.classList.add("mapControlUI");
-    legendUI.style.maxWidth = "190px";
+    legendUI.style.maxWidth = "300px";
     legendUI.style.fontSize = "12px";
     legendDiv.appendChild(legendUI);
 
@@ -129,39 +45,55 @@ function appendLegend(map) {
     legendText.innerHTML = `
         <strong data-toggle="collapse" href="#legendCollapse" class="${legendCollapsed == "show"?"collapsed":""}""
             aria-expanded="${legendCollapsed == "show"?"true":"false"}" aria-controls="legendCollapse"
-            style="cursor: pointer;">
+            style="cursor: pointer; display:block;">
             <i class="material-icons icon-arrow" style="vertical-align: middle;">keyboard_arrow_down</i>
             <span style="vertical-align: middle;">Legend</span>
         </strong>
         <div class="collapse ${legendCollapsed}" id="legendCollapse">
             <hr>
-            <p style="font-size: 12px;">Data Age:</p>
-            <table class="legend-table">
-                <tbody>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png" 
-                        alt="Marker for data within last 6 hours"></td>
-                        <td>Has data within the last 6 hours</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-lightgreen-fat-bright.png" 
-                        alt="Marker for data within last 72 hours"></td>
-                        <td>Has data within the last 72 hours</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-yellow-fat-bright.png" 
-                        alt="Marker for data within last 2 weeks"></td>
-                        <td>Has data within the last 2 weeks</td>
-                    </tr>
-                    <tr>
-                        <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-red-fat-bright.png" 
-                        alt="Marker for data out of date"></td>
-                        <td>Out of date</td>
-                    </tr>
-                </tbody>
-            </table>
+            <p class="title">Data Age:</p>
+            <div class="flex">
+                <table class="legend-table">
+                    <tbody>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png" 
+                            alt="Marker for data within last 6 hours"></td>
+                            <td>Has data within the last 6 hours</td>
+                        </tr>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-lightgreen-fat-bright.png" 
+                            alt="Marker for data within last 72 hours"></td>
+                            <td>Has data within the last 72 hours</td>
+                        </tr>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-yellow-fat-bright.png" 
+                            alt="Marker for data within last 2 weeks"></td>
+                            <td>Has data within the last 2 weeks</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="legend-table">
+                    <tbody>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-red-fat-bright.png" 
+                            alt="Marker for data out of date"></td>
+                            <td>Sensor data out of date</td>
+                        </tr>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-gray-fat-bright.png" 
+                            alt="Marker for sites with no data"></td>
+                            <td>Sensors have no data</td>
+                        </tr>
+                        <tr>
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-orangered-fat-bright.png" 
+                            alt="Marker for sites with only Leaf Pack data"></td>
+                            <td>Only Leaf Pack data</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
             <br>
-            <p style="font-size: 12px;">Ownership:</p>
+            <p class="title">Ownership:</p>
             <table class="legend-table">
                 <tr>
                     <td>

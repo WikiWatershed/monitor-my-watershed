@@ -74,13 +74,11 @@ function initMap() {
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
-    var icons = getMarkerIcons();
-
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
-            icon: site.status == "owned" ? icons.skinny[site.dataAge]: icons.fat[site.dataAge],
+            icon: getMarkerIcon(site.status, site.dataAge, site.dataType.split(",")),
             title: site.name
         });
 

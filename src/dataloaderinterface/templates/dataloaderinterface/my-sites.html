@@ -32,13 +32,13 @@
             <div class="row">
                 <div class="col-sm-12">
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-md-6 col-sm-12">
                             <h4 data-toggle="collapse" href="#mySitesCollapse"
                             aria-expanded="true" aria-controls="mySitesCollapse"
                                 style="cursor: pointer;  display: inline-block;"
                             ><i class="material-icons icon-arrow">keyboard_arrow_down</i> My Registered Sites <span class="badge badge-secondary">{{ sites|length }}</span></h4>
                         </div>
-                        <div class="col-6 text-right">
+                        <div class="col-md-6 col-sm-12 text-right">
                             <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
                                class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--accent mdl-js-ripple-effect">
                                 <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
@@ -302,6 +302,7 @@
                         "elevation": {{ site.elevation_m|default_if_none:'""' }},
                         "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                         "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
+                        "dataType": "{% if site.sensors.all %}EnviroDIY,{% endif %}{% if site.leafpack_set.all %}Leaf Pack{% endif %}",
                         "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}",
                         "status":"owned"
                      }{% if not forloop.last or followed_sites.count > 0 %},{% endif %}
@@ -316,6 +317,7 @@
                         "elevation": {{ site.elevation_m|default_if_none:'""' }},
                         "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                         "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
+                        "dataType": "{% if site.sensors.all %}EnviroDIY,{% endif %}{% if site.leafpack_set.all %}Leaf Pack{% endif %}",
                         "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}",
                         "status":"followed"
                      }{% if not forloop.last %},{% endif %}

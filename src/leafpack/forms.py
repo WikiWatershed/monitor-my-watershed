@@ -139,7 +139,8 @@ class LeafPackForm(forms.ModelForm):
 
     deployment_type = forms.ChoiceField(
         choices=DEPLOYMENT_TYPE_CHOICES,
-        label='Stream Habitat Type'
+        label='Stream Habitat Type',
+        required=False
     )
 
     notes = forms.CharField(widget=forms.Textarea, label='Notes')
