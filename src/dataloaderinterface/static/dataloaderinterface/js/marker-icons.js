@@ -1,8 +1,19 @@
 /**
  * Created by Mauriel on 10/8/2018.
  */
-var legendCollapsed = localStorage.getItem("legendCollapsed");
-legendCollapsed = legendCollapsed == null ? "show" : legendCollapsed;
+var legendCollapsed = localStorage.getItem("legendCollapsed") == null ? "show" : localStorage.getItem("legendCollapsed");
+
+function createInfoWindowContent(site) {
+    var contentElement = $('<div></div>').append($('#site-marker-content').html());
+    var fields = contentElement.find('.site-field');
+    fields.each(function(index, element) {
+        var field = $(element).data('field');
+        $(element).find('.site-data').text(site[field]);
+    });
+    contentElement.find('.site-link a').attr('href', site.detail_link);
+
+    return $('<div></div>').append(contentElement.html()).html();
+}
 
 function getMarkerIcon(type, color, dataTypes) {
     type = type != "owned" ? "fat" : "skinny";

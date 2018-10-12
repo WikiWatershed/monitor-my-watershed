@@ -51,6 +51,9 @@ function initMap() {
         content: ''
     });
 
+    var prevMarker;
+    var prevZIndex;
+
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: { lat: site.latitude, lng: site.longitude },
@@ -61,10 +64,19 @@ function initMap() {
 
         bounds.extend(marker.getPosition());
 
-        marker.addListener('click', function() {
+        marker.addListener('click', function () {
+            if (prevMarker) {
+                prevMarker.setZIndex(prevZIndex);
+            }
+
+            prevMarker = this;
+            prevZIndex = this.zIndex;
+
             var infoContent = createInfoWindowContent(site);
             infoWindow.setContent(infoContent);
             infoWindow.open(marker.get('map'), marker);
+
+            marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); // Bring the marker to the front
         });
 
         $('.site[data-site=' + site.id + '] .view-on-map').on('click', { 'site-data': site, 'marker': marker, 'info-window': infoWindow }, function(event) {
@@ -87,18 +99,6 @@ function initMap() {
     }
 
     appendLegend(map);
-}
-
-function createInfoWindowContent(siteInfo) {
-    var contentElement = $('<div></div>').append($('#site-marker-content').html());
-    var fields = contentElement.find('.site-field');
-    fields.each(function(index, element) {
-        var field = $(element).data('field');
-        $(element).find('.site-data').text(siteInfo[field]);
-    });
-    contentElement.find('.site-link a').attr('href', siteInfo.detail_link);
-
-    return $('<div></div>').append(contentElement.html()).html();
 }
 
 // Makes all site cards have the same height.

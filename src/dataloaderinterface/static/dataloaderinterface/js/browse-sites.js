@@ -74,6 +74,13 @@ function initMap() {
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
+    var infoWindow = new google.maps.InfoWindow({
+        content: ''
+    });
+
+    var prevMarker;
+    var prevZIndex;
+
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
@@ -86,18 +93,19 @@ function initMap() {
             marker[filters[f].key] = site[filters[f].key];
         }
 
-        marker.addListener('click', function() {
-            var contentElement = $('<div></div>').append($('#site-marker-content').html());
-            var fields = contentElement.find('.site-field');
-            fields.each(function(index, element) {
-                var field = $(element).data('field');
-                $(element).find('.site-data').text(site[field]);
-            });
-            contentElement.find('.site-link a').attr('href', site.detail_link);
+        marker.addListener('click', function () {
+            if (prevMarker) {
+                prevMarker.setZIndex(prevZIndex);
+            }
 
-            var infoContent = $('<div></div>').append(contentElement.html()).html();
+            prevMarker = this;
+            prevZIndex = this.zIndex;
+
+            var infoContent = createInfoWindowContent(site);
             infoWindow.setContent(infoContent);
             infoWindow.open(marker.get('map'), marker);
+
+            marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); // Bring the marker to the front
         });
 
         markers.push(marker);
