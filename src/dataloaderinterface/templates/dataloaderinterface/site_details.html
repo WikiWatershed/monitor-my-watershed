@@ -268,19 +268,23 @@
                     </h6>
                 </div>
 
-                {% if can_administer_site %}
+                {% if can_administer_site or site.sensors.all %}
                     <div class="buttons-toolbar col-12 text-right">
-                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                           href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
-                           download>
-                            <i class="material-icons center-icon">cloud_download</i>
-                            Download Sensor Data
-                        </a>
-                        <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                           href="{% url 'sensors' site.sampling_feature_code %}">
-                            <i class="material-icons center-icon">assignment</i>
-                            Manage Sensors
-                        </a>
+                        {% if site.sensors.all %}
+                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                               href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
+                               download>
+                                <i class="material-icons center-icon">cloud_download</i>
+                                Download Sensor Data
+                            </a>
+                        {% endif %}
+                        {% if can_administer_site %}
+                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                               href="{% url 'sensors' site.sampling_feature_code %}">
+                                <i class="material-icons center-icon">assignment</i>
+                                Manage Sensors
+                            </a>
+                        {% endif %}
                     </div>
                 {% endif %}
 
