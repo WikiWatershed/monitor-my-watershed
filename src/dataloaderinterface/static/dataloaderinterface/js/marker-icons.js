@@ -39,7 +39,7 @@ function getMarkerIcon(type, color, dataTypes) {
     return icon[type];
 }
 
-function appendLegend(map) {
+function appendMarkersLegend(map) {
     // Append legend:
     var legendDiv = document.createElement('div');
 

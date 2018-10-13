@@ -29,10 +29,19 @@ body {
     border-bottom: 1px solid #DDD;
 }
 
+/* small devices */
 @media only screen and (max-width: 720px) {
     #filters {
         overflow-y: initial;
         height: initial;
+    }
+
+}
+
+/* medium devices and smaller */
+@media only screen and (max-width: 992px) {
+    .search-wrapper {
+        margin-top: 50px;
     }
 }
 
@@ -99,4 +108,22 @@ body {
 
 #map {
     border: 0;
+}
+
+input#search {
+    padding-right: 36px;
+    border-radius: 0 0.25rem 0.25rem 0;
+}
+
+#search-clear {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    z-index: 3;
+    color: #b6b6b6;
+    cursor: pointer;
+}
+
+#search-clear:hover {
+    color: #4f4f4f;
 }

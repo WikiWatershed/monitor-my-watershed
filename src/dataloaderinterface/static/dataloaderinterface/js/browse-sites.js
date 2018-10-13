@@ -24,6 +24,7 @@ var filters = {
         has_search: true
     }
 };
+var textSearchFacets = ["code", "name"];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
@@ -86,7 +87,8 @@ function initMap() {
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
             icon: getMarkerIcon(site.status, site.dataAge, site.dataType.split(",")),
-            title: site.name
+            title: site.name,
+            site: site
         });
 
         for (var f in filters) {
@@ -111,15 +113,16 @@ function initMap() {
         markers.push(marker);
     });
 
-    appendLegend(map);
-    appendExtraUI();
+    appendMarkersLegend(map);
+    appendResultsLegend();
+    appendSearchControl();
 }
 
-function appendExtraUI() {
+function appendResultsLegend() {
     // Append division for showing number of results:
     var resultsDiv = document.createElement('div');
 
-    // Set CSS for the control border.
+    // Set CSS for the control
     var resultslUI = document.createElement('div');
     resultslUI.classList.add("mapControlUI");
     resultslUI.style.width = "250px";
@@ -135,6 +138,30 @@ function appendExtraUI() {
     resultslUI.appendChild(controlText);
 
     map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(resultsDiv);
+}
+
+function appendSearchControl() {
+    // Append division for search control:
+    var searchDiv = document.createElement('div');
+
+    // Set CSS for the control
+    var searchUI = document.createElement('div');
+    searchUI.style.fontSize = "14px";
+    searchDiv.appendChild(searchUI);
+
+    // Set CSS for the control interior.
+    var controlText = document.createElement('div');
+    controlText.classList.add("input-group");
+    controlText.classList.add("search-wrapper");
+    controlText.style.padding = "1em";
+    controlText.innerHTML = `
+      <span class="input-group-addon" id="search-addon"><i class="material-icons">search</i></span>
+      <input id="search" type="text" class="form-control" placeholder="Search..." aria-describedby="search-addon">
+      <i id="search-clear" class="material-icons">cancel</i>
+    `;
+    searchUI.appendChild(controlText);
+
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(searchDiv);
 }
 
 $(document).ready(function () {
@@ -224,7 +251,7 @@ $(document).ready(function () {
         }
     }
 
-    // Bind search events
+    // Bind search events for filter items
     $(".input-filter").keyup(function() {
         var items = $(this).closest("tbody").find("tr:not(.td-filter)");
         var searchStr = $(this).val().trim().toUpperCase();
@@ -243,6 +270,14 @@ $(document).ready(function () {
         }
     });
 
+    // Bind search event for map control
+    $(".map-container").on("keyup", "#search", filter);
+
+    $(".map-container").on("click", "#search-clear", function () {
+        $("#search").val("");
+        filter();
+    });
+
     $("#btnClearFilters").click(function () {
         // document.querySelector('.chk-filter').parentElement.MaterialCheckbox.uncheck();
         var items = $(".chk-filter");
@@ -257,6 +292,8 @@ $(document).ready(function () {
             zoomExtent();
         }
 
+        $("#search").val("");
+
         $("#marker-count").text(markers.length);
         $("#marker-total-count").text(markers.length);
     });
@@ -267,13 +304,29 @@ $(document).ready(function () {
         }
     });
 
-    $(".chk-filter").change(function() {
-        var checkedItems = getCurrentFilters();
-        var someVisible = false;
-        var count = 0;
+    $(".chk-filter").change(filter);
+});
 
-        // If nothing selected, display all
-        if (!checkedItems.length) {
+function isSearched(metadata, searchString) {
+    // Search each metadata element and see if it contains the search string
+    for (var j = 0; j < textSearchFacets.length; j++) {
+        if (metadata[textSearchFacets[j]].trim().toUpperCase().indexOf(searchString) >= 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function filter() {
+    var checkedItems = getCurrentFilters();
+    var someVisible = false;
+    var count = 0;
+    const searchString = $("#search").val().trim().toUpperCase();
+
+    // If no checkbox selected
+    if (!checkedItems.length) {
+        if (!searchString) {
             for (var i = 0; i < markers.length; i++) {
                 markers[i].setVisible(true);
             }
@@ -282,57 +335,74 @@ $(document).ready(function () {
         }
         else {
             for (var i = 0; i < markers.length; i++) {
-                var visible = true;    // Starts as true by default
-                for (var j = 0; j < checkedItems.length; j++) {
-                    var key = checkedItems[j][0];
-                    var values = checkedItems[j][1];
-
-                    var isInclusive = false;
-                    for (var f in filters) {
-                        if (filters[f].key == key && filters[f].inclusive) {
-                            isInclusive = true;
-                            break;
-                        }
-                    }
-
-                    if (isInclusive) {
-                        var ckey = markers[i][key].split(",");
-                        var found = false;
-                        for (var v in ckey) {
-                            if (ckey[v] && !(values.indexOf(ckey[v]) < 0)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        visible = visible && found; // Hide if none of the values were filtered
-                    }
-                    else {
-                        if (values.indexOf(markers[i][key]) < 0) {
-                            visible = false; // Hide if not included in some filter
-                        }
-                    }
-                }
-
+                // Search each property and see if it contains the search string
+                var visible = isSearched(markers[i].site, searchString);
                 if (visible) {
-                    count++;
                     someVisible = true;
+                    count++;
                 }
 
                 markers[i].setVisible(visible);
-
-                someVisible = someVisible || (!someVisible && visible)
             }
         }
+    }
+    else {
+        for (var i = 0; i < markers.length; i++) {
+            var visible = true;    // Starts as true by default
+            for (var j = 0; j < checkedItems.length; j++) {
+                var key = checkedItems[j][0];
+                var values = checkedItems[j][1];
 
-        // Populate map count
-        $("#marker-count").text(count);
-        $("#marker-total-count").text(markers.length);
+                var isInclusive = false;
+                for (var f in filters) {
+                    if (filters[f].key == key && filters[f].inclusive) {
+                        isInclusive = true;
+                        break;
+                    }
+                }
 
-        if ($("#switch-zoom").prop("checked") && someVisible) {
-            zoomExtent();
+                if (isInclusive) {
+                    var ckey = markers[i][key].split(",");
+                    var found = false;
+                    for (var v in ckey) {
+                        if (ckey[v] && !(values.indexOf(ckey[v]) < 0)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    visible = visible && found; // Hide if none of the values were filtered
+                }
+                else {
+                    if (values.indexOf(markers[i][key]) < 0) {
+                        visible = false; // Hide if not included in some filter
+                    }
+                }
+            }
+
+            if (searchString) {
+                visible = visible && isSearched(markers[i].site, searchString);
+            }
+
+            // Done filtering current marker
+
+            if (visible) {
+                count++;
+                someVisible = true;
+            }
+
+            markers[i].setVisible(visible);
+            someVisible = someVisible || (!someVisible && visible)
         }
-    });
-});
+    }
+
+    // Populate map count
+    $("#marker-count").text(count);
+    $("#marker-total-count").text(markers.length);
+
+    if ($("#switch-zoom").prop("checked") && someVisible) {
+        zoomExtent();
+    }
+}
 
 // Zooms to the extent of markers.
 function zoomExtent() {
