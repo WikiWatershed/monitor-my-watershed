@@ -32,9 +32,9 @@ function initMap() {
     const DEFAULT_LATITUDE = 40.0902;
     const DEFAULT_LONGITUDE = -95.7129;
     const DEFAULT_POSITION = { lat: DEFAULT_LATITUDE, lng: DEFAULT_LONGITUDE };
-    var ZOOM_LEVEL = sessionStorage && parseInt(sessionStorage.getItem('CURRENT_ZOOM')) || DEFAULT_ZOOM;
-    var temp = sessionStorage.getItem('CURRENT_CENTER');
-    var MAP_CENTER = DEFAULT_POSITION;
+    const ZOOM_LEVEL = sessionStorage && parseInt(sessionStorage.getItem('CURRENT_ZOOM')) || DEFAULT_ZOOM;
+    const temp = sessionStorage.getItem('CURRENT_CENTER');
+    let MAP_CENTER = DEFAULT_POSITION;
 
     if(sessionStorage.getItem('CURRENT_CENTER')) {
         MAP_CENTER = getLatLngFromString(temp);
@@ -44,8 +44,6 @@ function initMap() {
             map.setZoom(DEFAULT_SPECIFIC_ZOOM);
         }, undefined, { timeout: 5000 });
     }
-
-    var markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: MAP_CENTER,
@@ -61,29 +59,26 @@ function initMap() {
 
     map.setOptions({minZoom: 1, maxZoom: 18});
 
-    var infoWindow = new google.maps.InfoWindow({
-        content: ''
-    });
-
     map.addListener('zoom_changed', function(){
-        var CURRENT_ZOOM = map.getZoom();
+        let CURRENT_ZOOM = map.getZoom();
         sessionStorage.setItem('CURRENT_ZOOM', CURRENT_ZOOM);
     });
 
     map.addListener('center_changed', function(){
-        var CURRENT_CENTER = map.getCenter();
+        let CURRENT_CENTER = map.getCenter();
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
-    var infoWindow = new google.maps.InfoWindow({
+    let infoWindow = new google.maps.InfoWindow({
         content: ''
     });
 
-    var prevMarker;
-    var prevZIndex;
+    let prevMarker;
+    let prevZIndex;
+    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
 
     markerData.forEach(function(site) {
-        var marker = new google.maps.Marker({
+        let marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
             icon: getMarkerIcon(site.status, site.dataAge, site.dataType.split(",")),
@@ -91,7 +86,7 @@ function initMap() {
             site: site
         });
 
-        for (var f in filters) {
+        for (let f in filters) {
             marker[filters[f].key] = site[filters[f].key];
         }
 
@@ -103,7 +98,7 @@ function initMap() {
             prevMarker = this;
             prevZIndex = this.zIndex;
 
-            var infoContent = createInfoWindowContent(site);
+            let infoContent = createInfoWindowContent(site);
             infoWindow.setContent(infoContent);
             infoWindow.open(marker.get('map'), marker);
 
@@ -120,17 +115,17 @@ function initMap() {
 
 function appendResultsLegend() {
     // Append division for showing number of results:
-    var resultsDiv = document.createElement('div');
+    let resultsDiv = document.createElement('div');
 
     // Set CSS for the control
-    var resultslUI = document.createElement('div');
+    let resultslUI = document.createElement('div');
     resultslUI.classList.add("mapControlUI");
     resultslUI.style.width = "250px";
     resultslUI.style.fontSize = "14px";
     resultsDiv.appendChild(resultslUI);
 
     // Set CSS for the control interior.
-    var controlText = document.createElement('div');
+    let controlText = document.createElement('div');
     controlText.style.padding = "1em";
     controlText.innerHTML = 'Showing <strong id="marker-count">'
         + markers.length + '</strong> out of <strong id="marker-total-count">'
@@ -142,15 +137,15 @@ function appendResultsLegend() {
 
 function appendSearchControl() {
     // Append division for search control:
-    var searchDiv = document.createElement('div');
+    let searchDiv = document.createElement('div');
 
     // Set CSS for the control
-    var searchUI = document.createElement('div');
+    let searchUI = document.createElement('div');
     searchUI.style.fontSize = "14px";
     searchDiv.appendChild(searchUI);
 
     // Set CSS for the control interior.
-    var controlText = document.createElement('div');
+    let controlText = document.createElement('div');
     controlText.classList.add("input-group");
     controlText.classList.add("search-wrapper");
     controlText.innerHTML = `
@@ -167,21 +162,21 @@ $(document).ready(function () {
     $('nav .menu-browse-sites').addClass('active');
     resizeContent();
 
-    var markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
 
     markerData.forEach(function (site) {
-        for (var f in filters) {
-            var keys = [site[filters[f].key]];
+        for (let f in filters) {
+            let keys = [site[filters[f].key]];
             if (filters[f].inclusive) {
                 keys = [];
-                var includes = site[filters[f].key].split(",");
-                for (var i = 0; i < includes.length; i++) {
+                let includes = site[filters[f].key].split(",");
+                for (let i = 0; i < includes.length; i++) {
                     if (includes[i].trim()) {
                         keys.push(includes[i].trim());
                     }
                 }
             }
-            for (var ckey in keys) {
+            for (let ckey in keys) {
                 if (filters[f].values[keys[ckey]])
                     filters[f].values[keys[ckey]] += 1;
                 else
@@ -191,22 +186,22 @@ $(document).ready(function () {
     });
 
     // Move the items to an array so we can sort them
-    for (var f in filters) {
+    for (let f in filters) {
         filters[f].values_sortable = [];
-        for (var val in filters[f].values) {
+        for (let val in filters[f].values) {
             filters[f].values_sortable.push([val, filters[f].values[val]]);
         }
     }
 
     // Sort the arrays alphabetically
-    for (var f in filters) {
+    for (let f in filters) {
         filters[f].values_sortable.sort(function (a, b) {
             return b[0] > a[0] ? -1 : 1;
         });
     }
 
     // Append filter headers
-    for (var f in filters) {
+    for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width">\
                         <tr>\
@@ -236,7 +231,7 @@ $(document).ready(function () {
         );
 
         // Append filter items
-        for (var item = 0; item < filters[f].values_sortable.length; item++) {
+        for (let item = 0; item < filters[f].values_sortable.length; item++) {
             $("#collapse-" + filters[f].key + " > table tbody").append(' <tr>\
                 <td class="mdl-data-table__cell--non-numeric">\
                     <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '">\
@@ -252,13 +247,13 @@ $(document).ready(function () {
 
     // Bind search events for filter items
     $(".input-filter").keyup(function() {
-        var items = $(this).closest("tbody").find("tr:not(.td-filter)");
-        var searchStr = $(this).val().trim().toUpperCase();
+        let items = $(this).closest("tbody").find("tr:not(.td-filter)");
+        let searchStr = $(this).val().trim().toUpperCase();
 
         if (searchStr.length > 0) {
             items.hide();
 
-            var results = items.filter(function () {
+            let results = items.filter(function () {
                 return $(this).find('label').text().trim().toUpperCase().indexOf(searchStr) >= 0;
             });
 
@@ -279,11 +274,11 @@ $(document).ready(function () {
 
     $("#btnClearFilters").click(function () {
         // document.querySelector('.chk-filter').parentElement.MaterialCheckbox.uncheck();
-        var items = $(".chk-filter");
-        for (var i = 0; i < items.length; i++) {
+        let items = $(".chk-filter");
+        for (let i = 0; i < items.length; i++) {
             $(items[i]).parent()[0].MaterialCheckbox.uncheck();
         }
-        for (var i = 0; i < markers.length; i++) {
+        for (let i = 0; i < markers.length; i++) {
             markers[i].setVisible(true);
         }
 
@@ -292,7 +287,6 @@ $(document).ready(function () {
         }
 
         $("#search").val("");
-
         $("#marker-count").text(markers.length);
         $("#marker-total-count").text(markers.length);
     });
@@ -308,7 +302,7 @@ $(document).ready(function () {
 
 function isSearched(metadata, searchString) {
     // Search each metadata element and see if it contains the search string
-    for (var j = 0; j < textSearchFacets.length; j++) {
+    for (let j = 0; j < textSearchFacets.length; j++) {
         if (metadata[textSearchFacets[j]].trim().toUpperCase().indexOf(searchString) >= 0) {
             return true;
         }
@@ -318,24 +312,24 @@ function isSearched(metadata, searchString) {
 }
 
 function filter() {
-    var checkedItems = getCurrentFilters();
-    var someVisible = false;
-    var count = 0;
+    let checkedItems = getCurrentFilters();
+    let someVisible = false;
+    let count = 0;
     const searchString = $("#search").val().trim().toUpperCase();
 
     // If no checkbox selected
     if (!checkedItems.length) {
         if (!searchString) {
-            for (var i = 0; i < markers.length; i++) {
+            for (let i = 0; i < markers.length; i++) {
                 markers[i].setVisible(true);
             }
             someVisible = true;
             count = markers.length;
         }
         else {
-            for (var i = 0; i < markers.length; i++) {
+            for (let i = 0; i < markers.length; i++) {
                 // Search each property and see if it contains the search string
-                var visible = isSearched(markers[i].site, searchString);
+                let visible = isSearched(markers[i].site, searchString);
                 if (visible) {
                     someVisible = true;
                     count++;
@@ -346,14 +340,14 @@ function filter() {
         }
     }
     else {
-        for (var i = 0; i < markers.length; i++) {
-            var visible = true;    // Starts as true by default
-            for (var j = 0; j < checkedItems.length; j++) {
-                var key = checkedItems[j][0];
-                var values = checkedItems[j][1];
+        for (let i = 0; i < markers.length; i++) {
+            let visible = true;    // Starts as true by default
+            for (let j = 0; j < checkedItems.length; j++) {
+                let key = checkedItems[j][0];
+                let values = checkedItems[j][1];
+                let isInclusive = false;
 
-                var isInclusive = false;
-                for (var f in filters) {
+                for (let f in filters) {
                     if (filters[f].key == key && filters[f].inclusive) {
                         isInclusive = true;
                         break;
@@ -361,9 +355,9 @@ function filter() {
                 }
 
                 if (isInclusive) {
-                    var ckey = markers[i][key].split(",");
-                    var found = false;
-                    for (var v in ckey) {
+                    let ckey = markers[i][key].split(",");
+                    let found = false;
+                    for (let v in ckey) {
                         if (ckey[v] && !(values.indexOf(ckey[v]) < 0)) {
                             found = true;
                             break;
@@ -405,8 +399,8 @@ function filter() {
 
 // Zooms to the extent of markers.
 function zoomExtent() {
-    var bounds = new google.maps.LatLngBounds();
-    for (var i = 0; i < markers.length; i++) {
+    let bounds = new google.maps.LatLngBounds();
+    for (let i = 0; i < markers.length; i++) {
         if (markers[i].visible) {
             bounds.extend(markers[i].getPosition());
         }
@@ -417,19 +411,19 @@ function zoomExtent() {
 
 // Returns an object listing currently checked filter items
 function getCurrentFilters() {
-    var filters = $(".filter-body");
-    var results = [];
+    let filters = $(".filter-body");
+    let results = [];
 
-    for (var i = 0; i < filters.length; i++) {
-        var items = [];
-        var checked = $(filters[i]).find(".chk-filter:checked");
+    for (let i = 0; i < filters.length; i++) {
+        let items = [];
+        let checked = $(filters[i]).find(".chk-filter:checked");
 
-        for (var j = 0; j < checked.length; j++) {
+        for (let j = 0; j < checked.length; j++) {
             items.push($(checked[j]).attr("data-value"));
         }
 
         if (items && items.length > 0) {
-            var facet = $(filters[i]).attr("data-facet");
+            let facet = $(filters[i]).attr("data-facet");
             results.push([facet, items]);
         }
     }
@@ -445,8 +439,7 @@ function resizeContent() {
 }
 
 function getLatLngFromString(location) {
-    var latlang = location.replace(/[()]/g,'');
-    var latlng = latlang.split(',');
-    var locate = new google.maps.LatLng(parseFloat(latlng[0]) , parseFloat(latlng[1]));
-    return locate;
+    let latlang = location.replace(/[()]/g,'');
+    let latlng = latlang.split(',');
+    return new google.maps.LatLng(parseFloat(latlng[0]) , parseFloat(latlng[1]));
 }
