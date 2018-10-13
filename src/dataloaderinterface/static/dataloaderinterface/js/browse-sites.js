@@ -155,7 +155,7 @@ function appendSearchControl() {
     controlText.classList.add("search-wrapper");
     controlText.innerHTML = `
       <span class="input-group-addon" id="search-addon"><i class="material-icons">search</i></span>
-      <input id="search" type="text" class="form-control" placeholder="Search..." aria-describedby="search-addon">
+      <input id="search" type="text" class="form-control" placeholder="Search sites..." aria-describedby="search-addon">
       <i id="search-clear" class="material-icons">cancel</i>
     `;
     searchUI.appendChild(controlText);
