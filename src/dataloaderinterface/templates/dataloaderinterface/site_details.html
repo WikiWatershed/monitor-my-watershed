@@ -39,7 +39,7 @@
                             </div>
 
 
-                            {% if not is_site_owner %}
+                            {% if user.is_authenticated and not is_site_owner %}
                                 <div class="follow-status">
                                     {# this is the button to trigger the follow/unfollow action #}
                                     <form id="follow-site-form">
@@ -635,7 +635,9 @@ const char *UUIDs[] =                                                      // UU
 
 {% block services_urls %}
     {{ block.super }}
-    <input id="follow-site-api" type="hidden" value="{% url 'follow_site' %}">
+    {% if user.is_authenticated and not is_site_owner %}
+        <input id="follow-site-api" type="hidden" value="{% url 'follow_site' %}">
+    {% endif %}
 {% endblock %}
 
 {% block scripts %}
