@@ -13,7 +13,7 @@ body {
 /* medium devices and smaller */
 @media only screen and (max-width: 992px) {
     .search-wrapper {
-        margin-top: 70px;
+        margin-top: 70px !important;
     }
 }
 
