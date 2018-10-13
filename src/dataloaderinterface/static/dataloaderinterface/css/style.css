@@ -262,7 +262,7 @@ div.registration-data > table tr td:first-child {
 }
 
 table.shade-first-col tr td:first-child {
-    background: #fafafa;
+    background: #c2c2c21a;
 }
 
 div.registration-field {
@@ -731,7 +731,7 @@ table.macroinv tr.taxon, table.macroinv tr.taxon a {
 }
 
 .mdl-data-table-no-hover tbody tr:hover {
-    background-color: #FFF;
+    background-color: initial;
 }
 
 .mdl-data-table__cell--icon {
@@ -1294,6 +1294,12 @@ table.no-borders td {
 
 table.mdl-data-table {
     white-space: normal;
+}
+
+table.mdl-data-table:not(.full-width) {
+    max-width: 100%;
+    overflow: auto;
+    display: inline-block;
 }
 
 #legend-container table td {
