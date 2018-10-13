@@ -153,7 +153,6 @@ function appendSearchControl() {
     var controlText = document.createElement('div');
     controlText.classList.add("input-group");
     controlText.classList.add("search-wrapper");
-    controlText.style.padding = "1em";
     controlText.innerHTML = `
       <span class="input-group-addon" id="search-addon"><i class="material-icons">search</i></span>
       <input id="search" type="text" class="form-control" placeholder="Search..." aria-describedby="search-addon">
