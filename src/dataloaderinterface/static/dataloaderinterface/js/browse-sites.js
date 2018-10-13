@@ -24,7 +24,7 @@ var filters = {
         has_search: true
     }
 };
-var textSearchFacets = ["code", "name"];
+var textSearchFacets = ["code", "name", "organization", "type", "dataType"];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
