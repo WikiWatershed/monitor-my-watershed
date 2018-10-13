@@ -3,7 +3,7 @@
 * This script performs setup for the hydroshare settings modal.
 */
 
-window.sfCode = window.location.href.match(/(?<=\/sites\/).+(?=\/)/)[0];
+var siteCode = $('#site-code').val().trim();
 
 function initializeHydroShareSettingsDialog() {
     const hydroshareSettingsForm = $('#hydroshare-settings-form')[0];
@@ -63,7 +63,7 @@ function initializeHydroShareSettingsDialog() {
 
         let method = submitButton.id === 'create-resource' ? 'create' : 'update';
 
-        let url = `/hydroshare/${window.sfCode}/${method}/`;
+        let url = `/hydroshare/${siteCode}/${method}/`;
         let serializedForm = $(hydroshareSettingsForm).serialize();
         let progressSpinner = $(hydroshareSettingsForm).find('#hs-progress-spinner');
 
@@ -117,6 +117,5 @@ function initializeHydroShareSettingsDialog() {
                 $(dialogButtons).prop('disabled', false);
                 $(submitButton).addClass('mdl-button--accent');
             });
-
     }
 }

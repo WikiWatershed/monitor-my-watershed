@@ -18,43 +18,23 @@
 
 {% load static %}
 
-{# TODO: Replace with dynamic url #}
 <div class="hs-img-container">
-    <img src="https://www.hydroshare.org/static/img/logo-lg.png">
+    <img src="{% static 'dataloaderinterface/images/hs-logo.png' %}">
 </div>
 
 {% if hs_account %}
-
     <form method="post" id="disconnect-hs-form">
         {% csrf_token %}
         <input type="hidden" name="disconnect-hydroshare-account" value="true">
         <input type="submit" class="mdl-button mdl-button--raised" value="Disconnect HydroShare Account">
     </form>
-
-    <dialog class="mdl-dialog" id="hs-dialog" hidden>
-        <div class="mdl-dialog__content">
-            <h4 class="mdl-dialog__title" style="padding: 0; margin-bottom: 20px;">Disconnect your HydroShare account?</h4>
-            <p><span class="text-warning">Warning:</span> Your sites on EnviroDIY will stop sharing data with <em>hydroshare.org</em>
-                and your
-                HydroShare settings will be lost.</p>
-        </div>
-        <div class="mdl-dialog__actions">
-            <button type="button" id="continue" class="mdl-button mdl-button--raised mdl-button--accent">Continue</button>
-            <button type="button" class="mdl-button mdl-button--raised close" style="padding: 0 16px;">Cancel</button>
-        </div>
-    </dialog>
-
 {% else %}
-
     {% if data_profile_mode == 'view' %}
-
         <p class="lead">Connect Account to HydroShare</p>
         <a href="{% url 'hydroshare:oauth_redirect' %}"
            class="mdl-button mdl-button--raised mdl-button--accent button-link">Connect</a>
         {#        <p class="text-danger">This feature has been temporarily disabled.</p>#}
         {#        <button class="mdl-button mdl-button--raised mdl-button--accent" disabled>Connect</button>#}
-
     {% endif %}
-
 {% endif %}
 
