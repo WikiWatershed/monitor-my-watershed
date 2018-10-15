@@ -6,6 +6,7 @@ from dataloader.models import *
 
 
 # Register your models here.
+from dataloaderinterface.forms import SiteSensorForm
 from dataloaderinterface.models import SiteRegistration, SiteSensor, SensorOutput
 from hydroshare.models import HydroShareAccount, HydroShareResource
 from leafpack.models import LeafPack, LeafPackType, Macroinvertebrate
@@ -68,7 +69,46 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(InstrumentOutputVariable)
 class InstrumentOutputVariableAdmin(admin.ModelAdmin):
-    pass
+    def get_changelist_form(self, request, **kwargs):
+        return super(InstrumentOutputVariableAdmin, self).get_changelist_form(request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        super(InstrumentOutputVariableAdmin, self).save_model(request, obj, form, change)
+
+        # There is no more time to work on having this form create user-specified SensorOutputs.
+        # It creates all possible sensor outputs, so it works as before with just the instrument output variables,
+        # but everything is ready to work with specific sampled media.
+        if change:
+            SensorOutput.objects.filter(instrument_output_variable_id=obj.pk).update(
+                model_id=obj.model.equipment_model_id,
+                model_name=obj.model.model_name,
+                model_manufacturer=obj.model.model_manufacturer.organization_code,
+                variable_id=obj.variable.variable_id,
+                variable_name=obj.variable.variable_name_id,
+                variable_code=obj.variable.variable_code,
+                unit_id=obj.instrument_raw_output_unit.unit_id,
+                unit_name=obj.instrument_raw_output_unit.unit_name,
+                unit_abbreviation=obj.instrument_raw_output_unit.unit_abbreviation,
+            )
+        else:
+            sampled_media = SiteSensorForm.allowed_sampled_medium
+            sensor_outputs = [
+                SensorOutput(
+                    instrument_output_variable_id=obj.pk,
+                    model_id=obj.model.equipment_model_id,
+                    model_name=obj.model.model_name,
+                    model_manufacturer=obj.model.model_manufacturer.organization_code,
+                    variable_id=obj.variable.variable_id,
+                    variable_name=obj.variable.variable_name_id,
+                    variable_code=obj.variable.variable_code,
+                    unit_id=obj.instrument_raw_output_unit.unit_id,
+                    unit_name=obj.instrument_raw_output_unit.unit_name,
+                    unit_abbreviation=obj.instrument_raw_output_unit.unit_abbreviation,
+                    sampled_medium=sampled_medium
+                )
+                for sampled_medium in sampled_media
+            ]
+            SensorOutput.objects.bulk_create(sensor_outputs)
 
 
 class SensorOutputForm(forms.ModelForm):
@@ -89,34 +129,6 @@ class SensorOutputForm(forms.ModelForm):
     class Meta:
         model = SensorOutput
         fields = ['model_id', 'variable_id', 'unit_id', 'sampled_medium']
-
-
-@admin.register(SensorOutput)
-class SensorOutputAdmin(admin.ModelAdmin):
-    form = SensorOutputForm
-
-    def save_model(self, request, obj, form, change):
-        # creation and update do the same.
-        equipment_model = EquipmentModel.objects.get(pk=form.data['model_id'])
-        variable = Variable.objects.get(pk=form.data['variable_id'])
-        unit = Unit.objects.get(pk=form.data['unit_id'])
-
-        iov = InstrumentOutputVariable.objects.get_or_create(
-            model=equipment_model,
-            variable=variable,
-            instrument_method=Method.objects.filter(method_code='Sensor').first(),
-            instrument_raw_output_unit=unit
-        )[0]
-        obj.instrument_output_variable_id = iov.instrument_output_variable_id
-        obj.model_name = equipment_model.model_name
-        obj.model_manufacturer = equipment_model.model_manufacturer.organization_code
-        obj.variable_name = variable.variable_name_id
-        obj.variable_code = variable.variable_code
-        obj.unit_name = unit.unit_name
-        obj.unit_abbreviation = unit.unit_abbreviation
-        obj.save()
-
-        super(SensorOutputAdmin, self).save_model(request, obj, form, change)
 
 
 class HydroShareResourceInline(admin.TabularInline):
