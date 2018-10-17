@@ -170,7 +170,8 @@ class FollowSiteApi(APIView):
 
 class SensorDataUploadView(APIView):
     authentication_classes = (SessionAuthentication,)
-    header_row_indicators = ('Sampling Feature', 'Data Logger', 'Date and Time')
+    header_row_indicators = ('Data Logger', 'Sampling Feature',
+                             'Sensor', 'Variable', 'Result', 'Date and Time')
 
     def should_skip_row(self, row):
         if row[0].startswith(self.header_row_indicators):
@@ -178,21 +179,45 @@ class SensorDataUploadView(APIView):
 
     def build_results_dict(self, data_file):
         results = {'utc_offset': 0, 'site_uuid': '', 'results': {}}
-        is_first_row = True
+        got_feature_uuid = False
+        got_result_uuids = False
+        got_UTC_offset = False
 
         for index, row in enumerate(csv.reader(data_file)):
-            if row[0].startswith('Sampling Feature'):
-                # two cases here: it's the first row and we parse it, or it isn't and we stop
-                if not is_first_row:
-                    break
 
-                results['site_uuid'] = row[0].replace('Sampling Feature: ', '')
-                # build dict with the rest of the columns
-                results['results'] = {uuid: {'index': uuid_index, 'values': []} for uuid_index, uuid in enumerate(row[1:], start=1)}
+            if row[0].startswith('Sampling Feature') and not got_feature_uuid:
+                    results['site_uuid'] = row[0].replace(
+                        'Sampling Feature UUID: ', '').replace(
+                        'Sampling Feature: ', '')
+                    got_feature_uuid = True
+
+                    # oldest csv's from modular sensors have the result UUID's
+                    # in the same row as the sampling feature UUID
+                    # build dict with the rest of the columns
+                    if row[1] != '' and not got_result_uuids:
+                        results['results'] = {uuid:
+                                              {'index': uuid_index,
+                                               'values': []
+                                               } for uuid_index, uuid in
+                                              enumerate(row[1:], start=1)}
+                        got_result_uuids = True
+
+            elif row[0].startswith('Result UUID:') and not got_result_uuids:
+                results['results'] = {uuid:
+                                      {'index': uuid_index,
+                                       'values': []
+                                       } for uuid_index, uuid in
+                                      enumerate(row[1:], start=1)}
+                got_result_uuids = True
 
             elif row[0].startswith('Date and Time'):
-                results['utc_offset'] = int(row[0].replace('Date and Time in UTC', ''))
-            is_first_row = False
+                results['utc_offset'] = int(row[0].replace(
+                    'Date and Time in UTC', '').replace('+', ''))
+                got_UTC_offset = True
+
+            if got_feature_uuid and got_result_uuids and got_UTC_offset:
+                break
+
         return results
 
     def post(self, request, *args, **kwargs):
