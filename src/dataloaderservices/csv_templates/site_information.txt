@@ -9,13 +9,13 @@
 #
 # Site Information
 # ---------------------------
-"# SiteCode: {site.sampling_feature.sampling_feature_code}"
-"# SiteName: {site.sampling_feature.sampling_feature_name}"
-"# SiteDescription: {site.sampling_feature.sampling_feature_description}"
-"# Latitude: {site.sampling_feature.site.latitude}"
-"# Longitude: {site.sampling_feature.site.longitude}"
-"# Elevation: {site.sampling_feature.elevation_m}"
-"# VerticalDatum: {site.sampling_feature.elevation_datum_id}"
-"# SiteType: {site.sampling_feature.site.site_type_id}"
-"# SiteNotes: {site.site_notes}"
+# SiteCode: {site.sampling_feature.sampling_feature_code}
+# SiteName: {site.sampling_feature.sampling_feature_name}
+# SiteDescription: {site.sampling_feature.sampling_feature_description}
+# Latitude: {site.sampling_feature.site.latitude}
+# Longitude: {site.sampling_feature.site.longitude}
+# Elevation: {site.sampling_feature.elevation_m}
+# VerticalDatum: {site.sampling_feature.elevation_datum_id}
+# SiteType: {site.sampling_feature.site.site_type_id}
+# SiteNotes: {site.site_notes}
 #

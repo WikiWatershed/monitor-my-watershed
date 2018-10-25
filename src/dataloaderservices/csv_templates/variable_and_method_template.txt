@@ -16,5 +16,5 @@
 # TimeSupportUnitsType: {r.timeseriesresult.intended_time_spacing_unit_id}
 # MethodDescription: {r.feature_action.action.method.method_description}
 # MethodLink: {r.feature_action.action.method.method_link}
-"# SensorNotes: {s.sensor_notes}"
+# SensorNotes: "{s.sensor_notes}"
 #
