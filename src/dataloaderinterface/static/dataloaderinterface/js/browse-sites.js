@@ -28,6 +28,7 @@ var textSearchFacets = [
     "code",
     "name",
     "organization",
+    "organization_code",
     "type",
     "dataType",
     "deployment_by",
