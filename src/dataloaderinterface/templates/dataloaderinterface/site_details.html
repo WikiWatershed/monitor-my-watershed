@@ -543,8 +543,8 @@
                 <div class="mdl-dialog__content">
                     <div class="measurements-table">
                         {% for sensor in site.sensors.all %}
-                            <table class="mdl-data-table mdl-shadow--2dp data-values" cellspacing="0"
-                                   width="100%" data-result-id="{{ sensor.result_id }}">
+                            <table class="mdl-data-table data-values" cellspacing="0"
+                                   data-result-id="{{ sensor.result_id }}">
                                 <thead>
                                 <tr>
                                     <th class="mdl-data-table__cell--non-numeric">

@@ -13,7 +13,7 @@
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
             <div class="page-title">Manage Sensor Results Metadata for
-                <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
+                <a href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
                     {{ site_registration.sampling_feature_code }}</a>
             </div>
             <fieldset class="form-fieldset">

@@ -239,11 +239,11 @@ $(document).ready(function () {
     // Append filter headers
     for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width">\
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width bg-medium-teal">\
                         <tr>\
                             <td class="mdl-data-table__cell--non-numeric">\
                                 <a data-toggle="collapse" href="#collapse-' + filters[f].key + '" role="button" aria-expanded="true"\
-                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none; color: #222;">\
+                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none;">\
                                     <h6><i class="material-icons mdl-shadow--2dp">' + filters[f].icon + '</i> ' + filters[f].label + '<i class="material-icons icon-arrow pull-right">keyboard_arrow_down</i></h6>\
                                 </a>\
                             </td>\
