@@ -24,7 +24,20 @@ var filters = {
         has_search: true
     }
 };
-var textSearchFacets = ["code", "name", "organization", "type", "dataType"];
+var textSearchFacets = [
+    "code",
+    "name",
+    "organization",
+    "organization_code",
+    "type",
+    "dataType",
+    "deployment_by",
+    "stream_name",
+    "major_watershed",
+    "sub_basin",
+    "closest_town",
+    "site_notes"
+];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
@@ -75,7 +88,19 @@ function initMap() {
 
     let prevMarker;
     let prevZIndex;
-    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // Remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+    // from https://stackoverflow.com/questions/14432165/uncaught-syntaxerror-unexpected-token-with-json-parse
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function(site) {
         let marker = new google.maps.Marker({
@@ -162,7 +187,18 @@ $(document).ready(function () {
     $('nav .menu-browse-sites').addClass('active');
     resizeContent();
 
-    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function (site) {
         for (let f in filters) {
