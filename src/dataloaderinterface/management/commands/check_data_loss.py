@@ -15,7 +15,7 @@ class Command(BaseCommand):
     def send_email(email_address, subject, message):
         print("- sending email to {}: {}".format(email_address, subject))
         success = send_mail(subject, message, settings.NOTIFY_EMAIL_SENDER, [email_address])
-        return True if success == 1 else False
+        return success == 1
 
     def handle(self, *args, **options):
         # MAGICAL BEAUTIFUL QUERY
@@ -41,7 +41,7 @@ class Command(BaseCommand):
                        "Best regards,\n"
                        "The EnviroDIY team.\n"
                        "").format(site_alert.user.first_name, site_alert.site_registration.sampling_feature_name,
-                                  gap, site_alert.last_measurement_utc_datetime,
+                                  gap, site_alert.last_measurement_datetime,
                                   site_alert.site_registration.sampling_feature_code)
             success = Command.send_email(site_alert.user.email, subject, message)
             if success:
