@@ -155,6 +155,10 @@ div.image-container {
     box-shadow: none;
 }
 
+.toolkit-list li {
+    margin: 10px 0;
+}
+
 h4 {
     font-size: 18px;
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
