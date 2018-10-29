@@ -14,6 +14,39 @@ html > body {
     src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 
+/* Color Palette */
+.color-light-teal {
+    color: #66CCCC;
+}
+
+.bg-light-teal {
+    background-color: #66CCCC;
+}
+
+.color-medium-teal {
+    color: #009999;
+}
+
+.bg-medium-teal {
+    background-color: #009999;
+}
+
+.color-dark-teal {
+    color: #336666;
+}
+
+.bg-dark-teal {
+    background-color: #336666;
+}
+
+.color-black {
+    color: #000;
+}
+
+.bg-black {
+    background-color: #000;
+}
+
 /*MEDIA QUERIES*/
 
 @media only screen and (max-width: 480px) {
@@ -910,8 +943,8 @@ i.material-icons.site-card-icon {
 }
 
 .page-title, .section-title {
+    color: #009999;
     text-transform: uppercase;
-    color: rgb(4, 138, 138);
     font-size: 18px;
     font-weight: 500;
     font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
