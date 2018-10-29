@@ -1,6 +1,7 @@
 import codecs
 import csv
 import os
+from collections import OrderedDict
 from datetime import timedelta, datetime
 
 from StringIO import StringIO
@@ -361,20 +362,19 @@ class CSVDataApi(View):
             # and if it's not, filter using 'pk__in'
             iter(result_ids)
             time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('values') \
                 .prefetch_related('result__feature_action__action__people') \
                 .select_related('result__feature_action__sampling_feature', 'result__variable') \
-                .filter(pk__in=result_ids)
+                .filter(pk__in=result_ids) \
+                .order_by('pk')
         except TypeError:
             # If exception is raised, `result_ids` is not an iterable,
             # so filter using 'pk'
             time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('values') \
                 .prefetch_related('result__feature_action__action__people') \
                 .select_related('result__feature_action__sampling_feature', 'result__variable') \
                 .filter(pk=result_ids)
 
-        if not time_series_result:
+        if not time_series_result.count():
             raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
 
         csv_file = StringIO()
@@ -426,32 +426,32 @@ class CSVDataApi(View):
 
     @staticmethod
     def get_data_values(time_series_results):  # type: (QuerySet) -> object
+        result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
+        data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
+        data_values_map = OrderedDict()
 
-        def date_value_date(dv):  # type: (TimeSeriesResult) -> str
-            dt = dv.value_datetime + timedelta(hours=dv.value_datetime_utc_offset)
-            return dt.strftime(CSVDataApi.date_format)
+        for value in data_values_queryset:
+            data_values_map.setdefault(value['value_datetime'], {}).update({
+                'utc_offset': value['value_datetime_utc_offset'],
+                value['result_id']: value['data_value']
+            })
 
-        results_data = [result.values.all() for result in time_series_results]  # type: [TimeSeriesResultValue]
-        max_data_len = max([len(result_data) for result_data in results_data])
+        data = []
+        for timestamp, values in data_values_map.iteritems():
+            local_timestamp = timestamp + timedelta(hours=values['utc_offset'])
+            row = [
+                local_timestamp.strftime(CSVDataApi.date_format),   # Local DateTime
+                '{0}:00'.format(values['utc_offset']),              # UTC Offset
+                timestamp.strftime(CSVDataApi.date_format)          # UTC DateTime
+            ]
 
-        data = list()
-
-        for i in range(0, max_data_len):
-            dv = results_data[0][i]
-            row = (
-                date_value_date(dv),
-                '{0}:00'.format(dv.value_datetime_utc_offset),
-                dv.value_datetime.strftime(CSVDataApi.date_format),
-            )
-
-            for j in range(0, len(results_data)):
+            for result_id in result_ids:
                 try:
-                    row += (results_data[j][i].data_value,)
-                except IndexError:
-                    row += ('',)
+                    row.append(values[result_id])
+                except KeyError:
+                    row.append('')
 
             data.append(row)
-
         return data
 
     @staticmethod
