@@ -24,7 +24,19 @@ var filters = {
         has_search: true
     }
 };
-var textSearchFacets = ["code", "name", "organization", "type", "dataType"];
+var textSearchFacets = [
+    "code",
+    "name",
+    "organization",
+    "type",
+    "dataType",
+    "deployment_by",
+    "stream_name",
+    "major_watershed",
+    "sub_basin",
+    "closest_town",
+    "site_notes"
+];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
