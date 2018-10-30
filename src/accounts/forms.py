@@ -24,6 +24,7 @@ class UserRegistrationForm(UserCreationForm):
                   '"Add New Organization".'
     )
     agreement = forms.BooleanField(required=True)
+    acceptance = forms.BooleanField(required=True)
 
     class Meta:
         model = User
