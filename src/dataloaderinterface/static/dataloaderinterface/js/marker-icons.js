@@ -18,7 +18,7 @@ function createInfoWindowContent(site) {
 function getMarkerIcon(type, color, dataTypes) {
     type = type != "owned" ? "fat" : "skinny";
     if (dataTypes[0] == "Leaf Pack") {
-        color = "orangered";
+        color = "blue";
     }
     var icon = {
         skinny: {
@@ -96,7 +96,7 @@ function appendMarkersLegend(map) {
                             <td>Sensors have no data</td>
                         </tr>
                         <tr>
-                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-orangered-fat-bright.png" 
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-blue-fat-bright.png" 
                             alt="Marker for sites with only Leaf Pack data"></td>
                             <td>Only Leaf Pack data</td>
                         </tr>
