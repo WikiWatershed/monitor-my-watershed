@@ -687,6 +687,7 @@ footer .separator {
 
 .follow-checkbox .mdl-checkbox__label {
     display: block;
+    font-size: 20px;
 }
 
 .page-header .page-title {
