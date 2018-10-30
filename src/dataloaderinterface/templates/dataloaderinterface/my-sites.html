@@ -26,12 +26,13 @@
             <div class="row">
                 <div class="col-sm-12 map-container my-sites">
                     <div id="map"></div>
+                    <br><br>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-12">
-                    <div class="row">
+                    <div class="row" style="margin-top: 20px;">
                         <div class="col-md-6 col-sm-12">
                             <h4 data-toggle="collapse" href="#mySitesCollapse"
                             aria-expanded="true" aria-controls="mySitesCollapse"
@@ -40,12 +41,11 @@
                         </div>
                         <div class="col-md-6 col-sm-12 text-right">
                             <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
-                               class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--accent mdl-js-ripple-effect">
+                               class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--colored mdl-js-ripple-effect">
                                 <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
                             </a>
                         </div>
                     </div>
-
                     <hr>
                 </div>
                 {% if sites %}
@@ -84,9 +84,9 @@
                                      data-lastUpdated="{{ site.latest_measurement.value_datetime|date:"U" }}">
                                     <div class="mdl-card mdl-shadow--2dp site-card">
                                         <div class="mdl-card__title">
-                                            <h2 class="mdl-card__title-text" id="mySite{{ forloop.counter }}">
+                                            <div class="mdl-card__title-text" id="mySite{{ forloop.counter }}">
                                                 <a href="{% autoescape off %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_code }}</a>
-                                            </h2>
+                                            </div>
                                             <div class="mdl-tooltip" data-mdl-for="mySite{{ forloop.counter }}">
                                                 {{ site.sampling_feature_code }}
                                             </div>
@@ -207,9 +207,9 @@
                                      data-lastUpdated="{{ site.latest_measurement.value_datetime|date:"U" }}">
                                     <div class="mdl-card mdl-shadow--2dp site-card">
                                         <div class="mdl-card__title">
-                                            <h2 class="mdl-card__title-text" id="followedSite{{ forloop.counter }}">
+                                            <div class="mdl-card__title-text" id="followedSite{{ forloop.counter }}">
                                                 <a href="{% autoescape on %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_code }}</a>
-                                            </h2>
+                                            </div>
                                             <div class="mdl-tooltip" data-mdl-for="followedSite{{ forloop.counter }}">
                                                 {{ site.sampling_feature_code }}
                                             </div>

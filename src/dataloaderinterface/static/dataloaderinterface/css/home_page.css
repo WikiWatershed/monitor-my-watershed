@@ -27,7 +27,6 @@
 }
 
 .card a, .lead a {
-    color: #336666;
     font-weight: normal;
 }
 
@@ -57,7 +56,6 @@
     top: -23px;
     left: calc(50% - 20px);
     box-shadow: 0 1px 1.5px 0 rgba(0,0,0,.12), 0 1px 1px 0 rgba(0,0,0,.24);
-    background-color: #65cbcb;
     color: #FFF;
 }
 
@@ -67,7 +65,6 @@
     width: 100%;
     padding: 30px;
     color: #FFF;
-    background: #37474f;
     border-radius: 2px 2px 0 0;
 }
 
@@ -105,7 +102,6 @@
 }
 
 .section-title {
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
     font-size: 34px;
     font-weight: 400;
     line-height: 40px;

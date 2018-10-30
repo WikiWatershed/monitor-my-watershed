@@ -5,13 +5,66 @@ html {
 html > body {
     height: calc(100% - 141px);
     font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-    background: #e8e8e8;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 16px;
+    line-height: 28px;
+    color: #5f5f5f;
+    background: #f1f1f1;
 }
 
 @font-face {
     font-family: 'Glyphicons Halflings';
     src: url('../fonts/glyphicons-halflings-regular.eot');
     src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
+}
+
+/* Color Palette */
+.color-light-teal {
+    color: #66CCCC;
+}
+
+.bg-light-teal {
+    background-color: #66CCCC;
+}
+
+.color-medium-teal {
+    color: #009999;
+}
+
+.bg-medium-teal {
+    background-color: #009999;
+}
+
+.color-dark-teal {
+    color: #336666;
+}
+
+.bg-dark-teal {
+    background-color: #336666;
+}
+
+.color-black {
+    color: #000;
+}
+
+.bg-black {
+    background-color: #000;
+}
+
+.mdl-button--accent.mdl-button--accent.mdl-button--raised,
+.mdl-button--accent.mdl-button--accent.mdl-button--fab,
+.mdl-button--fab.mdl-button--colored {
+    background-color: #66CCCC;
+}
+
+.mdl-button--accent.mdl-button--accent {
+    color: #66CCCC;
+}
+
+/* Heading */
+h4, h3, h2, .page-title, .section-title {
+    font-family: Ubuntu;
 }
 
 /*MEDIA QUERIES*/
@@ -57,6 +110,14 @@ html > body {
     .buttons-toolbar .button-link, .buttons-toolbar form, .buttons-toolbar button {
         width: 100%;
     }
+}
+
+a {
+    color: #336666;
+}
+
+a:hover {
+    color: #000;
 }
 
 /*ICON COLORS*/
@@ -310,8 +371,7 @@ svg.not-stale {
 }
 
 .plot_box .mdl-card__actions {
-    background: #66cbcb;
-    border: 1px solid #3bb7b7;
+    background: #66CCCC;
 }
 
 .white-shadow {
@@ -590,7 +650,7 @@ footer h5 {
 }
 
 footer a {
-    color: #66cbcb;
+    color: #66CCCC;
     font-weight: 500;
 }
 
@@ -623,6 +683,10 @@ footer .separator {
 .follow-checkbox {
     display: block;
     width: auto;
+}
+
+.follow-checkbox .mdl-checkbox__label {
+    display: block;
 }
 
 .page-header .page-title {
@@ -765,13 +829,17 @@ span.table-trigger, span.tsa-trigger, span.download-trigger {
     font-size: 14px;
 }
 
+hr {
+    border-top: 1px solid #dedede;
+}
+
 .ribbon-content .page-title {
-    margin: 0;
-    margin-top: -40px;
-    margin-bottom: 40px;
+    margin: -40px 0 40px 0;
     padding-bottom: 10px;
-    border-bottom: 1px solid #DDD;
-    line-height: 24px;
+    border-bottom: 1px solid #dedede;
+    line-height: 1.5em;
+    font-weight: normal;
+    font-size: 22px;
 }
 
 .ribbon {
@@ -780,10 +848,6 @@ span.table-trigger, span.tsa-trigger, span.download-trigger {
     -webkit-flex-shrink: 0;
     -ms-flex-negative: 0;
     flex-shrink: 0;
-}
-
-.ribbon-blue {
-    background-color: #337ab7;
 }
 
 .ribbon-green {
@@ -869,7 +933,7 @@ span.table-trigger, span.tsa-trigger, span.download-trigger {
 
 #followedSites .site-card .mdl-card__title, #mySites .site-card .mdl-card__title {
     padding-right: 60px;
-    background-color: #4fc0df;
+    background-color: #66CCCC;
     color: #FFF;
 }
 
@@ -910,11 +974,9 @@ i.material-icons.site-card-icon {
 }
 
 .page-title, .section-title {
-    text-transform: uppercase;
-    color: rgb(4, 138, 138);
-    font-size: 18px;
-    font-weight: 500;
-    font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+    color: #336666;
+    font-size: 24px;
+    font-weight: 400;
 }
 
 .section-subtitle {
@@ -975,10 +1037,6 @@ a.accent:hover {
     color: #FFF;
 }
 
-#btn-login {
-    background-color: rgb(101, 101, 101);
-}
-
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -1017,13 +1075,11 @@ label.checkbox-label {
 /*PROFILE STYLING*/
 #profile-banner {
     height: 35vh;
-    background: #5d688a;
     margin: -80px -4vw 40px -4vw;
     padding-right: 4vw;
     padding-left: 4vw;
     display: flex;
     color: #FFF;
-
 }
 
 #profile-banner h3 {
@@ -1142,7 +1198,7 @@ label.checkbox-label {
 }
 
 div#followedSites .mdl-card tr:first-child, div#mySites .mdl-card tr:first-child {
-    color: #4fc0df;
+    color: #66CCCC;
 }
 
 div#mySites .mdl-card__title,
@@ -1183,7 +1239,7 @@ div#followedSites .mdl-card__menu {
 }
 
 .form-leafpack .step-row {
-    border-left: 3px solid #87c7c7;
+    border-left: 3px solid #66CCCC;
     margin-left: 20px;
     padding-left: 20px;
     padding-bottom: 40px;
@@ -1247,11 +1303,11 @@ td.label, p.label {
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background-color: #048a8a;
+    background-color: #009999;
     color: #FFF;
     text-align: center;
     font-size: 28px;
-    padding: 10px 2px 0 2px;
+    padding: 7px 2px 0 2px;
     margin-right: 13px;
     margin-bottom: 10px;
 }

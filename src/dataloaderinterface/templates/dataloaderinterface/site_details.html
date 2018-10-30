@@ -22,7 +22,7 @@
 {% endblock %}
 
 {% block content %}
-    <div class="ribbon ribbon-blue"></div>
+    <div class="ribbon bg-light-teal"></div>
 
     <div class="ribbon-container">
         <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
@@ -278,7 +278,7 @@
                             </a>
                         {% endif %}
                         {% if can_administer_site %}
-                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                            <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
                                href="{% url 'sensors' site.sampling_feature_code %}">
                                 <i class="material-icons center-icon">assignment</i>
                                 Manage Sensors
@@ -479,7 +479,7 @@
                     {% if can_administer_site %}
                     <div class="buttons-toolbar row">
                         <div class="col-12 text-right">
-                            <a class="button-link mdl-button mdl-button--accent mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                            <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
                                href="{% url 'leafpacks' site.sampling_feature_code %}">
                                 <i class="material-icons center-icon">assignment</i>
                                 Manage Experiments
@@ -543,8 +543,8 @@
                 <div class="mdl-dialog__content">
                     <div class="measurements-table">
                         {% for sensor in site.sensors.all %}
-                            <table class="mdl-data-table mdl-shadow--2dp data-values" cellspacing="0"
-                                   width="100%" data-result-id="{{ sensor.result_id }}">
+                            <table class="mdl-data-table data-values" cellspacing="0"
+                                   data-result-id="{{ sensor.result_id }}">
                                 <thead>
                                 <tr>
                                     <th class="mdl-data-table__cell--non-numeric">

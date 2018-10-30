@@ -34,7 +34,7 @@
                     {% if not user.is_authenticated %}
                         <h4 class="text-center">Ready to start sharing your data?</h4>
                         <h4 class="text-center">
-                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect"
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
                                href="{% url 'user_registration' %}">SIGN UP</a>
                         </h4>
                     {% endif %}
@@ -79,8 +79,8 @@
                             <div class="row text-center">
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">1</h3>
-                                        <i class="fa fa-laptop step-icon" aria-hidden="true"></i>
+                                        <h3 class="step-number bg-light-teal">1</h3>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
                                         <h4><a href="{% url 'login' %}">Register</a>
                                             your compatible data logger and your sensors.</h4>
                                     </div>
@@ -88,16 +88,16 @@
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">2</h3>
-                                        <i class="material-icons step-icon">settings_remote</i>
+                                        <h3 class="step-number bg-light-teal">2</h3>
+                                        <i class="material-icons step-icon bg-dark-teal">settings_remote</i>
                                         <h4>Deploy your data logger and start collecting data.</h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">3</h3>
-                                        <i class="fa fa-cloud-upload step-icon" aria-hidden="true"></i>
+                                        <h3 class="step-number bg-light-teal">3</h3>
+                                        <i class="fa fa-cloud-upload step-icon bg-dark-teal" aria-hidden="true"></i>
                                         <h4>Stream your data continuously and <a
                                                 href="{% url 'browse_sites' %}">view your results</a> online.</h4>
                                     </div>
@@ -134,8 +134,8 @@
                             <div class="row text-center">
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">1</h3>
-                                        <i class="fa fa-leaf step-icon" aria-hidden="true"></i>
+                                        <h3 class="step-number bg-light-teal">1</h3>
+                                        <i class="fa fa-leaf step-icon bg-dark-teal" aria-hidden="true"></i>
                                         <h4>Conduct your <a href="https://www.leafpacknetwork.org/resources/manual/"
                                                             target="_blank">Leaf Pack experiment</a>.</h4>
                                     </div>
@@ -143,8 +143,8 @@
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">2</h3>
-                                        <i class="fa fa-laptop step-icon" aria-hidden="true"></i>
+                                        <h3 class="step-number bg-light-teal">2</h3>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
                                         <h4><a href="{% url 'login' %}">Register</a>
                                             your location and enter your data.</h4>
                                     </div>
@@ -152,8 +152,8 @@
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">3</h3>
-                                        <i class="fa fa-map step-icon" aria-hidden="true"></i>
+                                        <h3 class="step-number bg-light-teal">3</h3>
+                                        <i class="fa fa-map step-icon bg-dark-teal" aria-hidden="true"></i>
                                         <h4><a href="{% url 'browse_sites' %}">Explore</a> your data and those contributed by others.</h4>
                                     </div>
                                 </div>
@@ -229,7 +229,7 @@
                 <section class="col-sm-12 text-center">
                     <h3>Ready to join?</h3>
                     <h5>Create an account for free.</h5>
-                    <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect"
+                    <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
                        href="{% url 'user_registration' %}">SIGN UP</a>
                 </section>
             </div>
