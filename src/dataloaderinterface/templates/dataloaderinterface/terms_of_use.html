@@ -3,7 +3,6 @@
 
 {% block styles %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/terms_of_use.css' %}">
 {% endblock %}
 
 {% block page_title %}
@@ -27,7 +26,7 @@
                             Center</a> and <a href="https://www.limno.com/" target="_blank">LimnoTech</a>. The Website
                         is offered subject to your acceptance without modification of all of the terms and conditions
                         contained herein and all other operating rules, policies (including, without limitation, our <a
-                                href="#">Privacy Policy</a>) and procedures that may be published from time to time on
+                                href="{% url 'privacy' %}">Privacy Policy</a>) and procedures that may be published from time to time on
                         this Website by Stroud Water Research Center and LimnoTech (collectively, the "Agreement").</p>
                     <p>
                         Please read this Agreement carefully before accessing or using the Website. By accessing or

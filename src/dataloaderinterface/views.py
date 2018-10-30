@@ -38,6 +38,10 @@ class DMCAView(TemplateView):
     template_name = 'dataloaderinterface/dmca.html'
 
 
+class PrivacyView(TemplateView):
+    template_name = 'dataloaderinterface/privacy.html'
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = 'sites'
