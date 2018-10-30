@@ -1,9 +1,14 @@
 from datetime import datetime, time, timedelta
 from django import template
 from django.utils.timesince import timesince
-from django.utils.formats import date_format
 
 register = template.Library()
+
+
+@register.simple_tag(name='tsa_url')
+def tsa_url():
+    from django.conf import settings
+    return settings.TSA_URL
 
 
 @register.filter("utc_timesince", is_safe=False)

@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load helpers %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -80,7 +81,7 @@
                         <a class="nav-link" href="{% url 'browse_sites' %}">Browse Sites</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="http://www.monitormywatershed.org/tsa/" target="_blank">Time Series Analyst <i
+                        <a class="nav-link" href="{% tsa_url %}" target="_blank">Time Series Analyst <i
                                 class="material-icons" style="font-size: 14px;">open_in_new</i></a>
                     </li>
                 </ul>
