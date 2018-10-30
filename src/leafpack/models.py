@@ -91,7 +91,7 @@ class LeafPack(models.Model):
     storm_precipitation = models.FloatField(default=0)
     types = models.ManyToManyField('LeafPackType')
     deployment_type = models.CharField(max_length=255, blank=True, null=True)
-    # notes = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
 
     def taxon_count(self):
         """

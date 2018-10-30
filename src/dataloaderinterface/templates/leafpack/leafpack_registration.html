@@ -246,8 +246,20 @@
                 </div>
 
                 <div class="row step-row">
-                    <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
-                    {{ form.notes|add_class:"form-control" }}
+                    <div class="col-12 form-field">
+                        <div class="mdl-card mdl-shadow--2dp full-width">
+                             <div class="mdl-card__title mdl-card--border" style="display: block;">
+                                <label for="{{ form.notes.id_for_label }}" class="control-label">{{ form.notes.label }}</label>
+                            </div>
+                            <div class="mdl-card__supporting-text mdl-card--border default-font">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        {{ form.notes|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <br><br>
