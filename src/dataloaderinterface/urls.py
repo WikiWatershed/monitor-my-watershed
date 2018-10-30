@@ -16,12 +16,14 @@ Including another URLconf
 from django.conf.urls import url, include
 
 from dataloaderinterface.views import SitesListView, SiteDetailView, SiteRegistrationView, SensorListUpdateView, \
-    HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, TermsOfUseView
+    HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, \
+    TermsOfUseView, DMCAView
 
 urlpatterns = [
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^sites/$', SitesListView.as_view(), name='sites_list'),
     url(r'^terms/$', TermsOfUseView.as_view(), name='terms_of_use'),
+    url(r'^dmca/$', DMCAView.as_view(), name='dmca'),
     url(r'^status/$', StatusListView.as_view(), name='status'),
     url(r'^browse/$', BrowseSitesListView.as_view(), name='browse_sites'),
     url(r'^sites/register/$', SiteRegistrationView.as_view(), name='site_registration'),

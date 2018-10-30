@@ -34,6 +34,10 @@ class TermsOfUseView(TemplateView):
     template_name = 'dataloaderinterface/terms_of_use.html'
 
 
+class DMCAView(TemplateView):
+    template_name = 'dataloaderinterface/dmca.html'
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = 'sites'
