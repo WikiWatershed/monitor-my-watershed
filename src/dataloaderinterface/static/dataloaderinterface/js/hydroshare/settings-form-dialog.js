@@ -115,7 +115,7 @@ function initializeHydroShareSettingsDialog() {
                 progressSpinner.removeClass('is-active');
                 $('span#hs-loading-msg').prop('hidden', true);
                 $(dialogButtons).prop('disabled', false);
-                $(submitButton).addClass('mdl-button--accent');
+                $(submitButton).addClass('mdl-button--colored');
             });
     }
 }

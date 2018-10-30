@@ -52,6 +52,16 @@ html > body {
     background-color: #000;
 }
 
+.mdl-button--accent.mdl-button--accent.mdl-button--raised,
+.mdl-button--accent.mdl-button--accent.mdl-button--fab,
+.mdl-button--fab.mdl-button--colored {
+    background-color: #66CCCC;
+}
+
+.mdl-button--accent.mdl-button--accent {
+    color: #66CCCC;
+}
+
 /* Heading */
 h4, h3, h2, .page-title, .section-title {
     font-family: Ubuntu;
@@ -361,8 +371,7 @@ svg.not-stale {
 }
 
 .plot_box .mdl-card__actions {
-    background: #66cbcb;
-    border: 1px solid #3bb7b7;
+    background: #66CCCC;
 }
 
 .white-shadow {
@@ -841,10 +850,6 @@ hr {
     flex-shrink: 0;
 }
 
-.ribbon-blue {
-    background-color: #337ab7;
-}
-
 .ribbon-green {
     background-color: #62843e;
 }
@@ -928,7 +933,7 @@ hr {
 
 #followedSites .site-card .mdl-card__title, #mySites .site-card .mdl-card__title {
     padding-right: 60px;
-    background-color: #4fc0df;
+    background-color: #66CCCC;
     color: #FFF;
 }
 
@@ -1033,10 +1038,6 @@ a.accent:hover {
     color: #FFF;
 }
 
-#btn-login {
-    background-color: rgb(101, 101, 101);
-}
-
 .noselect {
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -1075,13 +1076,11 @@ label.checkbox-label {
 /*PROFILE STYLING*/
 #profile-banner {
     height: 35vh;
-    background: #5d688a;
     margin: -80px -4vw 40px -4vw;
     padding-right: 4vw;
     padding-left: 4vw;
     display: flex;
     color: #FFF;
-
 }
 
 #profile-banner h3 {
@@ -1200,7 +1199,7 @@ label.checkbox-label {
 }
 
 div#followedSites .mdl-card tr:first-child, div#mySites .mdl-card tr:first-child {
-    color: #4fc0df;
+    color: #66CCCC;
 }
 
 div#mySites .mdl-card__title,
@@ -1305,7 +1304,7 @@ td.label, p.label {
     border-radius: 50%;
     width: 40px;
     height: 40px;
-    background-color: #336666;
+    background-color: #009999;
     color: #FFF;
     text-align: center;
     font-size: 28px;
