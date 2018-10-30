@@ -39,9 +39,9 @@ body {
 
 #filters {
     overflow-y: scroll;
-    background: #e8e8e8;
+    background: #f1f1f1;
     height: 100%;
-    border-bottom: 1px solid #DDD;
+    border-bottom: 1px solid #dedede;
 }
 
 #filters label:not(.mdl-switch) {
@@ -68,12 +68,8 @@ body {
     overflow: auto;
 }
 
-.filter-header table {
-    background-color: #66cbcb;
-}
-
 .filter-header table tr:hover {
-    background-color: #94eaea;
+    background-color: #336666;
 }
 
 .filter-header h6 {
@@ -82,11 +78,11 @@ body {
 
 #filters .filter-header h6 > i.material-icons:first-child {
     vertical-align: middle;
-    background: #005050;
-    color: #fff;
+    background: #336666;
+    color: #FFF;
     border-radius: 50%;
-    padding: 0px;
-    border: 2px solid #048a8a;
+    padding: 0;
+    border: 2px solid #66CCCC;
 }
 
 .page-title {
@@ -100,7 +96,7 @@ body {
     margin: 10px 0;
 }
 
-.page-title, .subtitle {
+.page-title, .subtitle, .filter-header a {
     text-shadow: 0 1px 0 #000;
     color: #FFF;
 }

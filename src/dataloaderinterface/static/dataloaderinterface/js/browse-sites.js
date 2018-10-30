@@ -24,7 +24,20 @@ var filters = {
         has_search: true
     }
 };
-var textSearchFacets = ["code", "name", "organization", "type", "dataType"];
+var textSearchFacets = [
+    "code",
+    "name",
+    "organization",
+    "organization_code",
+    "type",
+    "dataType",
+    "deployment_by",
+    "stream_name",
+    "major_watershed",
+    "sub_basin",
+    "closest_town",
+    "site_notes"
+];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
@@ -75,7 +88,19 @@ function initMap() {
 
     let prevMarker;
     let prevZIndex;
-    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // Remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+    // from https://stackoverflow.com/questions/14432165/uncaught-syntaxerror-unexpected-token-with-json-parse
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function(site) {
         let marker = new google.maps.Marker({
@@ -162,7 +187,18 @@ $(document).ready(function () {
     $('nav .menu-browse-sites').addClass('active');
     resizeContent();
 
-    let markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function (site) {
         for (let f in filters) {
@@ -203,11 +239,11 @@ $(document).ready(function () {
     // Append filter headers
     for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width">\
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width bg-medium-teal">\
                         <tr>\
                             <td class="mdl-data-table__cell--non-numeric">\
                                 <a data-toggle="collapse" href="#collapse-' + filters[f].key + '" role="button" aria-expanded="true"\
-                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none; color: #222;">\
+                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none;">\
                                     <h6><i class="material-icons mdl-shadow--2dp">' + filters[f].icon + '</i> ' + filters[f].label + '<i class="material-icons icon-arrow pull-right">keyboard_arrow_down</i></h6>\
                                 </a>\
                             </td>\

@@ -98,7 +98,7 @@ function initMap() {
         map.fitBounds(bounds);
     }
 
-    appendLegend(map);
+    appendMarkersLegend(map);
 }
 
 // Makes all site cards have the same height.
