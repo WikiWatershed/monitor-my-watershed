@@ -101,34 +101,14 @@
                                                 </div>
 
                                                 <div class="col-sm-12">
-                                                    <div class="checkbox form-field required-field {% if form.acceptance.errors %}has-error{% endif %}">
-                                                        <label class="checkbox-label">{{ form.acceptance|add_class:"" }}
+                                                    <div class="checkbox form-field required-field {% if form.agreement.errors %}has-error{% endif %}">
+                                                        <label class="checkbox-label">{{ form.agreement|add_class:"" }}
                                                             I agree to the Monitor My Watershed <a
                                                                     href="{% url 'terms_of_use' %}">Terms of Use</a> and
                                                             that all data I post to this site will be made public
                                                             according to the Creative Commons Attribution Share Alike
                                                             License (CC-By-SA).
                                                         </label>
-                                                        {{ form.acceptance.errors }}
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-sm-12">
-                                                    <div class="checkbox form-field required-field {% if form.agreement.errors %}has-error{% endif %}">
-                                                        <label class="checkbox-label">{{ form.agreement|add_class:"" }}
-                                                            I agree that all of the data I post to this site will be
-                                                            made public according to the Creative Commons Attribution
-                                                            Share Alike License (CC-By-SA).
-                                                        </label>
-                                                        <a id="agreement-icon"
-                                                           href="https://creativecommons.org/licenses/by-sa/4.0/"
-                                                           target="_blank">
-                                                            <img src="https://licensebuttons.net/l/by-sa/4.0/88x31.png"
-                                                                 alt="Creative Commons Attribution Share Alike License (CC-By-SA).">
-                                                        </a>
-                                                        <div class="mdl-tooltip" data-mdl-for="agreement-icon">
-                                                            Creative Commons Attribution Share Alike License (CC-By-SA)
-                                                        </div>
                                                         {{ form.agreement.errors }}
                                                     </div>
                                                 </div>
