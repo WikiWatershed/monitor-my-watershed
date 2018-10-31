@@ -64,7 +64,7 @@ html > body {
 
 /* Heading */
 h4, h3, h2, .page-title, .section-title {
-    font-family: Ubuntu;
+    font-family: Ubuntu, Helvetica, sans-serif;
 }
 
 /*MEDIA QUERIES*/
