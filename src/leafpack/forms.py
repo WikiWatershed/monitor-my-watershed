@@ -145,7 +145,8 @@ class LeafPackForm(forms.ModelForm):
 
     notes = forms.CharField(
         label='Leave your comments',
-        widget=forms.Textarea()
+        widget=forms.Textarea(),
+        required=False
     )
 
     class Meta:

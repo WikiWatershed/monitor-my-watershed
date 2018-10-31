@@ -326,6 +326,14 @@
                         </tr>
                     </table>
                 </div>
+
+                {% if leafpack.notes %}
+                    <div class="col-12">
+                        <h6 class="title">Comments</h6>
+                        <hr class="dotted">
+                        <p><em>{{ leafpack.notes }}</em></p>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
