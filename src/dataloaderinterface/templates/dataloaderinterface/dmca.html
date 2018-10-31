@@ -1,0 +1,111 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+    {{ block.super }}
+{% endblock %}
+
+{% block page_title %}
+    <title>DMCA Notice and Takedown Procedure</title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-dark"></div>
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <section class="device-data col-lg-12">
+                <header class="section-header">
+                    <div class="page-title">Monitor My Watershed® DMCA Notice and Takedown Procedure</div>
+                </header>
+                <div class="section-body">
+                    <p>Stroud™ Water Research Center and LimnoTech abide by the federal Digital Millennium Copyright Act
+                        (DMCA) by responding to notices of alleged infringement that comply with the DMCA and other
+                        applicable laws. As part of our response, we may remove or disable access to material residing
+                        on MonitorMyWatershed.org that is claimed to be infringing, in which case we will make a
+                        good-faith attempt to contact the person who submitted the affected material so that they may
+                        make a counter notification, also in accordance with the DMCA.</p>
+                    <p>Stroud Water Research Center and LimnoTech do not control content hosted on third-party websites,
+                        and cannot remove content from sites they do not own or control. If you are the copyright owner
+                        of content hosted on a third-party site, and you have not authorized the use of your content,
+                        please contact the administrator of that website directly to have the content removed.</p>
+                    <p>Before serving either a Notice of Infringing Material or Counter-Notification, you may wish to
+                        contact a lawyer to better understand your rights and obligations under the DMCA and other
+                        applicable laws. The following notice requirements are intended to comply with Stroud Water
+                        Research Center and LimnoTech’s rights and obligations under the DMCA and, in particular,
+                        section 512(c), and do not constitute legal advice.</p>
+
+                    <h6 class="section-title">Notice of Infringing Material</h6>
+                    <p>To file a notice of infringing material on a site owned or controlled by Stroud Water Research
+                        Center and LimnoTech (such as MonitorMyWatershed.org), please provide a notification containing
+                        the following details:
+                    </p>
+                    <ul>
+                        <li>Reasonably sufficient details to enable us to identify the work claimed to be infringed or,
+                            if multiple works are claimed to be infringed, a representative list of such works (for
+                            example: title, author, any registration or tracking number, URL);
+                        </li>
+                        <li>Reasonably sufficient detail to enable us to identify and locate the material that is
+                            claimed to be infringing (for example a link to the page that contains the material);
+                        </li>
+                        <li>Your contact information so that we can contact you (for example, your address, telephone
+                            number, email address);
+                        </li>
+                        <li>A statement that you have a good faith belief that the use of the material identified in (2)
+                            is not authorized by the copyright owner, its agent, or the law;
+                        </li>
+                        <li>A statement, under penalty of perjury, that the information in the notification is accurate
+                            and that you are authorized to act on behalf of the owner of the exclusive right that is
+                            alleged to be infringed.
+                        </li>
+                        <li>Your physical or electronic signature.</li>
+                    </ul>
+                    <p>Then send this notice to:</p>
+                    <p>By Mail:</p>
+                    <p>Stroud Water Research Center<br>970 Spencer Road<br>Avondale, PA 19311</p>
+                    <p>By Email:</p>
+                    <p>Email: <a href="mailto:dmca@monitormywatershed.org" target="_blank">dmca@monitormywatershed.org</a></p>
+                    <h6 class="section-title">Counter-Notification</h6>
+                    <p>If material that you have posted to a site controlled or operated by Stroud Water Research Center
+                        and LimnoTech (such as MonitorMyWatershed.org) has been taken down, you may file a
+                        counter-notification that contains the following details:</p>
+                    <ul>
+                        <li>Identification of the material that has been removed or to which access has been disabled
+                            and the location at which the material appeared before it was removed or disabled;
+                        </li>
+                        <li>A statement, under penalty of perjury, that you have a good faith belief that the material
+                            was removed or disabled as a result of mistake or misidentification of the material in
+                            question;
+                        </li>
+                        <li>Your name, address and telephone number;</li>
+                        <li>A statement that you consent to the jurisdiction of the Federal District Court for judicial
+                            district in which your address is located or, if your address is outside of the USA, for any
+                            judicial district in which Stroud Water Research Center and LimnoTech may be found and that
+                            you will accept service of process from the person who submitted a notice in compliance with
+                            the section (c)(1)(C) of the DMCA, as generally described above;
+                        </li>
+                        <li>Your physical or electronic signature.</li>
+                    </ul>
+                    <p>Then send this notice to:</p>
+                    <p>By Mail:</p>
+                    <p>
+                        Stroud Water Research Center<br>70 Spencer Road<br>Avondale, PA 19311
+                    </p>
+                    <p>By Email:</p>
+                    <p>Email: <a href="mailto:dmca@monitormywatershed.org">dmca@monitormywatershed.org</a></p>
+                    <p>You may be able to find examples of counter-notifications at <a
+                            href="https://www.lumendatabase.org/counter_notices/new" target="_blank">https://www.lumendatabase.org/counter_notices/new</a>.
+                        Please note, however, that this is no substitute for legal advice and you should obtain legal
+                        advice to better understand your rights and obligations under the DMCA and applicable laws.</p>
+
+                    <p class="flex" style="align-items: center;">
+                        <img style="margin-right: 20px; height: 31px;" src="{% static 'dataloaderinterface/images/creative-commons.png' %}" alt="Creative Commons"/>
+                        <small class="text-muted"><em>This policy is adapted from the <a href="https://creativecommons.org/dmca/" target="_blank">Creative
+                        Commons DMCA Notice & Takedown Procedure</a> and is is licensed under a <a
+                            href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons
+                        Attribution 4.0 International license</a>.</em></small>
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock %}

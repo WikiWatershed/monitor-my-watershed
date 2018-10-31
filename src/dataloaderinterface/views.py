@@ -30,6 +30,18 @@ class HomeView(TemplateView):
     template_name = 'dataloaderinterface/home.html'
 
 
+class TermsOfUseView(TemplateView):
+    template_name = 'dataloaderinterface/terms_of_use.html'
+
+
+class DMCAView(TemplateView):
+    template_name = 'dataloaderinterface/dmca.html'
+
+
+class PrivacyView(TemplateView):
+    template_name = 'dataloaderinterface/privacy.html'
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = 'sites'

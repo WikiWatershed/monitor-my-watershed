@@ -649,12 +649,12 @@ footer h5 {
     font-size: 14px;
 }
 
-footer a {
+footer a, .panel-login a {
     color: #66CCCC;
     font-weight: 500;
 }
 
-footer a:hover {
+footer a:hover, .panel-login a:hover {
     color: #b8e9e6;
 }
 
@@ -976,7 +976,7 @@ i.material-icons.site-card-icon {
 
 .page-title, .section-title {
     color: #336666;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 400;
 }
 
