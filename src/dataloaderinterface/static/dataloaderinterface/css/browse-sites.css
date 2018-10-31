@@ -40,7 +40,8 @@ body {
 #filters {
     overflow-y: scroll;
     background: #f1f1f1;
-    height: 100%;
+    height: auto;
+    max-height: 100%;
     border-bottom: 1px solid #dedede;
 }
 
