@@ -785,14 +785,8 @@ footer .separator {
     background-color: #f4f4f4;
 }
 
-table.macroinv a {
-    font-weight: initial;
-    color: initial;
-}
-
 table.macroinv tr.taxon, table.macroinv tr.taxon a {
     font-weight: bold;
-    color: initial;
 }
 
 .mdl-data-table-no-hover tbody tr:hover {
