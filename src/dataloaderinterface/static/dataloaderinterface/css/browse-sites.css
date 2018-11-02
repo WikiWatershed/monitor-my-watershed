@@ -2,6 +2,21 @@ body {
     /*overflow: hidden;*/
 }
 
+/* small devices */
+@media only screen and (max-width: 720px) {
+    #filters {
+        overflow-y: initial;
+        height: initial;
+    }
+}
+
+/* medium devices and smaller */
+@media only screen and (max-width: 992px) {
+    .search-wrapper {
+        margin-top: 70px !important;
+    }
+}
+
 #wrapper {
     height: 100%;
     padding-top: 81px;
@@ -15,6 +30,7 @@ body {
 
 .map-container {
     height: 100%;
+    min-height: 550px;
 }
 
 .full-height {
@@ -23,16 +39,10 @@ body {
 
 #filters {
     overflow-y: scroll;
-    background: #e8e8e8;
-    height: 100%;
-    border-bottom: 1px solid #DDD;
-}
-
-@media only screen and (max-width: 720px) {
-    #filters {
-        overflow-y: initial;
-        height: initial;
-    }
+    background: #f1f1f1;
+    height: auto;
+    max-height: 100%;
+    border-bottom: 1px solid #dedede;
 }
 
 #filters label:not(.mdl-switch) {
@@ -59,12 +69,8 @@ body {
     overflow: auto;
 }
 
-.filter-header table {
-    background-color: #66cbcb;
-}
-
 .filter-header table tr:hover {
-    background-color: #94eaea;
+    background-color: #336666;
 }
 
 .filter-header h6 {
@@ -73,11 +79,11 @@ body {
 
 #filters .filter-header h6 > i.material-icons:first-child {
     vertical-align: middle;
-    background: #005050;
-    color: #fff;
+    background: #336666;
+    color: #FFF;
     border-radius: 50%;
-    padding: 0px;
-    border: 2px solid #048a8a;
+    padding: 0;
+    border: 2px solid #66CCCC;
 }
 
 .page-title {
@@ -91,7 +97,7 @@ body {
     margin: 10px 0;
 }
 
-.page-title, .subtitle {
+.page-title, .subtitle, .filter-header a {
     text-shadow: 0 1px 0 #000;
     color: #FFF;
 }
@@ -99,3 +105,37 @@ body {
 #map {
     border: 0;
 }
+
+input#search {
+    padding-right: 36px;
+    border-radius: 0 0.25rem 0.25rem 0;
+    border: 0;
+    border-left: 1px solid rgb(206, 212, 218);
+}
+
+#search-clear {
+    position: absolute;
+    right: 5px;
+    top: 5px;
+    z-index: 3;
+    color: #b6b6b6;
+    cursor: pointer;
+}
+
+#search-addon {
+    border: 0;
+}
+
+#search-clear:hover {
+    color: #4f4f4f;
+}
+
+.search-wrapper {
+    padding: 0;
+    margin-top: 15px;
+    border-radius: 0.25rem;
+    -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    -moz-box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px -1px;
+}
+

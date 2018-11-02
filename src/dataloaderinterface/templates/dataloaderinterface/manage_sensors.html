@@ -4,16 +4,16 @@
 {% load widget_tweaks %}
 
 {% block page_title %}
-    <title>Manage Sensors at {{ site_registration.sampling_feature_code }}</title>
+    <title>Manage Sensor Results Metadata for {{ site_registration.sampling_feature_code }}</title>
 {% endblock %}
 
 {% block content %}
-    <div class="ribbon ribbon-blue"></div>
+    <div class="ribbon bg-medium-teal"></div>
 
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
-            <div class="page-title">Manage Sensors at
-                <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
+            <div class="page-title">Manage Sensor Results Metadata for
+                <a href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
                     {{ site_registration.sampling_feature_code }}</a>
             </div>
             <fieldset class="form-fieldset">
@@ -85,7 +85,7 @@
                                             <span class="field-text">{{ sensor.sensor_output.sampled_medium }}</span>
                                         </td>
                                         <td data-field="height" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.height|default:"" }} {% if sensor.height %}m{% endif %}</span>
+                                            <span class="field-text">{% if sensor.height != None %}{{ sensor.height }} m{% endif %}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">
@@ -102,7 +102,7 @@
                                         </td>
                                     </tr>
                                 {% endfor %}
-                                <tr class="no-sensors-row bg-white {% if object.sensors.count > 0 %}hidden{% endif %}">
+                                <tr class="no-sensors-row {% if object.sensors.count > 0 %}hidden{% endif %}">
                                     <td colspan="7" class="text-center">No sensors have been added.</td>
                                 </tr>
                                 </tbody>
@@ -166,11 +166,11 @@
                             </div>
 
                             <div class="mdl-card__actions mdl-card--border">
-                                <button id="upload-placeholder"
+                                <span id="upload-placeholder"
                                         class="mdl-button--file mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--2dp">
                                     <i class="material-icons">attach_file</i>
                                     <input type="file" name="data_file" id="id_data_file" accept=".csv">
-                                </button>
+                                </span>
 
                                 <div class="file-preview grid">
                                     <small id="file-preview-default" class="text-muted" style="align-self: center;">
@@ -182,7 +182,7 @@
                                            aria-hidden="true"></i>
                                         <span style="align-self: center;"><span class="file-name">File name.csv</span><span class="file-size small text-muted"></span></span>
                                         <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                                                id="btn-upload-file" disabled style="margin: 0; align-self: center;">
+                                                id="btn-upload-file" type="button" disabled style="margin: 0; align-self: center;">
                                             <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
                                         </button>
                                     </div>
@@ -232,20 +232,15 @@
                                  style="width: 100%; min-height: initial;">
                                 <strong>Don't see your sensor in the list of equipment models?</strong>
                                 <small>Click <a
-                                        href="mailto:ww-data-portal-help@googlegroups.com?Subject=Request%20for%20new%20sensor">here</a>
-                                    to send an email to
-                                    a system administrator with a request to add new sensors. Please provide
-                                    us
-                                    with the
-                                    manufacturer and make/model information for the sensor, as well as a
-                                    link to
-                                    a
-                                    website description if you can.
+                                        href="mailto:help@monitormywatershed.org?Subject=Request%20for%20new%20sensor">here</a>
+                                    to send an email to a system administrator with a request to add new sensors. Please
+                                    provide us with the manufacturer and make/model information for the sensor, as well
+                                    as a link to a website description if you can.
                                 </small>
 
                                 <div class="input-group">
                                     <input readonly id="adminEmail" type="text" class="form-control"
-                                           value="ww-data-portal-help@googlegroups.com"
+                                           value="help@monitormywatershed.org"
                                            aria-label="Administrator's email" data-copy-target="adminEmail">
                                 </div>
                             </div>
@@ -256,12 +251,12 @@
                 </div>
                 <div class="mdl-dialog__actions text-right">
                     <button id="edit-sensor-button"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
                         Update Sensor
                     </button>
 
                     <button id="add-sensor-button"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect">
+                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
                         Add New Sensor
                     </button>
 

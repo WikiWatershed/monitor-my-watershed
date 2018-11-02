@@ -24,6 +24,20 @@ var filters = {
         has_search: true
     }
 };
+var textSearchFacets = [
+    "code",
+    "name",
+    "organization",
+    "organization_code",
+    "type",
+    "dataType",
+    "deployment_by",
+    "stream_name",
+    "major_watershed",
+    "sub_basin",
+    "closest_town",
+    "site_notes"
+];
 
 function initMap() {
     const DEFAULT_ZOOM = 5;
@@ -31,9 +45,9 @@ function initMap() {
     const DEFAULT_LATITUDE = 40.0902;
     const DEFAULT_LONGITUDE = -95.7129;
     const DEFAULT_POSITION = { lat: DEFAULT_LATITUDE, lng: DEFAULT_LONGITUDE };
-    var ZOOM_LEVEL = sessionStorage && parseInt(sessionStorage.getItem('CURRENT_ZOOM')) || DEFAULT_ZOOM;
-    var temp = sessionStorage.getItem('CURRENT_CENTER');
-    var MAP_CENTER = DEFAULT_POSITION;
+    const ZOOM_LEVEL = sessionStorage && parseInt(sessionStorage.getItem('CURRENT_ZOOM')) || DEFAULT_ZOOM;
+    const temp = sessionStorage.getItem('CURRENT_CENTER');
+    let MAP_CENTER = DEFAULT_POSITION;
 
     if(sessionStorage.getItem('CURRENT_CENTER')) {
         MAP_CENTER = getLatLngFromString(temp);
@@ -43,8 +57,6 @@ function initMap() {
             map.setZoom(DEFAULT_SPECIFIC_ZOOM);
         }, undefined, { timeout: 5000 });
     }
-
-    var markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: MAP_CENTER,
@@ -60,115 +72,147 @@ function initMap() {
 
     map.setOptions({minZoom: 1, maxZoom: 18});
 
-    var infoWindow = new google.maps.InfoWindow({
-        content: ''
-    });
-
     map.addListener('zoom_changed', function(){
-        var CURRENT_ZOOM = map.getZoom();
+        let CURRENT_ZOOM = map.getZoom();
         sessionStorage.setItem('CURRENT_ZOOM', CURRENT_ZOOM);
     });
 
     map.addListener('center_changed', function(){
-        var CURRENT_CENTER = map.getCenter();
+        let CURRENT_CENTER = map.getCenter();
         sessionStorage.setItem('CURRENT_CENTER', CURRENT_CENTER);
     });
 
-    var icons = {
-        followed: {
-            url: "/static/dataloaderinterface/images/marker-blue-dotted.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        },
-        owned: {
-            url: "/static/dataloaderinterface/images/marker-red-dotted.png",
-            size: new google.maps.Size(36, 62),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 62)
-        },
-        unfollowed: {
-            url: "/static/dataloaderinterface/images/marker-blue.png",
-            size: new google.maps.Size(36, 63),
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(18, 58),
-            scaledSize: new google.maps.Size(36, 63)
-        }
-    };
+    let infoWindow = new google.maps.InfoWindow({
+        content: ''
+    });
+
+    let prevMarker;
+    let prevZIndex;
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // Remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+    // from https://stackoverflow.com/questions/14432165/uncaught-syntaxerror-unexpected-token-with-json-parse
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function(site) {
-        var marker = new google.maps.Marker({
+        let marker = new google.maps.Marker({
             position: {lat: site.latitude, lng: site.longitude},
             map: map,
-            icon: icons[site.status],
-            title: site.name
+            icon: getMarkerIcon(site.status, site.dataAge, site.dataType.split(",")),
+            title: site.name,
+            site: site
         });
 
-        for (var f in filters) {
+        for (let f in filters) {
             marker[filters[f].key] = site[filters[f].key];
         }
 
-        marker.addListener('click', function() {
-            var contentElement = $('<div></div>').append($('#site-marker-content').html());
-            var fields = contentElement.find('.site-field');
-            fields.each(function(index, element) {
-                var field = $(element).data('field');
-                $(element).find('.site-data').text(site[field]);
-            });
-            contentElement.find('.site-link a').attr('href', site.detail_link);
+        marker.addListener('click', function () {
+            if (prevMarker) {
+                prevMarker.setZIndex(prevZIndex);
+            }
 
-            var infoContent = $('<div></div>').append(contentElement.html()).html();
+            prevMarker = this;
+            prevZIndex = this.zIndex;
+
+            let infoContent = createInfoWindowContent(site);
             infoWindow.setContent(infoContent);
             infoWindow.open(marker.get('map'), marker);
+
+            marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); // Bring the marker to the front
         });
 
         markers.push(marker);
     });
 
-    var centerControlDiv = document.createElement('div');
+    appendMarkersLegend(map);
+    appendResultsLegend();
+    appendSearchControl();
+}
 
-    // Set CSS for the control border.
-    var controlUI = document.createElement('div');
-    controlUI.style.backgroundColor = '#fff';
-    controlUI.style.border = '2px solid #fff';
-    controlUI.style.borderRadius = '3px';
-    controlUI.style.boxShadow = '0 1px 1px rgba(0,0,0,.3)';
-    controlUI.style.margin = '1em';
-    controlUI.style.width = "182px";
-    centerControlDiv.appendChild(controlUI);
+function appendResultsLegend() {
+    // Append division for showing number of results:
+    let resultsDiv = document.createElement('div');
+
+    // Set CSS for the control
+    let resultslUI = document.createElement('div');
+    resultslUI.classList.add("mapControlUI");
+    resultslUI.style.width = "250px";
+    resultslUI.style.fontSize = "14px";
+    resultsDiv.appendChild(resultslUI);
 
     // Set CSS for the control interior.
-    var controlText = document.createElement('div');
+    let controlText = document.createElement('div');
     controlText.style.padding = "1em";
     controlText.innerHTML = 'Showing <strong id="marker-count">'
         + markers.length + '</strong> out of <strong id="marker-total-count">'
         + markers.length + '</strong> results.';
-    controlUI.appendChild(controlText);
+    resultslUI.appendChild(controlText);
 
-    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(centerControlDiv);
+    map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(resultsDiv);
+}
+
+function appendSearchControl() {
+    // Append division for search control:
+    let searchDiv = document.createElement('div');
+
+    // Set CSS for the control
+    let searchUI = document.createElement('div');
+    searchUI.style.fontSize = "14px";
+    searchDiv.appendChild(searchUI);
+
+    // Set CSS for the control interior.
+    let controlText = document.createElement('div');
+    controlText.classList.add("input-group");
+    controlText.classList.add("search-wrapper");
+    controlText.innerHTML = `
+      <span class="input-group-addon" id="search-addon"><i class="material-icons">search</i></span>
+      <input id="search" type="text" class="form-control" placeholder="Search sites..." aria-describedby="search-addon">
+      <i id="search-clear" class="material-icons">cancel</i>
+    `;
+    searchUI.appendChild(controlText);
+
+    map.controls[google.maps.ControlPosition.TOP_CENTER].push(searchDiv);
 }
 
 $(document).ready(function () {
     $('nav .menu-browse-sites').addClass('active');
     resizeContent();
 
-    var markerData = JSON.parse(document.getElementById('sites-data').innerHTML);
+    let dataString = document.getElementById('sites-data').innerHTML.replace(/\\n/g, "\\n")
+        .replace(/\\'/g, "\\'")
+        .replace(/\\"/g, '\\"')
+        .replace(/\\&/g, "\\&")
+        .replace(/\\r/g, "\\r")
+        .replace(/\\t/g, "\\t")
+        .replace(/\\b/g, "\\b")
+        .replace(/\\f/g, "\\f");
+    // remove non-printable and other non-valid JSON chars
+    dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
+
+    let markerData = JSON.parse(dataString);
 
     markerData.forEach(function (site) {
-        for (var f in filters) {
-            var keys = [site[filters[f].key]];
+        for (let f in filters) {
+            let keys = [site[filters[f].key]];
             if (filters[f].inclusive) {
                 keys = [];
-                var includes = site[filters[f].key].split(",");
-                for (var i = 0; i < includes.length; i++) {
+                let includes = site[filters[f].key].split(",");
+                for (let i = 0; i < includes.length; i++) {
                     if (includes[i].trim()) {
                         keys.push(includes[i].trim());
                     }
                 }
             }
-            for (var ckey in keys) {
+            for (let ckey in keys) {
                 if (filters[f].values[keys[ckey]])
                     filters[f].values[keys[ckey]] += 1;
                 else
@@ -178,28 +222,28 @@ $(document).ready(function () {
     });
 
     // Move the items to an array so we can sort them
-    for (var f in filters) {
+    for (let f in filters) {
         filters[f].values_sortable = [];
-        for (var val in filters[f].values) {
+        for (let val in filters[f].values) {
             filters[f].values_sortable.push([val, filters[f].values[val]]);
         }
     }
 
     // Sort the arrays alphabetically
-    for (var f in filters) {
+    for (let f in filters) {
         filters[f].values_sortable.sort(function (a, b) {
             return b[0] > a[0] ? -1 : 1;
         });
     }
 
     // Append filter headers
-    for (var f in filters) {
+    for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width">\
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp full-width bg-medium-teal">\
                         <tr>\
                             <td class="mdl-data-table__cell--non-numeric">\
                                 <a data-toggle="collapse" href="#collapse-' + filters[f].key + '" role="button" aria-expanded="true"\
-                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none; color: #222;">\
+                                   aria-controls="collapse-' + f.key + '" style="text-decoration: none;">\
                                     <h6><i class="material-icons mdl-shadow--2dp">' + filters[f].icon + '</i> ' + filters[f].label + '<i class="material-icons icon-arrow pull-right">keyboard_arrow_down</i></h6>\
                                 </a>\
                             </td>\
@@ -223,7 +267,7 @@ $(document).ready(function () {
         );
 
         // Append filter items
-        for (var item = 0; item < filters[f].values_sortable.length; item++) {
+        for (let item = 0; item < filters[f].values_sortable.length; item++) {
             $("#collapse-" + filters[f].key + " > table tbody").append(' <tr>\
                 <td class="mdl-data-table__cell--non-numeric">\
                     <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '">\
@@ -237,15 +281,15 @@ $(document).ready(function () {
         }
     }
 
-    // Bind search events
+    // Bind search events for filter items
     $(".input-filter").keyup(function() {
-        var items = $(this).closest("tbody").find("tr:not(.td-filter)");
-        var searchStr = $(this).val().trim().toUpperCase();
+        let items = $(this).closest("tbody").find("tr:not(.td-filter)");
+        let searchStr = $(this).val().trim().toUpperCase();
 
         if (searchStr.length > 0) {
             items.hide();
 
-            var results = items.filter(function () {
+            let results = items.filter(function () {
                 return $(this).find('label').text().trim().toUpperCase().indexOf(searchStr) >= 0;
             });
 
@@ -256,13 +300,21 @@ $(document).ready(function () {
         }
     });
 
+    // Bind search event for map control
+    $(".map-container").on("keyup", "#search", filter);
+
+    $(".map-container").on("click", "#search-clear", function () {
+        $("#search").val("");
+        filter();
+    });
+
     $("#btnClearFilters").click(function () {
         // document.querySelector('.chk-filter').parentElement.MaterialCheckbox.uncheck();
-        var items = $(".chk-filter");
-        for (var i = 0; i < items.length; i++) {
+        let items = $(".chk-filter");
+        for (let i = 0; i < items.length; i++) {
             $(items[i]).parent()[0].MaterialCheckbox.uncheck();
         }
-        for (var i = 0; i < markers.length; i++) {
+        for (let i = 0; i < markers.length; i++) {
             markers[i].setVisible(true);
         }
 
@@ -270,6 +322,7 @@ $(document).ready(function () {
             zoomExtent();
         }
 
+        $("#search").val("");
         $("#marker-count").text(markers.length);
         $("#marker-total-count").text(markers.length);
     });
@@ -280,77 +333,110 @@ $(document).ready(function () {
         }
     });
 
-    $(".chk-filter").change(function() {
-        var checkedItems = getCurrentFilters();
-        var someVisible = false;
-        var count = 0;
+    $(".chk-filter").change(filter);
+});
 
-        // If nothing selected, display all
-        if (!checkedItems.length) {
-            for (var i = 0; i < markers.length; i++) {
+function isSearched(metadata, searchString) {
+    // Search each metadata element and see if it contains the search string
+    for (let j = 0; j < textSearchFacets.length; j++) {
+        if (metadata[textSearchFacets[j]].trim().toUpperCase().indexOf(searchString) >= 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function filter() {
+    let checkedItems = getCurrentFilters();
+    let someVisible = false;
+    let count = 0;
+    const searchString = $("#search").val().trim().toUpperCase();
+
+    // If no checkbox selected
+    if (!checkedItems.length) {
+        if (!searchString) {
+            for (let i = 0; i < markers.length; i++) {
                 markers[i].setVisible(true);
             }
             someVisible = true;
             count = markers.length;
         }
         else {
-            for (var i = 0; i < markers.length; i++) {
-                var visible = true;    // Starts as true by default
-                for (var j = 0; j < checkedItems.length; j++) {
-                    var key = checkedItems[j][0];
-                    var values = checkedItems[j][1];
-
-                    var isInclusive = false;
-                    for (var f in filters) {
-                        if (filters[f].key == key && filters[f].inclusive) {
-                            isInclusive = true;
-                            break;
-                        }
-                    }
-
-                    if (isInclusive) {
-                        var ckey = markers[i][key].split(",");
-                        var found = false;
-                        for (var v in ckey) {
-                            if (ckey[v] && !(values.indexOf(ckey[v]) < 0)) {
-                                found = true;
-                                break;
-                            }
-                        }
-                        visible = visible && found; // Hide if none of the values were filtered
-                    }
-                    else {
-                        if (values.indexOf(markers[i][key]) < 0) {
-                            visible = false; // Hide if not included in some filter
-                        }
-                    }
-                }
-
+            for (let i = 0; i < markers.length; i++) {
+                // Search each property and see if it contains the search string
+                let visible = isSearched(markers[i].site, searchString);
                 if (visible) {
-                    count++;
                     someVisible = true;
+                    count++;
                 }
 
                 markers[i].setVisible(visible);
-
-                someVisible = someVisible || (!someVisible && visible)
             }
         }
+    }
+    else {
+        for (let i = 0; i < markers.length; i++) {
+            let visible = true;    // Starts as true by default
+            for (let j = 0; j < checkedItems.length; j++) {
+                let key = checkedItems[j][0];
+                let values = checkedItems[j][1];
+                let isInclusive = false;
 
-        // Populate map count
-        $("#marker-count").text(count);
-        $("#marker-total-count").text(markers.length);
+                for (let f in filters) {
+                    if (filters[f].key == key && filters[f].inclusive) {
+                        isInclusive = true;
+                        break;
+                    }
+                }
 
-        if ($("#switch-zoom").prop("checked") && someVisible) {
-            zoomExtent();
+                if (isInclusive) {
+                    let ckey = markers[i][key].split(",");
+                    let found = false;
+                    for (let v in ckey) {
+                        if (ckey[v] && !(values.indexOf(ckey[v]) < 0)) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    visible = visible && found; // Hide if none of the values were filtered
+                }
+                else {
+                    if (values.indexOf(markers[i][key]) < 0) {
+                        visible = false; // Hide if not included in some filter
+                    }
+                }
+            }
+
+            if (searchString) {
+                visible = visible && isSearched(markers[i].site, searchString);
+            }
+
+            // Done filtering current marker
+
+            if (visible) {
+                count++;
+                someVisible = true;
+            }
+
+            markers[i].setVisible(visible);
+            someVisible = someVisible || (!someVisible && visible)
         }
-    });
-});
+    }
+
+    // Populate map count
+    $("#marker-count").text(count);
+    $("#marker-total-count").text(markers.length);
+
+    if ($("#switch-zoom").prop("checked") && someVisible) {
+        zoomExtent();
+    }
+}
 
 // Zooms to the extent of markers.
 function zoomExtent() {
-    var bounds = new google.maps.LatLngBounds();
-    for (var i = 0; i < markers.length; i++) {
+    let bounds = new google.maps.LatLngBounds();
+    for (let i = 0; i < markers.length; i++) {
         if (markers[i].visible) {
             bounds.extend(markers[i].getPosition());
         }
@@ -361,19 +447,19 @@ function zoomExtent() {
 
 // Returns an object listing currently checked filter items
 function getCurrentFilters() {
-    var filters = $(".filter-body");
-    var results = [];
+    let filters = $(".filter-body");
+    let results = [];
 
-    for (var i = 0; i < filters.length; i++) {
-        var items = [];
-        var checked = $(filters[i]).find(".chk-filter:checked");
+    for (let i = 0; i < filters.length; i++) {
+        let items = [];
+        let checked = $(filters[i]).find(".chk-filter:checked");
 
-        for (var j = 0; j < checked.length; j++) {
+        for (let j = 0; j < checked.length; j++) {
             items.push($(checked[j]).attr("data-value"));
         }
 
         if (items && items.length > 0) {
-            var facet = $(filters[i]).attr("data-facet");
+            let facet = $(filters[i]).attr("data-facet");
             results.push([facet, items]);
         }
     }
@@ -389,8 +475,7 @@ function resizeContent() {
 }
 
 function getLatLngFromString(location) {
-    var latlang = location.replace(/[()]/g,'');
-    var latlng = latlang.split(',');
-    var locate = new google.maps.LatLng(parseFloat(latlng[0]) , parseFloat(latlng[1]));
-    return locate;
+    let latlang = location.replace(/[()]/g,'');
+    let latlng = latlang.split(',');
+    return new google.maps.LatLng(parseFloat(latlng[0]) , parseFloat(latlng[1]));
 }

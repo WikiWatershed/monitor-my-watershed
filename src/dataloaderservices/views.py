@@ -1,6 +1,7 @@
 import codecs
 import csv
 import os
+from collections import OrderedDict
 from datetime import timedelta, datetime
 
 from StringIO import StringIO
@@ -170,7 +171,8 @@ class FollowSiteApi(APIView):
 
 class SensorDataUploadView(APIView):
     authentication_classes = (SessionAuthentication,)
-    header_row_indicators = ('Sampling Feature', 'Data Logger', 'Date and Time')
+    header_row_indicators = ('Data Logger', 'Sampling Feature',
+                             'Sensor', 'Variable', 'Result', 'Date and Time')
 
     def should_skip_row(self, row):
         if row[0].startswith(self.header_row_indicators):
@@ -178,21 +180,45 @@ class SensorDataUploadView(APIView):
 
     def build_results_dict(self, data_file):
         results = {'utc_offset': 0, 'site_uuid': '', 'results': {}}
-        is_first_row = True
+        got_feature_uuid = False
+        got_result_uuids = False
+        got_UTC_offset = False
 
         for index, row in enumerate(csv.reader(data_file)):
-            if row[0].startswith('Sampling Feature'):
-                # two cases here: it's the first row and we parse it, or it isn't and we stop
-                if not is_first_row:
-                    break
 
-                results['site_uuid'] = row[0].replace('Sampling Feature: ', '')
-                # build dict with the rest of the columns
-                results['results'] = {uuid: {'index': uuid_index, 'values': []} for uuid_index, uuid in enumerate(row[1:], start=1)}
+            if row[0].startswith('Sampling Feature') and not got_feature_uuid:
+                    results['site_uuid'] = row[0].replace(
+                        'Sampling Feature UUID: ', '').replace(
+                        'Sampling Feature: ', '')
+                    got_feature_uuid = True
+
+                    # oldest csv's from modular sensors have the result UUID's
+                    # in the same row as the sampling feature UUID
+                    # build dict with the rest of the columns
+                    if row[1] != '' and not got_result_uuids:
+                        results['results'] = {uuid:
+                                              {'index': uuid_index,
+                                               'values': []
+                                               } for uuid_index, uuid in
+                                              enumerate(row[1:], start=1)}
+                        got_result_uuids = True
+
+            elif row[0].startswith('Result UUID:') and not got_result_uuids:
+                results['results'] = {uuid:
+                                      {'index': uuid_index,
+                                       'values': []
+                                       } for uuid_index, uuid in
+                                      enumerate(row[1:], start=1)}
+                got_result_uuids = True
 
             elif row[0].startswith('Date and Time'):
-                results['utc_offset'] = int(row[0].replace('Date and Time in UTC', ''))
-            is_first_row = False
+                results['utc_offset'] = int(row[0].replace(
+                    'Date and Time in UTC', '').replace('+', ''))
+                got_UTC_offset = True
+
+            if got_feature_uuid and got_result_uuids and got_UTC_offset:
+                break
+
         return results
 
     def post(self, request, *args, **kwargs):
@@ -361,20 +387,19 @@ class CSVDataApi(View):
             # and if it's not, filter using 'pk__in'
             iter(result_ids)
             time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('values') \
                 .prefetch_related('result__feature_action__action__people') \
                 .select_related('result__feature_action__sampling_feature', 'result__variable') \
-                .filter(pk__in=result_ids)
+                .filter(pk__in=result_ids) \
+                .order_by('pk')
         except TypeError:
             # If exception is raised, `result_ids` is not an iterable,
             # so filter using 'pk'
             time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('values') \
                 .prefetch_related('result__feature_action__action__people') \
                 .select_related('result__feature_action__sampling_feature', 'result__variable') \
                 .filter(pk=result_ids)
 
-        if not time_series_result:
+        if not time_series_result.count():
             raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
 
         csv_file = StringIO()
@@ -426,32 +451,32 @@ class CSVDataApi(View):
 
     @staticmethod
     def get_data_values(time_series_results):  # type: (QuerySet) -> object
+        result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
+        data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
+        data_values_map = OrderedDict()
 
-        def date_value_date(dv):  # type: (TimeSeriesResult) -> str
-            dt = dv.value_datetime + timedelta(hours=dv.value_datetime_utc_offset)
-            return dt.strftime(CSVDataApi.date_format)
+        for value in data_values_queryset:
+            data_values_map.setdefault(value['value_datetime'], {}).update({
+                'utc_offset': value['value_datetime_utc_offset'],
+                value['result_id']: value['data_value']
+            })
 
-        results_data = [result.values.all() for result in time_series_results]  # type: [TimeSeriesResultValue]
-        max_data_len = max([len(result_data) for result_data in results_data])
+        data = []
+        for timestamp, values in data_values_map.iteritems():
+            local_timestamp = timestamp + timedelta(hours=values['utc_offset'])
+            row = [
+                local_timestamp.strftime(CSVDataApi.date_format),   # Local DateTime
+                '{0}:00'.format(values['utc_offset']),              # UTC Offset
+                timestamp.strftime(CSVDataApi.date_format)          # UTC DateTime
+            ]
 
-        data = list()
-
-        for i in range(0, max_data_len):
-            dv = results_data[0][i]
-            row = (
-                date_value_date(dv),
-                '{0}:00'.format(dv.value_datetime_utc_offset),
-                dv.value_datetime.strftime(CSVDataApi.date_format),
-            )
-
-            for j in range(0, len(results_data)):
+            for result_id in result_ids:
                 try:
-                    row += (results_data[j][i].data_value,)
-                except IndexError:
-                    row += ('',)
+                    row.append(values[result_id])
+                except KeyError:
+                    row.append('')
 
             data.append(row)
-
         return data
 
     @staticmethod
@@ -621,15 +646,21 @@ class TimeSeriesValuesApi(APIView):
 
             # delete last measurement
             last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
-            last_measurement and last_measurement.delete()
-
-            # create new 'last' measurement
-            SensorMeasurement.objects.create(
-                sensor=site_sensor,
-                value_datetime=result_value.value_datetime,
-                value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
-                data_value=result_value.data_value
-            )
+            if not last_measurement:
+                SensorMeasurement.objects.create(
+                    sensor=site_sensor,
+                    value_datetime=result_value.value_datetime,
+                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    data_value=result_value.data_value
+                )
+            elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
+                last_measurement and last_measurement.delete()
+                SensorMeasurement.objects.create(
+                    sensor=site_sensor,
+                    value_datetime=result_value.value_datetime,
+                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    data_value=result_value.data_value
+                )
 
             if is_first_value:
                 result.valid_datetime = measurement_datetime

@@ -1,9 +1,14 @@
 from datetime import datetime, time, timedelta
 from django import template
 from django.utils.timesince import timesince
-from django.utils.formats import date_format
 
 register = template.Library()
+
+
+@register.simple_tag(name='tsa_url')
+def tsa_url():
+    from django.conf import settings
+    return settings.TSA_URL
 
 
 @register.filter("utc_timesince", is_safe=False)
@@ -47,3 +52,20 @@ def divide(value, arg):
         return int(value) / int(arg) if int(arg) != 0 else 0
     except (ValueError, ZeroDivisionError):
         return None
+
+
+@register.filter("data_age")
+def data_age(value):
+    if not value:
+        return 'gray'
+
+    val = datetime.utcnow() - value
+
+    if val < timedelta(hours=6):
+        return "darkgreen"
+    elif val < timedelta(hours=72):
+        return "lightgreen"
+    elif val < timedelta(hours=336):
+        return "yellow"
+    else:
+        return "red"

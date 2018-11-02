@@ -79,11 +79,6 @@
                                         <label for="{{ form.deployment_type.id_for_label }}">{{ form.deployment_type.label }}</label>
                                         {{ form.deployment_type|add_class:"form-control" }}
                                     </div>
-
-                                    <div class="form-field col-6">
-                                        <label for="{{ form.content.id_for_label }}">{{ form.content.label }}</label>
-                                        {{ form.content|add_class:"form-control" }}
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -98,13 +93,12 @@
 
                             <div class="mdl-card__supporting-text default-font">
                                 <div class="form-field">
+                                    <label for="{{ form.types.id_for_label }}">{{ form.types.label }}</label>
                                     {{ form.types.errors }}
                                     {{ form.types }}
                                     <h6 class="title">Other</h6>
-                                    <label for="{{ form.types_other.id_for_label }}">
-                                        <label for="{{ form.types_other.id_for_label }}">{{ form.types_other.label }}</label>
-                                        {{ form.types_other|add_class:"form-control" }}
-                                    </label>
+                                    <label for="{{ form.types_other.id_for_label }}">{{ form.types_other.label }}</label>
+                                    {{ form.types_other|add_class:"form-control" }}
                                 </div>
                             </div>
                         </div>
@@ -182,7 +176,7 @@
                                         <label for="{{ form.storm_precipitation.id_for_label }}">{{ form.storm_precipitation.label }}</label>
                                         <br>
                                         {{ form.storm_precipitation|add_class:"form-control d-inline" }}
-                                        <small>cm (depth)</small>
+                                        <small>cm</small>
                                     </div>
                                 </div>
 
@@ -198,7 +192,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
 
                 <div class="row">
@@ -213,12 +206,9 @@
                         <div class="mdl-card mdl-shadow--2dp full-width">
                             <div class="mdl-card__title mdl-card--border" style="display: block;">
                                 <div>Macroinvertebrate Counts</div>
-                                <small class="text-muted mdl-card__subtitle-text">Enter the numbers you recorded in
-                                    the "TOTAL" column in the Project Summary Data Sheet:
+                                <small class="text-muted mdl-card__subtitle-text">Enter the total number found within
+                                    all of your retrieved leaf packs.
                                 </small>
-                            </div>
-                            <div class="mdl-card__supporting-text mdl-card--border">
-                                <span>Enter 0 for taxa not found in your leaf packs!</span>
                             </div>
                             <div class="mdl-card__supporting-text mdl-card--border default-font">
                                 <div class="row">
@@ -249,6 +239,30 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-12">
+                        <span class="step-number center-icon">4</span>
+                        <h5 class="headline d-inline-block">Is there anything else you’d like to tell us about your Leaf Pack Experiment?</h5>
+                    </div>
+                </div>
+
+                <div class="row step-row">
+                    <div class="col-12 form-field">
+                        <div class="mdl-card mdl-shadow--2dp full-width">
+                             <div class="mdl-card__title mdl-card--border" style="display: block;">
+                                <label for="{{ form.notes.id_for_label }}" class="control-label">{{ form.notes.label }}</label>
+                            </div>
+                            <div class="mdl-card__supporting-text mdl-card--border default-font">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        {{ form.notes|add_class:"form-control" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <br><br>
                 <div class="row">
                     <div class="col">
@@ -259,7 +273,7 @@
                                     href="{% url 'leafpack:view' sampling_feature_code leafpack.id %}"
                                 {% endif %}
                         >Cancel</a>
-                        <button type="submit" class="mdl-button mdl-button--raised mdl-button--accent">
+                        <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored">
                             {% if leafpack.pk is None %}
                                 Submit
                             {% else %}

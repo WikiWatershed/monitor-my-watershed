@@ -24,28 +24,28 @@
             </div>
 
             <div class="row">
-                <div class="col-sm-12 my-sites-map-container my-sites">
+                <div class="col-sm-12 map-container my-sites">
                     <div id="map"></div>
+                    <br><br>
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-sm-12">
-                    <div class="row">
-                        <div class="col-6">
+                    <div class="row" style="margin-top: 20px;">
+                        <div class="col-md-6 col-sm-12">
                             <h4 data-toggle="collapse" href="#mySitesCollapse"
                             aria-expanded="true" aria-controls="mySitesCollapse"
                                 style="cursor: pointer;  display: inline-block;"
                             ><i class="material-icons icon-arrow">keyboard_arrow_down</i> My Registered Sites <span class="badge badge-secondary">{{ sites|length }}</span></h4>
                         </div>
-                        <div class="col-6 text-right">
+                        <div class="col-md-6 col-sm-12 text-right">
                             <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
-                               class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--accent mdl-js-ripple-effect">
+                               class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--colored mdl-js-ripple-effect">
                                 <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
                             </a>
                         </div>
                     </div>
-
                     <hr>
                 </div>
                 {% if sites %}
@@ -84,9 +84,9 @@
                                      data-lastUpdated="{{ site.latest_measurement.value_datetime|date:"U" }}">
                                     <div class="mdl-card mdl-shadow--2dp site-card">
                                         <div class="mdl-card__title">
-                                            <h2 class="mdl-card__title-text" id="mySite{{ forloop.counter }}">
+                                            <div class="mdl-card__title-text" id="mySite{{ forloop.counter }}">
                                                 <a href="{% autoescape off %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_code }}</a>
-                                            </h2>
+                                            </div>
                                             <div class="mdl-tooltip" data-mdl-for="mySite{{ forloop.counter }}">
                                                 {{ site.sampling_feature_code }}
                                             </div>
@@ -159,7 +159,8 @@
                     </div>
                 {% else %}
                     <div class="col-sm-12">
-                        <p>No sites to display</p>
+                        <p class="text-muted"><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>
+                            No sites to display</p>
                     </div>
                 {% endif %}
 
@@ -206,9 +207,9 @@
                                      data-lastUpdated="{{ site.latest_measurement.value_datetime|date:"U" }}">
                                     <div class="mdl-card mdl-shadow--2dp site-card">
                                         <div class="mdl-card__title">
-                                            <h2 class="mdl-card__title-text" id="followedSite{{ forloop.counter }}">
+                                            <div class="mdl-card__title-text" id="followedSite{{ forloop.counter }}">
                                                 <a href="{% autoescape on %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_code }}</a>
-                                            </h2>
+                                            </div>
                                             <div class="mdl-tooltip" data-mdl-for="followedSite{{ forloop.counter }}">
                                                 {{ site.sampling_feature_code }}
                                             </div>
@@ -281,7 +282,8 @@
                     </div>
                 {% else %}
                     <div class="col-sm-12">
-                        <p>No followed sites to display</p>
+                        <p class="text-muted"><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>
+                            No followed sites to display</p>
                     </div>
                 {% endif %}
             </div>
@@ -300,6 +302,8 @@
                         "elevation": {{ site.elevation_m|default_if_none:'""' }},
                         "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                         "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
+                        "dataType": "{% if site.sensors.all.count > 0 %}EnviroDIY,{% endif %}{% if site.leafpack_set.all.count > 0 %}Leaf Pack{% endif %}",
+                        "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}",
                         "status":"owned"
                      }{% if not forloop.last or followed_sites.count > 0 %},{% endif %}
                 {% endfor %}
@@ -313,6 +317,8 @@
                         "elevation": {{ site.elevation_m|default_if_none:'""' }},
                         "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                         "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
+                        "dataType": "{% if site.sensors.all.count > 0 %}EnviroDIY,{% endif %}{% if site.leafpack_set.all.count > 0 %}Leaf Pack{% endif %}",
+                        "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}",
                         "status":"followed"
                      }{% if not forloop.last %},{% endif %}
                 {% endfor %}
@@ -343,7 +349,7 @@
                         <td><span class="site-data"></span> <span class="elevation-units">m</span></td>
                     </tr>
                     <tr data-field="latest-measurement" class="site-field">
-                        <th><span class="site-label">Latest Measurement</span></th>
+                        <th><span class="site-label">Latest<br>Measurement</span></th>
                         <td><span class="site-data"></span></td>
                     </tr>
                     <tr class="site-link">
@@ -361,13 +367,14 @@
 
 {% block styles %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/marker-icons.css' %}">
     <link rel="stylesheet" href="{% static 'dataloaderinterface/css/my-sites.css' %}">
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
     <script src="{% static 'dataloaderinterface/js/bootstrap-toolkit.min.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/my-sites.js' %}"></script>
-
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
 {% endblock %}

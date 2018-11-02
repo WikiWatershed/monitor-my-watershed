@@ -10,10 +10,10 @@
 {% block content %}
     <div class="container-fluid full-height">
         <div class="row" id="title-row">
-            <div class="col-sm-12 col-md-4 col-lg-3" style="background-color: #005252;">
+            <div class="col-sm-12 col-md-4 col-lg-3 bg-dark-teal">
                 <span class="page-title">Browse Data Collection Sites&nbsp;</span>
             </div>
-            <div class="col-sm-12 col-md-8 col-lg-9" style="background-color: #048a8a; border-bottom: 1px solid #005252;">
+            <div class="col-sm-12 col-md-8 col-lg-9 bg-medium-teal" style="border-bottom: 1px solid #005252;">
                 <span class="subtitle">Browse all sites that have been registered in the database by all users. Clicking on a site shows its details and provides a link to view the data collected at that site.</span>
             </div>
         </div>
@@ -55,6 +55,13 @@
                     "id": "{{ site.sampling_feature_id }}",
                     "code": "{{ site.sampling_feature_code }}",
                     "organization": "{{ site.organization_name }}",
+                    "organization_code": "{{ site.organization_code }}",
+                    "deployment_by": "{{ site.django_user.get_full_name }}",
+                    "stream_name": "{{ site.stream_name|default:"" }}",
+                    "major_watershed":"{{ site.major_watershed|default:"" }}",
+                    "sub_basin":"{{ site.sub_basin|default:"" }}",
+                    "closest_town":"{{ site.closest_town|default:"" }}",
+                    "site_notes":"{{ site.site_notes|escape }}",
                     "type": "{{ site.site_type }}",
                     "name": "{{ site.sampling_feature_name }}",
                     "latitude": {{ site.latitude|default_if_none:0 }},
@@ -62,8 +69,9 @@
                     "elevation": {{ site.elevation_m|default_if_none:'""' }},
                     "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                     "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
-                    "dataType": "{% if site.sensors.all %}EnviroDIY,{% endif %}{% if site.leafpack_set.all %}Leaf Pack{% endif %}",
-                    "status": "{{ site.ownership_status }}"
+                    "dataType": "{% if site.sensors.all.count > 0 %}EnviroDIY,{% endif %}{% if site.leafpack_set.all.count > 0 %}Leaf Pack{% endif %}",
+                    "status": "{{ site.ownership_status }}",
+                    "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}"
                     }{% if not forloop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -103,7 +111,7 @@
                                 <td><span class="site-data"></span> <span class="elevation-units">m</span></td>
                             </tr>
                             <tr class="site-field" data-field="latest-measurement">
-                                <th>Latest Measurement</th>
+                                <th>Latest<br>Measurement</th>
                                 <td><span class="site-data"></span></td>
                             </tr>
                             <tr class="site-link">
@@ -125,11 +133,13 @@
 
 {% block styles %}
     {{ block.super }}
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/marker-icons.css' %}">
     <link rel="stylesheet" href="{% static 'dataloaderinterface/css/browse-sites.css' %}">
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+    <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/browse-sites.js' %}"></script>
     <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
 {% endblock %}

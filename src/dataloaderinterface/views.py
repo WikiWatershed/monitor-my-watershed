@@ -6,11 +6,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
-from django.http.response import HttpResponseRedirect, Http404, HttpResponse, JsonResponse, HttpResponseServerError
-from django.shortcuts import render, redirect
-from django.views.generic.base import TemplateView, View
+from django.http.response import HttpResponseRedirect, Http404
+from django.shortcuts import redirect
+from django.views.generic.base import TemplateView
 from django.views.generic.detail import DetailView
-from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, ModelFormMixin
+from django.views.generic.edit import UpdateView, CreateView, DeleteView, ModelFormMixin
 from django.views.generic.list import ListView
 
 from dataloader.models import ElevationDatum, SiteType
@@ -18,6 +18,7 @@ from dataloaderinterface.models import SiteRegistration
 from dataloaderinterface.forms import SiteAlertForm, SiteRegistrationForm, SiteSensorForm, SensorDataForm
 from hydroshare.models import HydroShareResource, HydroShareAccount
 from leafpack.models import LeafPack
+
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -27,6 +28,18 @@ class LoginRequiredMixin(object):
 
 class HomeView(TemplateView):
     template_name = 'dataloaderinterface/home.html'
+
+
+class TermsOfUseView(TemplateView):
+    template_name = 'dataloaderinterface/terms_of_use.html'
+
+
+class DMCAView(TemplateView):
+    template_name = 'dataloaderinterface/dmca.html'
+
+
+class PrivacyView(TemplateView):
+    template_name = 'dataloaderinterface/privacy.html'
 
 
 class SitesListView(LoginRequiredMixin, ListView):

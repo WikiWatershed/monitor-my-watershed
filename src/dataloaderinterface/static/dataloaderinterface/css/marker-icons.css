@@ -1,0 +1,14 @@
+.legend-marker {
+    width: 20px;
+    margin-right: 6px;
+}
+
+table.legend-table td, table.legend-table th {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+#legendCollapse p.title {
+    font-size: 14px;
+    margin-bottom: 4px;
+}

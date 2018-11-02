@@ -29,12 +29,12 @@
                 </div>
                 <div class="banner-legend text-center">
                     <h2 class="text-center">Data Sharing Portal </h2>
-                    <h4 class="text-center">Contribute your water quality data</h4>
+                    <h4 class="text-center">Contribute your water-quality data</h4>
 
                     {% if not user.is_authenticated %}
                         <h4 class="text-center">Ready to start sharing your data?</h4>
                         <h4 class="text-center">
-                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect"
+                            <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
                                href="{% url 'user_registration' %}">SIGN UP</a>
                         </h4>
                     {% endif %}
@@ -49,8 +49,8 @@
         <div class="container shadow" id="how-it-works-section">
             <div class="row">
                 <section class="col-sm-12">
-                    <div class="text-center section-title">How it works</div>
-                    <p class="lead text-center">The WikiWatershed Data Portal supports multiple types of water quality data.</p>
+                    <div class="text-center section-title">How It Works</div>
+                    <p class="lead text-center">Monitor My Watershed supports multiple types of water-quality data.</p>
                     <br><br>
                     <div class="row">
                         <div class="col-sm-8 offset-sm-2 col-md-4 offset-md-2 col-8 offset-2">
@@ -68,7 +68,9 @@
                                 </div>
 
                                 <div class="mdl-card__supporting-text">
-                                    <p class="lead">EnviroDIY is a community of enthusiasts sharing do-it-yourself ideas for environmental science and monitoring.</p>
+                                    <p class="lead"><a href="https://www.envirodiy.org/" target="_blank">EnviroDIY</a>
+                                        is a community of enthusiasts sharing do-it-yourself ideas for environmental
+                                        science and monitoring.</p>
                                 </div>
                             </div>
                             <br><br><br>
@@ -77,25 +79,27 @@
                             <div class="row text-center">
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">1</h3>
-                                        <i class="fa fa-laptop step-icon" aria-hidden="true"></i>
-                                        <h4>Register your compatible data logger and your sensors.</h4>
+                                        <h3 class="step-number bg-light-teal">1</h3>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4><a href="{% url 'login' %}">Register</a>
+                                            your compatible data logger and your sensors.</h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">2</h3>
-                                        <i class="material-icons step-icon">settings_remote</i>
+                                        <h3 class="step-number bg-light-teal">2</h3>
+                                        <i class="material-icons step-icon bg-dark-teal">settings_remote</i>
                                         <h4>Deploy your data logger and start collecting data.</h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">3</h3>
-                                        <i class="fa fa-cloud-upload step-icon" aria-hidden="true"></i>
-                                        <h4>Stream your data continuously and view your results online.</h4>
+                                        <h3 class="step-number bg-light-teal">3</h3>
+                                        <i class="fa fa-cloud-upload step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4>Stream your data continuously and <a
+                                                href="{% url 'browse_sites' %}">view your results</a> online.</h4>
                                     </div>
                                 </div>
                             </div>
@@ -119,7 +123,8 @@
                                     Share and Explore Macroinvertebrate Datasets
                                 </div>
                                 <div class="mdl-card__supporting-text">
-                                    <p class="lead">The Leaf Pack Network is an international network of teachers,
+                                    <p class="lead"><a href="https://leafpacknetwork.org/" target="_blank">The Leaf Pack
+                                        Network</a> is an international network of teachers,
                                         students, and citizen monitors investigating their local stream ecosystems.</p>
                                 </div>
                             </div>
@@ -129,25 +134,27 @@
                             <div class="row text-center">
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">1</h3>
-                                        <i class="fa fa-leaf step-icon" aria-hidden="true"></i>
-                                        <h4>Conduct your Leaf Pack experiment.</h4>
+                                        <h3 class="step-number bg-light-teal">1</h3>
+                                        <i class="fa fa-leaf step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4>Conduct your <a href="https://www.leafpacknetwork.org/resources/manual/"
+                                                            target="_blank">Leaf Pack experiment</a>.</h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">2</h3>
-                                        <i class="fa fa-laptop step-icon" aria-hidden="true"></i>
-                                        <h4>Register your location and enter your data.</h4>
+                                        <h3 class="step-number bg-light-teal">2</h3>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4><a href="{% url 'login' %}">Register</a>
+                                            your location and enter your data.</h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
-                                        <h3 class="step-number">3</h3>
-                                        <i class="fa fa-map step-icon" aria-hidden="true"></i>
-                                        <h4>Explore your data and those contributed by others.</h4>
+                                        <h3 class="step-number bg-light-teal">3</h3>
+                                        <i class="fa fa-map step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4><a href="{% url 'browse_sites' %}">Explore</a> your data and those contributed by others.</h4>
                                     </div>
                                 </div>
                             </div>
@@ -161,39 +168,47 @@
     <div class="container-fluid content-section">
         <div class="container shadow" id="companion-section">
             <div class="col-sm-12">
-                <div class="text-center section-title">Explore our Companion Projects</div>
+                <div class="text-center section-title">Explore the WikiWatershed Toolkit</div>
                 <br><br>
 
                 <div class="row text-center">
                     <div class="col"></div>
-                    <div class="col-sm-12 col-lg-3 row-eq-height">
+                    <div class="col-sm-12 col-lg-6 row-eq-height">
                         <div class="card">
                             <div class="explore-image-container">
-                                <img class="card-header-image"
-                                     src="{% static 'dataloaderinterface/images/envirodiy_logo.png' %}"
-                                     alt="EnviroDIY logo">
-                            </div>
-                            <h3 class="text-left">EnviroDIY</h3>
-                            <h4 class="text-left" style="margin-bottom: 60px;">
-                                A community of enthusiasts sharing do-it-yourself ideas for environmental science and
-                                monitoring
-                            </h4>
-                            <h4 class="visit-link text-left" >
-                                <a href="https://envirodiy.org/" target="_blank">VISIT SITE <i class="material-icons center-icon">chevron_right</i></a>
-                            </h4>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-12 col-lg-3 row-eq-height">
-                        <div class="card">
-                            <div class="explore-image-container">
-                                <img class="card-header-image"
-                                     src="{% static 'dataloaderinterface/images/WikiWatershed_logo.png' %}"
+                                <img class="card-header-image" style="max-width: 350px;"
+                                     src="{% static 'dataloaderinterface/images/WikiWatershed_logo_white.png' %}"
                                      alt="WikiWatershed logo">
                             </div>
-                            <h3 class="text-left">WikiWatershed</h3>
                             <h4 class="text-left" style="margin-bottom: 60px;">
-                                Web tools for collaboratively advancing knowledge and stewardship of fresh water</h4>
+                                Monitor My Watershed® supports data capture and visualization functions for <a
+                                    href="https://www.envirodiy.org/" target="_blank">EnviroDIY</a>
+                                and <a href="https://www.leafpacknetwork.org/" target="_blank">Leaf Pack Network</a>
+                                communities, which are part of <a href="https://wikiwatershed.org/" target="_blank">WikiWatershed</a>®.
+                                <br><br>
+                                The WikiWatershed toolkit includes:
+                                <ul class="toolkit-list">
+                                    <li><a href="https://wikiwatershed.org/model/" target="_blank">Model My Watershed</a>®, a web app that lets you analyze geospatial data, model
+                                        storms, and compare conservation or development scenarios in a watershed.
+                                    </li>
+                                    <li>A <a href="https://wikiwatershed.org/model/" target="_blank">Runoff Simulation</a> that shows how land use and soil together determine whether
+                                        rainfall infiltrates into the soil, runs off into streams, or is evaporated and
+                                        transpired by plants.
+                                    </li>
+                                    <li>
+                                        <a href="https://www.envirodiy.org/" target="_blank">EnviroDIY</a>, a community of do-it-yourself enthusiasts sharing open-source ideas for environmental science and monitoring.
+                                    </li>
+                                    <li>
+                                        <a href="https://www.leafpacknetwork.org/" target="_blank">Leaf Pack Network</a>, an international network of teachers, students, and citizen monitors investigating their local stream ecosystems.
+                                    </li>
+                                    <li>
+                                        The <a href="https://wikiwatershed.org/water-quality-app/" target="_blank">Water
+                                        Quality mobile app</a> for recording water-monitoring data and enhancing
+                                        learning activities for students and citizen scientists. Available for Apple and
+                                        Android devices.
+                                    </li>
+                                </ul>
+                            </h4>
 
                             <h4 class="visit-link text-left">
                                 <a href="https://wikiwatershed.org/" target="_blank">
@@ -201,26 +216,6 @@
                             </h4>
                         </div>
                     </div>
-
-                    <div class="col-sm-12 col-lg-3 row-eq-height">
-                        <div class="card">
-                            <div class="explore-image-container">
-                                <img class="card-header-image"
-                                     src="{% static 'dataloaderinterface/images/Leaf-Pack-Network-logo_horiz.png' %}"
-                                     alt="Leaf Pack Network logo">
-                            </div>
-                            <h3 class="text-left">Leaf Pack Network</h3>
-                            <h4 class="text-left" style="margin-bottom: 60px;">
-                                An international network of teachers, students, and citizen monitors investigating their
-                                local stream ecosystems.
-                            </h4>
-                            <h4 class="visit-link text-left">
-                                <a href="https://leafpacknetwork.org/" target="_blank">
-                                VISIT SITE <i class="material-icons center-icon">chevron_right</i></a>
-                            </h4>
-                        </div>
-                    </div>
-
                     <div class="col"></div>
                 </div>
             </div>
@@ -233,7 +228,7 @@
                 <section class="col-sm-12 text-center">
                     <h3>Ready to join?</h3>
                     <h5>Create an account for free.</h5>
-                    <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--accent mdl-js-ripple-effect"
+                    <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect"
                        href="{% url 'user_registration' %}">SIGN UP</a>
                 </section>
             </div>

@@ -16,8 +16,7 @@ class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 
 class LeafPackForm(forms.ModelForm):
 
-    DEPLOYMENT_TYPE_CHOICES = (('Unknown', 'Unknown'), ('Pool', 'Pool'), ('Riffle', 'Riffle'), ('Run', 'Run'))
-    CONTENT_CHOICES = (('Leaves', 'Leaves'),)
+    DEPLOYMENT_TYPE_CHOICES = (('Pool', 'Pool'), ('Riffle', 'Riffle'), ('Run', 'Run'))
 
     def __init__(self, *args, **kwargs):
         super(LeafPackForm, self).__init__(*args, **kwargs)
@@ -62,12 +61,13 @@ class LeafPackForm(forms.ModelForm):
 
     types = forms.ModelMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
+        label='Enter the three predominant leaf species:',
         queryset=LeafPackType.objects.filter(created_by=None),
     )
 
     types_other = forms.CharField(
         max_length=255,
-        label='Enter the three predominant leaf species:',
+        label='Enter leaf species not listed above or experimental materials such as newspaper, plastic, etc.:',
         required=False,
         widget=forms.TextInput(attrs={'placeholder': 'i.e., Species 1, Species 2, Species 3'})
     )
@@ -137,9 +137,17 @@ class LeafPackForm(forms.ModelForm):
         required=False
     )
 
-    deployment_type = forms.ChoiceField(choices=DEPLOYMENT_TYPE_CHOICES)
+    deployment_type = forms.ChoiceField(
+        choices=DEPLOYMENT_TYPE_CHOICES,
+        label='Stream Habitat Type',
+        required=False
+    )
 
-    content = forms.ChoiceField(choices=CONTENT_CHOICES)
+    notes = forms.CharField(
+        label='Leave your comments',
+        widget=forms.Textarea(),
+        required=False
+    )
 
     class Meta:
         model = LeafPack

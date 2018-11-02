@@ -15,7 +15,7 @@ class Command(BaseCommand):
     def send_email(email_address, subject, message):
         print("- sending email to {}: {}".format(email_address, subject))
         success = send_mail(subject, message, settings.NOTIFY_EMAIL_SENDER, [email_address])
-        return True if success == 1 else False
+        return success == 1
 
     def handle(self, *args, **options):
         # MAGICAL BEAUTIFUL QUERY
@@ -30,18 +30,18 @@ class Command(BaseCommand):
         for site_alert in all_site_alerts:
             gap = int(site_alert.data_gap.total_seconds() / 3600)
 
-            subject = 'EnviroDIY Notification: No data received for site' \
+            subject = 'Monitor My Watershed Notification: No data received for site' \
                       ' {} in the last {} hours'.format(site_alert.site_registration.sampling_feature_name, gap)
 
             message = ("{},\n\n"
-                       "This email is to notify you that your EnviroDIY site \"{}\" has not received any new "
+                       "This email is to notify you that your Monitor My Watershed site \"{}\" has not received any new "
                        "data values in the last {} hours. The last update was on {}. You may want to check your "
                        "equipment to ensure it's working as intended. \n\n"
-                       "https://data.envirodiy.org/sites/{}/\n\n"
+                       "https://www.monitormywatershed.org/sites/{}/\n\n"
                        "Best regards,\n"
-                       "The EnviroDIY team.\n"
+                       "The Monitor My Watershed Team\n"
                        "").format(site_alert.user.first_name, site_alert.site_registration.sampling_feature_name,
-                                  gap, site_alert.last_measurement_utc_datetime,
+                                  gap, site_alert.last_measurement_datetime,
                                   site_alert.site_registration.sampling_feature_code)
             success = Command.send_email(site_alert.user.email, subject, message)
             if success:

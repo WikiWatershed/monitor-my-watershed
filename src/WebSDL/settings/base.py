@@ -45,6 +45,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
+    'tsa.apps.TsaConfig',
     'accounts.apps.AccountsConfig',
     'dataloader.apps.DataloaderConfig',
     'dataloaderservices.apps.DataloaderservicesConfig',
