@@ -646,15 +646,21 @@ class TimeSeriesValuesApi(APIView):
 
             # delete last measurement
             last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
-            last_measurement and last_measurement.delete()
-
-            # create new 'last' measurement
-            SensorMeasurement.objects.create(
-                sensor=site_sensor,
-                value_datetime=result_value.value_datetime,
-                value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
-                data_value=result_value.data_value
-            )
+            if not last_measurement:
+                SensorMeasurement.objects.create(
+                    sensor=site_sensor,
+                    value_datetime=result_value.value_datetime,
+                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    data_value=result_value.data_value
+                )
+            elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
+                last_measurement and last_measurement.delete()
+                SensorMeasurement.objects.create(
+                    sensor=site_sensor,
+                    value_datetime=result_value.value_datetime,
+                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    data_value=result_value.data_value
+                )
 
             if is_first_value:
                 result.valid_datetime = measurement_datetime
