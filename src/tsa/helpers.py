@@ -9,10 +9,10 @@ from tsa.models import DataSeries
 
 
 class TimeSeriesAnalystHelper(object):
-    wofpy_get_url = '{server}/wofpy/rest/1_1/GetValues' \
+    wofpy_get_url = 'http://{server}/wofpy/rest/1_1/GetValues' \
                     '?location={sampling_feature_code}&variable={variable_code}&methodCode=2' \
                     '&sourceCode={organization_id}&qualityControlLevelCode=Raw&startDate=&endDate='
-    influx_get_url = '{database_server}:8086/query?u=web_client&p=password&db=envirodiy' \
+    influx_get_url = 'https://{database_server}/query?u=web_client&p=password&db=envirodiy' \
                      '&q=SELECT%20time,%20DataValue::field,%20UTCOffset::field%20FROM%20{influx_identifier}'
 
     def create_series_from_sensor(self, sensor):
