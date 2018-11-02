@@ -30,16 +30,16 @@ class Command(BaseCommand):
         for site_alert in all_site_alerts:
             gap = int(site_alert.data_gap.total_seconds() / 3600)
 
-            subject = 'EnviroDIY Notification: No data received for site' \
+            subject = 'Monitor My Watershed Notification: No data received for site' \
                       ' {} in the last {} hours'.format(site_alert.site_registration.sampling_feature_name, gap)
 
             message = ("{},\n\n"
-                       "This email is to notify you that your EnviroDIY site \"{}\" has not received any new "
+                       "This email is to notify you that your Monitor My Watershed site \"{}\" has not received any new "
                        "data values in the last {} hours. The last update was on {}. You may want to check your "
                        "equipment to ensure it's working as intended. \n\n"
-                       "https://data.envirodiy.org/sites/{}/\n\n"
+                       "https://www.monitormywatershed.org/sites/{}/\n\n"
                        "Best regards,\n"
-                       "The EnviroDIY team.\n"
+                       "The Monitor My Watershed Team\n"
                        "").format(site_alert.user.first_name, site_alert.site_registration.sampling_feature_name,
                                   gap, site_alert.last_measurement_datetime,
                                   site_alert.site_registration.sampling_feature_code)
