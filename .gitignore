@@ -1,5 +1,3 @@
-/src/dataloaderinterface/static/data
-/src/WebSDL/.idea
 # Created by .ignore support plugin (hsz.mobi)
 ### Python template
 # Byte-compiled / optimized / DLL files
@@ -89,9 +87,6 @@ target/
 
 # Mongo Explorer plugin:
 # .idea/mongoSettings.xml
-/src/WebSDL/WebSDL/settings/settings.json
-settings.json
-settings.*.json
 
 ## File-based project format:
 *.ipr
@@ -118,8 +113,15 @@ crashlytics-build.properties
 
 ## Miscellaneous
 resources.csv
+/src/dataloaderinterface/static/data
+/src/WebSDL/.idea
 
 # Docker
 Dockerfile
 docker-start.sh
 docker-compose.yml
+
+# Django Settings
+/src/WebSDL/WebSDL/settings/settings.json
+settings.json
+settings.*.json
