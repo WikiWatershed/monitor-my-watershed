@@ -1,0 +1,9 @@
+# Series Information
+# ---------------------------
+# BeginDateTime: {sensor.registration.deployment_date}
+# EndDateTime: {sensor.last_measurement.value_datetime}
+# NumberOfObservations: {sensor.result.value_count}
+# QualityControlLevelCode: {sensor.result.processing_level.processing_level_code}
+# QualityControlLevelDefinition: {sensor.result.processing_level.definition}
+# GetDataUrl: {sensor.influx_url}
+#

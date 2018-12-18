@@ -341,7 +341,7 @@ class SensorDataUploadView(APIView):
         return Response({'message': 'file has been processed successfully'}, status.HTTP_200_OK)
 
 
-class CSVDataApi(View):
+class CSVDataApi(APIView):
     authentication_classes = ()
 
     date_format = '%Y-%m-%d %H:%M:%S'
@@ -351,64 +351,47 @@ class CSVDataApi(View):
         Downloads csv file for given result id's.
 
         example request to download csv data for one series:
-                curl -X GET http://localhost:8000/api.csv-values/?result_ids=100
+                curl -X GET http://localhost:8000/api/csv-values/?result_id=100
 
         example request to download csv data for multiple series:
-                curl -X GET http://localhost:8000/api.csv-values/?result_ids=100,101,102
+                curl -X GET http://localhost:8000/api/csv-values/?result_id=100&result_id=101&result_id=102
         """
-        result_ids = []
-        if 'result_id' in request.GET:
-            result_ids = [request.GET.get('result_id', [])]
-        elif 'result_ids' in request.GET:
-            result_ids = request.GET['result_ids'].split(',')
-
-        result_ids = filter(lambda x: len(x) > 0, result_ids)
+        result_ids = request.GET.getlist('result_id')
+        # result_ids = [int(parameter) for parameter in result_parameters if parameter.isdigit()]
 
         if not len(result_ids):
-            return Response({'error': 'Result ID(s) not found.'})
+            return Response({'error': 'Result ID(s) not found.'}, status.HTTP_400_BAD_REQUEST)
 
         try:
-            filename, csv_file = CSVDataApi.get_csv_file(result_ids, request=request)
+            filename, csv_file = CSVDataApi.generate_csv_file(result_ids, request=request)
         except ValueError as e:
-            return Response({'error': e.message})  # Time Series Result not found.
+            return Response({'error': e.message}, status.HTTP_404_NOT_FOUND)  # Time Series Result not found.
 
         response = HttpResponse(csv_file.getvalue(), content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="%s.csv"' % filename
         return response
 
     @staticmethod
-    def get_csv_file(result_ids, request=None):  # type: (list, any) -> (str, StringIO)
+    def generate_csv_file(result_ids, request=None):  # type: (list, any) -> (str, StringIO)
         """
         Gathers time series data for the passed in result id's to generate a csv file for download
         """
 
-        try:
-            # Some duck typing here to check if `result_ids` is an iterable,
-            # and if it's not, filter using 'pk__in'
-            iter(result_ids)
-            time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('result__feature_action__action__people') \
-                .select_related('result__feature_action__sampling_feature', 'result__variable') \
-                .filter(pk__in=result_ids) \
-                .order_by('pk')
-        except TypeError:
-            # If exception is raised, `result_ids` is not an iterable,
-            # so filter using 'pk'
-            time_series_result = TimeSeriesResult.objects \
-                .prefetch_related('result__feature_action__action__people') \
-                .select_related('result__feature_action__sampling_feature', 'result__variable') \
-                .filter(pk=result_ids)
+        sensors = SiteSensor.objects\
+            .prefetch_related('sensor_output', 'registration', 'last_measurement')\
+            .filter(result_id__in=result_ids)\
+            .order_by('pk')
 
-        if not time_series_result.count():
-            raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
+        if not sensors.count():
+            raise ValueError('The results were not found (result id(s): {}).'.format(', '.join(result_ids)))
 
         csv_file = StringIO()
         csv_writer = UnicodeWriter(csv_file)
-        csv_file.write(CSVDataApi.generate_metadata(time_series_result, request=request))
-        csv_writer.writerow(CSVDataApi.get_csv_headers(time_series_result))
-        csv_writer.writerows(CSVDataApi.get_data_values(time_series_result))
+        csv_file.write(CSVDataApi.generate_metadata(sensors))
+        csv_writer.writerow(CSVDataApi.generate_csv_headers(sensors))
+        csv_writer.writerows(CSVDataApi.get_data_values(sensors))
 
-        result = time_series_result.first().result
+        sensor = sensors.first()
 
         try:
             resultids_len = len(result_ids)
@@ -416,18 +399,18 @@ class CSVDataApi(View):
             resultids_len = 1
 
         if resultids_len > 1:
-            filename = "{}_TimeSeriesResults".format(result.feature_action.sampling_feature.sampling_feature_code)
+            filename = "{}_TimeSeriesResults".format(sensor.registration.sampling_feature_code)
         else:
-            filename = "{0}_{1}_{2}".format(result.feature_action.sampling_feature.sampling_feature_code,
-                                            result.variable.variable_code, result.result_id)
+            filename = "{0}_{1}_{2}".format(sensor.registration.sampling_feature_code,
+                                            sensor.sensor_output.variable_code, sensor.result_id)
 
         return filename, csv_file
 
     @staticmethod
-    def get_csv_headers(ts_results):  # type: ([TimeSeriesResult]) -> None
-        headers = ['DateTime', 'TimeOffset', 'DateTimeUTC']
-        var_codes = [ts_result.result.variable.variable_code for ts_result in ts_results]
-        return headers + CSVDataApi.clean_variable_codes(var_codes)
+    def generate_csv_headers(sensors):  # type: ([TimeSeriesResult]) -> None
+        headers = [u'DateTime', u'TimeOffset', u'DateTimeUTC']
+        variable_codes = [sensor.sensor_output.variable_code for sensor in sensors]
+        return headers + CSVDataApi.clean_variable_codes(variable_codes)
 
     @staticmethod
     def clean_variable_codes(varcodes):  # type: ([str]) -> [str]
@@ -450,11 +433,13 @@ class CSVDataApi(View):
         return varcodes
 
     @staticmethod
-    def get_data_values(time_series_results):  # type: (QuerySet) -> object
-        result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
-        data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
-        data_values_map = OrderedDict()
+    def get_data_values(sensors):  # type: (QuerySet) -> object
+        result_ids = [result_id[0] for result_id in sensors.values_list('result_id')]
+        data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids)\
+            .order_by('value_datetime')\
+            .values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
 
+        data_values_map = OrderedDict()
         for value in data_values_queryset:
             data_values_map.setdefault(value['value_datetime'], {}).update({
                 'utc_offset': value['value_datetime_utc_offset'],
@@ -486,92 +471,37 @@ class CSVDataApi(View):
             return fin.read()
 
     @staticmethod
-    def generate_metadata(time_series_results, request=None):  # type: (QuerySet, any) -> str
+    def generate_metadata(sensors):  # type: (QuerySet) -> str
         metadata = str()
+        site_sensor = sensors.first()
 
-        # Get the first TimeSeriesResult object and use it to get values for the
-        # "Site Information" block in the header of the CSV
-        tsr = time_series_results.first()
-        site_sensor = SiteSensor.objects.select_related('registration').filter(result_id=tsr.result.result_id).first()
-        metadata += CSVDataApi.read_file('site_information.txt').format(
-            site=site_sensor.registration
-        ).encode('utf-8')
+        # site information
+        metadata += CSVDataApi.read_file('site_information.txt').format(site=site_sensor.registration).encode('utf-8')
 
-        time_series_results_as_list = [tsr for tsr in time_series_results]
+        # variable information
+        variable_template_filename = 'variable_information.txt'
+        if sensors.count() > 1:
+            variable_template_filename = 'variable_information_compact.txt'
+            metadata += "# Variable Information\n# ---------------------------\n"
 
-        if len(time_series_results_as_list) == 1:
-            # If there is only one time series result, use the normal variable and method info template
-            variablemethodinfo_template = CSVDataApi.read_file('variable_and_method_template.txt')
-            tsr = next(iter(time_series_results_as_list))
-            metadata += variablemethodinfo_template.format(
-                variable_code=tsr.result.variable,
-                r=tsr.result,
-                v=tsr.result.variable,
-                u=tsr.result.unit,
-                s=site_sensor
-            )
-        else:
-            # If there are more than one time series result, use the compact
-            # version of the variable and method info template.
-
-            # Write Variable and Method Information data
-            metadata += "# Variable and Method Information\n#---------------------------\n"
-            variablemethodinfo_template = CSVDataApi.read_file('variable_and_method_template_compact.txt')
-            varcodes = [tsr.result.variable for tsr in time_series_results]
-            varcodes = CSVDataApi.clean_variable_codes(varcodes)
-            for i in range(0, len(time_series_results_as_list)):
-                # Yeah, so this is enumerating like this because of the need to append "-#"
-                # to variable codes when there are duplicate variable codes. This is so the
-                # column names can be distinguished easily.
-                tsr = time_series_results_as_list[i]
-
-                sensor = SiteSensor.objects.select_related('registration').filter(
-                    result_id=tsr.result.result_id).first()
-
-                # Why use `varcodes[i]` instead of simply `tsr.result.variable`? Because
-                # there is a possibility of having duplicate variable codes, and
-                # `varcodes` is passed into `CSVDataApi.clean_variable_codes(*arg)`
-                # which does additional formatting to the variable code names.
-                metadata += variablemethodinfo_template.format(
-                    variable_code=varcodes[i],
-                    r=tsr.result,
-                    v=tsr.result.variable,
-                    u=tsr.result.unit,
-                    s=sensor
-                )
-
+        variable_template = CSVDataApi.read_file(variable_template_filename)
+        for sensor in sensors:
+            metadata += variable_template.format(sensor=sensor).encode('utf-8')
         metadata += "#\n"
 
-        if len(time_series_results) == 1:
-            # If there's only one timeseriesresult, add the variable and unit information block.
-            # When there are multiple timeseriesresults, this part of the CSV becomes cluttered
-            # and unreadable.
-            tsr = time_series_results.first()
-            metadata += CSVDataApi.read_file('variable_and_unit_information.txt').format(
-                variable=tsr.result.variable,
-                unit=tsr.result.unit,
-                sensor=site_sensor
-            )
+        # source information
+        source_link = reverse('site_detail', kwargs={
+            'sampling_feature_code': site_sensor.registration.sampling_feature_code
+        })
+        metadata += CSVDataApi.read_file('source_information.txt')\
+            .format(registration=site_sensor.registration, source_link=source_link)\
+            .encode('utf-8')
 
-        # Write Source Information data
-
-        # affiliation = tsr.result.feature_action.action.people.first()
-        affiliation = site_sensor.registration.odm2_affiliation
-        annotation = tsr.result.annotations.first()
-        citation = annotation.citation.title if annotation and annotation.citation else ''
-
-        if request:
-            source_link = request.build_absolute_uri(reverse('site_detail', kwargs={
-                'sampling_feature_code': site_sensor.registration.sampling_feature_code}))
-        else:
-            source_link = reverse('site_detail', kwargs={
-                'sampling_feature_code': site_sensor.registration.sampling_feature_code})
-
-        metadata += CSVDataApi.read_file('source_info_template.txt').format(
-            affiliation=affiliation,
-            citation=citation,
-            source_link=source_link
-        )
+        # series information
+        if sensors.count() == 1:
+            metadata += CSVDataApi.read_file('series_information.txt') \
+                .format(sensor=site_sensor) \
+                .encode('utf-8')
 
         return metadata
 
