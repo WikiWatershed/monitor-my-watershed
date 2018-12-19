@@ -5,13 +5,15 @@
 function initializeSelect(select) {
     setTimeout(function () {
         select.each(function(index, selectElement) {
+            var parent = $(selectElement).parents('[role="dialog"]');
             $(selectElement).select2({
                 theme: "bootstrap",
                 containerCssClass : "input-sm",
                 dropdownAutoWidth: true,
                 width: 'auto',
                 allowClear: true,
-                placeholder: $(selectElement).attr('placeholder')
+                placeholder: $(selectElement).attr('placeholder'),
+                dropdownParent: (parent.length)? parent: $(document.body)
             });
         });
     });
