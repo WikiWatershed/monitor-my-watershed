@@ -7,9 +7,9 @@ output_variables = {};
 filter_structure = {
     'sensor_manufacturer': {sub_filters: ['sensor_model']},
     'sensor_model': {sub_filters: ['variable', 'sensor_manufacturer']},
-    'variable': {sub_filters: ['unit', 'sampled_medium', 'sensor_model']},
-    'unit': {sub_filters: ['variable']},
-    'sampled_medium': {sub_filters: ['variable']}
+    'variable': {sub_filters: ['unit', 'sensor_model']},
+    'unit': {sub_filters: ['sampled_medium', 'variable']},
+    'sampled_medium': {sub_filters: ['unit']}
 };
 
 function defaultSensorsMessage() {
