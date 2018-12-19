@@ -91,13 +91,15 @@ class OrganizationForm(forms.ModelForm):
         help_texts = {
             'organization_code': 'Enter a brief, but unique code to identify your organization (e.g., "USU" or "USGS")',
             'organization_name': 'Enter the name of your organization',
-            'organization_description': 'Enter a description for your organization'
+            'organization_description': 'Enter a description for your organization',
+            'organization_link': 'Enter a URL that links to the organization website'
         }
         fields = [
             'organization_code',
             'organization_name',
             'organization_type',
-            'organization_description'
+            'organization_description',
+            'organization_link'
         ]
 
 
