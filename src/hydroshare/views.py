@@ -524,7 +524,7 @@ def get_sensor_files(site_registration):
     queryset = SiteSensor.objects.filter(registration=site_registration.pk)
     files = []
     for site_sensor in queryset:
-        filename, csv_file = CSVDataApi.get_csv_file(site_sensor.result_id)
+        filename, csv_file = CSVDataApi.generate_csv_file([site_sensor.result_id])
         files.append((filename, csv_file.getvalue()))
     return files
 
