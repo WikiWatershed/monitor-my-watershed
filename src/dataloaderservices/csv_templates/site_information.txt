@@ -9,13 +9,16 @@
 #
 # Site Information
 # ---------------------------
-# SiteCode: {site.sampling_feature.sampling_feature_code}
-# SiteName: {site.sampling_feature.sampling_feature_name}
-# SiteDescription: {site.sampling_feature.sampling_feature_description}
-# Latitude: {site.sampling_feature.site.latitude}
-# Longitude: {site.sampling_feature.site.longitude}
-# Elevation: {site.sampling_feature.elevation_m}
-# VerticalDatum: {site.sampling_feature.elevation_datum_id}
-# SiteType: {site.sampling_feature.site.site_type_id}
+# SiteCode: {site.sampling_feature_code}
+# SiteName: {site.sampling_feature_name}
+# Latitude: {site.latitude}
+# Longitude: {site.longitude}
+# Elevation: {site.elevation_m}
+# VerticalDatum: {site.elevation_datum}
+# SiteType: {site.site_type}
+# StreamName: {site.stream_name}
+# MajorWatershed: {site.major_watershed}
+# SubBasin: {site.sub_basin}
+# ClosestTown: {site.closest_town}
 # SiteNotes: {site.site_notes}
 #

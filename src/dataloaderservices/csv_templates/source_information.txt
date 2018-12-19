@@ -1,0 +1,7 @@
+# Source Information
+# ------------------
+# Organization: {registration.organization_name}
+# SourceLink: {source_link}
+# ContactName: {registration.person_first_name} {registration.person_last_name}
+# Email: {registration.odm2_affiliation.primary_email}
+#
