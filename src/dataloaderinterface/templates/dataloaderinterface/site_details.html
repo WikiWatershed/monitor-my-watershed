@@ -271,7 +271,7 @@
                     <div class="buttons-toolbar col-12 text-right">
                         {% if site.sensors.all %}
                             <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'csv_data_service' %}?{{ site.sensors.all|get_csv_sensors_parameters }}"
+                               href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
                                download>
                                 <i class="material-icons center-icon">cloud_download</i>
                                 Download Sensor Data

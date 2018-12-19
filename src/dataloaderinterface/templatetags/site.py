@@ -69,6 +69,6 @@ def date_format(value, arg):
     return str(value)
 
 
-@register.filter("get_csv_sensors_parameters")
-def get_csv_sensors_parameters(sensors):
-    return '&'.join(["result_id={id}".format(id=sensor.result_id) for sensor in sensors])
+@register.filter("join_sensor__result_ids")
+def join_sensor_ids(sensors):
+    return ','.join([str(sensor.result_id) for sensor in sensors])
