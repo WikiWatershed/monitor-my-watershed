@@ -714,7 +714,7 @@ class Unit(models.Model):
     unit_link = models.CharField(db_column='unitslink', blank=True, max_length=255)
 
     def __str__(self):
-        return '%s: %s (%s)' % (self.unit_type_id, self.unit_name, self.unit_abbreviation)
+        return '%s - %s (%s)' % (self.unit_name, self.unit_abbreviation, self.unit_type_id)
 
     def __repr__(self):
         return "<Unit('%s', '%s', '%s', '%s')>" % (
