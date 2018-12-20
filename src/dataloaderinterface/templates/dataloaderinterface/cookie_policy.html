@@ -1,0 +1,69 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load staticfiles %}
+
+{% block styles %}
+    {{ block.super }}
+{% endblock %}
+
+{% block page_title %}
+    <title>Cookie Policy</title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-dark"></div>
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <section class="device-data col-lg-12">
+                <header class="section-header">
+                    <div class="page-title">Monitor My Watershed® Cookie Policy</div>
+                </header>
+                <div class="section-body">
+                    <p>Our <a href="{% url 'privacy' %}">Privacy Policy</a> explains our principles when it comes to the
+                        collection, processing, and
+                        storage of your information. This cookie policy specifically explains how we deploy cookies, as
+                        well as the options you have to control them.</p>
+                    <h6 class="section-title">What Are Cookies?</h6>
+                    <p>Cookies are small pieces of data, stored in text files, that are stored on your computer or other
+                        device when websites are loaded in a browser. They are widely used to “remember” you and your
+                        preferences, either for a single visit (through a “session cookie”) or for multiple repeat
+                        visits (using a “persistent cookie”). They ensure a consistent and efficient experience for
+                        visitors, and perform essential functions such as allowing users to register and remain logged
+                        in. Cookies may be set by the site that you are visiting (known as “first-party cookies”), or by
+                        third parties, such as those who serve content or provide advertising or analytics services on
+                        the website (“third-party cookies”).</p>
+                    <h6 class="section-title">Cookies Set by MonitorMyWatershed.org</h6>
+                    <p>We use cookies for a number of different purposes. Some cookies are necessary for technical
+                        reasons, some enable a personalized experience for both visitors and registered users. Some of
+                        these cookies may be set when a page is loaded, or only when a visitor takes a particular
+                        action.</p>
+                    <h6>Forms-Related Cookies</h6>
+                    <p>When you submit data through a form, cookies may be set to remember your user details.</p>
+                    <h6>Third-Party Cookies</h6>
+                    <p>This site uses Google Analytics which is one of the most widespread and trusted analytics
+                        solution on the web for helping us to understand how you use the site and ways that we can
+                        improve your experience. These cookies may track things such as how long you spend on the site
+                        and the pages that you visit so we can continue to produce engaging content. <a
+                                href="https://support.google.com/analytics/answer/6004245?hl=en" target="_blank">Visit
+                            this page</a> for
+                        more information on Google Analytics cookies.</p>
+                    <h6 class="section-title">Controlling Cookies</h6>
+                    <p>Visitors may wish to restrict the use of cookies, or completely prevent them from being set. Most
+                        browsers provide for ways to control cookie behavior such as the length of time they are stored
+                        — either through built-in functionality or by utilizing third-party plugins.</p>
+                    <p><strong>It’s important to note that restricting or disabling the use of cookies can limit the
+                        functionality of websites, or prevent them from working correctly at all.</strong></p>
+                    <p>To find out more on how to manage and delete cookies, visit <a
+                            href="https://www.aboutcookies.org/" target="_blank">aboutcookies.org</a>. For more details
+                        on advertising cookies, and how to manage them, visit <a href="https://youronlinechoices.eu/"
+                                                                                 target="_blank">youronlinechoices.eu</a> (EU-based), or
+                        <a href="http://www.aboutads.info/choices/" target="_blank">aboutads.info</a> (US-based). </p>
+                    <p>Some specific opt-out programs are available here:</p>
+                    <ul>
+                        <li>Quantcast - <a href="https://www.quantcast.com/opt-out/" target="_blank">https://www.quantcast.com/opt-out/</a></li>
+                        <li>Google Analytics - <a href="https://tools.google.com/dlpage/gaoptout" target="_blank">https://tools.google.com/dlpage/gaoptout</a></li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock %}
