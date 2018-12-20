@@ -1438,6 +1438,10 @@ div.file-preview {
     padding: 1em;
 }
 
+div.file-preview .file-name {
+    word-break: break-word;
+}
+
 i.file-icon {
     font-size: 30px;
     color: #66cbcb;
