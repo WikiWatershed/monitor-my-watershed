@@ -495,23 +495,22 @@
                         <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
                             <thead>
                             <tr>
-                                {#                                        <th class="mdl-data-table__cell--non-numeric">Experiment ID</th>#}
-                                {#                                        <th class="mdl-data-table__cell--non-numeric">Experiment Type</th>#}
                                 <th class="mdl-data-table__cell--non-numeric">Begin Date</th>
-                                <th class="mdl-data-table__cell--non-numeric">Content</th>
-                                <th class="mdl-data-table__cell--non-numeric">Deployment Type</th>
+                                <th class="mdl-data-table__cell--non-numeric">Total Number of Individuals Found</th>
+                                <th class="mdl-data-table__cell--non-numeric">Biotic Index</th>
+                                <th class="mdl-data-table__cell--non-numeric">Water Quality Category</th>
+                                <th class="mdl-data-table__cell--non-numeric">Percent EPT</th>
                                 <th class="mdl-data-table__cell--non-numeric"></th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for leafpack in leafpacks %}
                                 <tr>
-                                    {# TODO: Populate field experiment_type #}
-                                    {#                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.id }}</td>#}
-                                    {#                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.experiment_type }}</td>#}
                                     <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_date }}</td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ leafpack.content }}</td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ leafpack.deployment_type }}</td>
+                                    <td>{{ leafpack.taxon_count }}</td>
+                                    <td>{{ leafpack.biotic_index|floatformat:2 }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ leafpack.water_quality }}</td>
+                                    <td>{{ leafpack.percent_EPT|floatformat:2 }}%</td>
                                     <td class="mdl-data-table__cell--non-numeric">
                                         <a class="mdl-button mdl-js-button button-link mdl-button--primary"
                                            href="{% url 'leafpack:view' site.sampling_feature.sampling_feature_code leafpack.id %}">
