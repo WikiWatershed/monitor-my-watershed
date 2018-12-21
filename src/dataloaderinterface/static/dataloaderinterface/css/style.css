@@ -1433,6 +1433,11 @@ textarea[name="sensor_notes"] {
     top: 10px;
 }
 
+#btn-upload-file {
+    margin-left: 10px;
+    align-self: center;
+}
+
 div.file-preview {
     height: auto;
     padding: 1em;
