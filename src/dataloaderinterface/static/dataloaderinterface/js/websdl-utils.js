@@ -74,7 +74,7 @@ MaterialSnackbar.prototype.displaySnackbar_ = function () {
     }
     else {
         this.actionElement_.addEventListener('click', function () {
-            setTimeout(this.cleanup_.bind(this), 0);
+           this.cleanup_();
         }.bind(this));
     }
 };
