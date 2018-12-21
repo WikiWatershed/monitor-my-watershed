@@ -1442,6 +1442,10 @@ div.file-preview .file-name {
     word-break: break-word;
 }
 
+#file-preview-default {
+    align-self: center;
+}
+
 i.file-icon {
     font-size: 30px;
     color: #66cbcb;
