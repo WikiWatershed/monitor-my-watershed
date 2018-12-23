@@ -24,13 +24,10 @@ $(document).on('click', ".menu-order li", function () {
 
     var sortBy = $(this).parent().find("li[data-sort-by].active").attr("data-sort-by");
     var order = $(this).parent().find("li[data-order].active").attr("data-order");
+    var orderInt = order === "asc" ? 1 : -1;
 
     $(target + ' .sortable').sort(function (a, b) {
-        if (order == "asc") {
-            return (a.dataset[sortBy].toUpperCase() > b.dataset[sortBy].toUpperCase());
-        }
-
-        return (a.dataset[sortBy].toUpperCase() < b.dataset[sortBy].toUpperCase());
+        return (a.dataset[sortBy] > b.dataset[sortBy] ? orderInt : -orderInt);
     }).appendTo(target);
 
     var UISortState = JSON.parse(localStorage.getItem("UISortState")) || {};
@@ -96,17 +93,14 @@ $(document).ready(function () {
     for (var item in UISortState) {
         var sortBy = UISortState[item].sortBy;
         var order = UISortState[item].order;
+        var orderInt = order === "asc" ? 1 : -1;
 
         var ul = $("ul[data-sort-target='" + item + "']");
         ul.find("[data-sort-by='" + sortBy + "']").addClass("active");
         ul.find("[data-order='" + order + "']").addClass("active");
 
         $(item + ' .sortable').sort(function (a, b) {
-            if (order == "asc") {
-                return (a.dataset[sortBy] > b.dataset[sortBy]);
-            }
-
-            return (a.dataset[sortBy] < b.dataset[sortBy]);
+            return (a.dataset[sortBy] > b.dataset[sortBy] ? orderInt : -orderInt);
         }).appendTo(item);
 
         $(item).addClass("sorted");
