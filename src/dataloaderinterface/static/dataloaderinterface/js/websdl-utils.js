@@ -36,6 +36,20 @@ $(document).on('click', ".menu-order li", function () {
     localStorage.setItem("UISortState", JSON.stringify(UISortState));
 });
 
+$(document).on('click', ".button--disable-after", function () {
+    let form = $(this).closest("form");
+    if (form[0].checkValidity()) {
+        if ($(this).text().trim().toUpperCase() == "SAVE EDITS") {
+            $(this).text("Saving...");
+        }
+        else if ($(this).text().trim().toUpperCase() == "SUBMIT") {
+            $(this).text("Submitting...");
+        }
+
+        $(this).toggleClass("button--disabled", true);
+    }
+});
+
 // Displays a snack bar message
 function snackbarMsg(message, persistent = false) {
     var snackbar = document.querySelector('#clipboard-snackbar');

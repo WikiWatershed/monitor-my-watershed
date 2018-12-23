@@ -1467,3 +1467,11 @@ i.file-icon {
     width: 300px;
     z-index: 4;
 }
+
+.button--disabled {
+    color: rgba(0, 0, 0, .26) !important;
+    background-color: rgba(0, 0, 0, .12) !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
+    cursor: default !important;
+}
