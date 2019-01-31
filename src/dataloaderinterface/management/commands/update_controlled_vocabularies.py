@@ -39,7 +39,7 @@ vocabularies_map = {
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Update the ODM2 Controlled Vocabularies tables with the CVs in vocabulary.odm2.org'
 
     def handle(self, *args, **options):
         # TODO: These values should go in the settings.json file and not hardcoded.

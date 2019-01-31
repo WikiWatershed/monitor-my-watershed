@@ -9,7 +9,7 @@ from dataloaderinterface.models import SiteRegistration, SiteSensor, SensorMeasu
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Create `Last Measurement` objects for all sensors.'
 
     def handle(self, *args, **options):
         print('- Getting results')

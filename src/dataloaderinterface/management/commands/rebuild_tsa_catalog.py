@@ -10,7 +10,7 @@ from tsa.helpers import TimeSeriesAnalystHelper
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Delete and rebuild the TSA Catalog table.'
 
     def handle(self, *args, **options):
         sensors = SiteSensor.objects.select_related('registration').prefetch_related('last_measurement', 'sensor_output')\
