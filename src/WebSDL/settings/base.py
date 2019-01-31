@@ -122,6 +122,8 @@ for database in data['databases']:
         'TEST': database['test'] if 'test' in database else {},
     }
 
+INFLUX_CONNECTION = data['influx_connection']
+
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
