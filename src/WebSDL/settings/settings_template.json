@@ -1,45 +1,56 @@
 {
-  "secret_key": "",
-  "host": "-optional",
-  "recaptcha_secret_key": "-optional",
-  "recaptcha_user_key": "-optional",
-  "password_email_sender": "password.reset@data.envirodiy.org",
-  "email_host": "mail.usu.edu",
-  "influx_query": "{hostname_with_url_and_auth_and_db}&q=SELECT%20%2A%20FROM%20%22uuid_{result_uuid}%22%20WHERE%20%22time%22%20%3E=%20%27{last_measurement}%27-{days_of_data}d",
-  "tsa_url": "http://data.envirodiy.org/tsa/",
-  "sensor_data_period": "3",
+  "secret_key": "{{django secret key}}",
+  "static_root": "{{static files root directory}}",
+  "host": "{{server domain name}}",
+  "host_alt": ["{{any other server domain names}}", "{{...}}"],
+  "password_email_sender": "\"Password Recovery\" <{{password recovery email}}>",
+  "notify_email_sender": "\"Site Data Alert\" <{{data loss notification email}}>",
+  "email_host": "{{email server address}}",
+  "influx_query": "{{influx db server address}}/query?u={influx db user}&p={{influx db password}}&db=envirodiy&q=SELECT%20time,%20DataValue::field,%20UTCOffset::field%20FROM%20%22uuid_{result_uuid}%22%20WHERE%20%22time%22%20%3E=%20%27{last_measurement}%27-{days_of_data}d",
+  "influx_updater_query": {"url":"{{inlfux db server address}}/write?u=webtsa_root&p=yellowmousewithasmalltinyhat&db=envirodiy&precision=s", "body": "uuid_{result_uuid} DataValue={data_value},UTCOffset={utc_offset}.0 {timestamp_s}"},
+  "tsa_url": "{{time series analyst address}}",
+  "sensor_data_period": "{{days it takes for the data to be considered stale}}",
+
   "databases": [
     {
       "name": "default",
-      "schema": "",
-      "engine": "",
-      "user": "",
-      "password": "",
-      "host": "",
-      "port": ""
+      "schema": "{{django default database name}}",
+      "engine": "django.db.backends.postgresql_psycopg2",
+      "user": "{{database user}}",
+      "password": "{{database password}}",
+      "host": "{{database server address}}",
+      "port": "5432"
     },
     {
       "name": "odm2",
-      "schema": "",
-      "engine": "",
-      "user": "",
-      "password": "",
-      "host": "",
-      "port": ""
+      "schema": "odm2",
+      "engine": "django.db.backends.postgresql_psycopg2",
+      "user": "{{database user}}",
+      "password": "{{database password}}",
+      "host": "{{database server address}}",
+      "port": "5432"
+    },
+    {
+      "name": "tsa_catalog",
+      "schema": "tsa_catalog",
+      "engine": "django.db.backends.postgresql_psycopg2",
+      "user": "{{database user}}",
+      "password": "{{database password}}",
+      "host": "{{database server address}}",
+      "port": "5432"
     }
   ],
   "hydroshare_oauth": {
-    "client_id": "client_id_here",
-    "client_secret": "client_secret_here",
-    "redirect_uri": "http://localhost:8000/hydroshare/oauth/"
+      "client_id": "{{hydroshare client id}}",
+      "client_secret": "{{hydroshare client secret}}",
+      "redirect_uri": "hydroshare/oauth/"
   },
-  "crontab_log_file": "/var/log/crontab.log",
-  "crontab_user": "joesmokum",
+  "crontab_log_file": "{{log file for crontab jobs}}",
+  "crontab_user": "{{crontab user}}",
   "google_api_conf": {
-    "api_key": "<your_api_key>",
-    "files": {
-      "taxon_spreadsheet": "<this_spreadsheets_file_id>",
-      "<some_other_file>": "<some_other_file_id>"
-    }
+      "api_key": "{{api key for leafpack taxon spreadsheet}} (AIzaSyD_uxlkaHEd9h6FK7ULSWxkLbJ4ovySfOI)",
+      "files": {
+          "taxon_spreadsheet": "{{leafpack taxon spreadsheet id}} (12CVnLB7XVkOFUf4sL3Nd_oawZCr4BhoxfjL2P8IpZww)"
+      }
   }
 }
