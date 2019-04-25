@@ -33,7 +33,7 @@ class DataSeries(models.Model):
     data_type = models.CharField(db_column='DataType', max_length=50, null=True, blank=True)
     general_category = models.CharField(db_column='GeneralCategory', max_length=50, null=True, blank=True)
     time_support = models.FloatField(db_column='TimeSupport', null=True, blank=True)
-    time_support_unit_sname = models.CharField(db_column='TimeSupportUnitsName', max_length=500, null=True, blank=True)
+    time_support_units_name = models.CharField(db_column='TimeSupportUnitsName', max_length=500, null=True, blank=True)
     time_support_units_type = models.CharField(db_column='TimeSupportUnitsType', max_length=50, null=True, blank=True)
     time_support_units_abbreviation = models.CharField(db_column='TimeSupportUnitsAbbreviation', max_length=50, null=True, blank=True)
     quality_control_level_code = models.CharField(db_column='QualityControlLevelCode', max_length=50, null=True, blank=True)
