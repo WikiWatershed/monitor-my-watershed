@@ -181,6 +181,13 @@ EMAIL_SERVER = data['email_host'] if 'email_host' in data else '',
 
 EMAIL_HOST = EMAIL_SERVER[0] if isinstance(EMAIL_SERVER, tuple) else EMAIL_SERVER
 
+EMAIL_HOST_USER = data['email_user'] if 'email_user' in data else ''
+
+EMAIL_HOST_PASSWORD = data['email_password'] if 'email_password' in data else ''
+
+EMAIL_USE_TLS = True
+
+
 DATETIME_FORMAT = "N j, Y g:i a"
 
 HYDROSHARE_UTIL_CONFIG = {
