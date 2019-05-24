@@ -112,7 +112,7 @@ class TimeSeriesAnalystHelper(object):
                 organization_id=registration.organization_id
             ),
             get_data_influx=self.influx_get_url.format(
-                database_server=server_data['database_server'],
+                database_server=server_data['influx_server'],
                 influx_identifier=get_influx_identifier(sensor)
             ),
             no_data_value=get_no_data_value(sensor)
@@ -157,6 +157,7 @@ def retrieve_server_data():
             data = json.load(data_file)
         server_data['server'] = data['host']
         server_data['database_server'] = next(db_connection['host'] for db_connection in data['databases'] if db_connection['name'] == 'tsa_catalog')
+        server_data['influx_server'] = data['influx_server'] if 'influx_server' in data else server_data['database_server']
     except IOError:
         print('Error reading settings.json file')
 
