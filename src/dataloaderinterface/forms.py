@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from django.contrib.auth import get_user_model
 from django.forms import NumberInput
 from django.forms.widgets import HiddenInput
 
@@ -12,6 +12,12 @@ allowed_site_types = [
     'Borehole', 'Ditch', 'Atmosphere', 'Estuary', 'House', 'Land', 'Pavement', 'Stream', 'Spring',
     'Lake, Reservoir, Impoundment', 'Laboratory or sample-preparation area', 'Observation well', 'Soil hole',
     'Storm sewer', 'Stream gage', 'Tidal stream', 'Water quality station', 'Weather station', 'Wetland', 'Other'
+]
+
+user_affiliations = [
+    affiliation[0]
+    for affiliation
+    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
 ]
 
 
@@ -43,7 +49,7 @@ class SampledMediumField(forms.ModelChoiceField):
 
 class SiteRegistrationForm(forms.ModelForm):
     affiliation_id = forms.ModelChoiceField(
-        queryset=Affiliation.objects.for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
         required=False,
         help_text='Select the user that deployed or manages the site',
         label='Deployed By'
@@ -91,13 +97,15 @@ class OrganizationForm(forms.ModelForm):
         help_texts = {
             'organization_code': 'Enter a brief, but unique code to identify your organization (e.g., "USU" or "USGS")',
             'organization_name': 'Enter the name of your organization',
-            'organization_description': 'Enter a description for your organization'
+            'organization_description': 'Enter a description for your organization',
+            'organization_link': 'Enter a URL that links to the organization website'
         }
         fields = [
             'organization_code',
             'organization_name',
             'organization_type',
-            'organization_description'
+            'organization_description',
+            'organization_link'
         ]
 
 

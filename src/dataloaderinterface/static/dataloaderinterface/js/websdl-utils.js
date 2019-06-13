@@ -24,13 +24,10 @@ $(document).on('click', ".menu-order li", function () {
 
     var sortBy = $(this).parent().find("li[data-sort-by].active").attr("data-sort-by");
     var order = $(this).parent().find("li[data-order].active").attr("data-order");
+    var orderInt = order === "asc" ? 1 : -1;
 
     $(target + ' .sortable').sort(function (a, b) {
-        if (order == "asc") {
-            return (a.dataset[sortBy].toUpperCase() > b.dataset[sortBy].toUpperCase());
-        }
-
-        return (a.dataset[sortBy].toUpperCase() < b.dataset[sortBy].toUpperCase());
+        return (a.dataset[sortBy] > b.dataset[sortBy] ? orderInt : -orderInt);
     }).appendTo(target);
 
     var UISortState = JSON.parse(localStorage.getItem("UISortState")) || {};
@@ -39,13 +36,59 @@ $(document).on('click', ".menu-order li", function () {
     localStorage.setItem("UISortState", JSON.stringify(UISortState));
 });
 
-function snackbarMsg(message, duration = 3000) {
-    var snackbarContainer = document.querySelector('#clipboard-snackbar');
-    snackbarContainer.MaterialSnackbar.showSnackbar({
-        message: message,
-        timeout: duration
-    });
+$(document).on('click', ".button--disable-after", function () {
+    let form = $(this).closest("form");
+    if (form[0].checkValidity()) {
+        if ($(this).text().trim().toUpperCase() == "SAVE EDITS") {
+            $(this).text("Saving...");
+        }
+        else if ($(this).text().trim().toUpperCase() == "SUBMIT") {
+            $(this).text("Submitting...");
+        }
+
+        $(this).toggleClass("button--disabled", true);
+    }
+});
+
+// Displays a snack bar message
+function snackbarMsg(message, persistent = false) {
+    var snackbar = document.querySelector('#clipboard-snackbar');
+    if (!persistent) {
+        snackbar.MaterialSnackbar.showSnackbar({
+            message: message,
+        });
+    }
+    else {
+        snackbar.MaterialSnackbar.showSnackbar({
+            message: message,
+            actionHandler: function () {},  // Just needs a function reference
+            actionText: "Dismiss",
+            timeout: -1 // Makes it persistent
+        });
+    }
 }
+
+// Override to allow persistent messages
+MaterialSnackbar.prototype.displaySnackbar_ = function () {
+    this.element_.setAttribute('aria-hidden', 'true');
+    if (this.actionHandler_) {
+        this.actionElement_.textContent = this.actionText_;
+        this.actionElement_.addEventListener('click', this.actionHandler_);
+        this.setActionHidden_(false);
+    }
+    this.textElement_.textContent = this.message_;
+    this.element_.classList.add(this.cssClasses_.ACTIVE);
+    this.element_.setAttribute('aria-hidden', 'false');
+
+    if (this.timeout_ > -1) {
+        setTimeout(this.cleanup_.bind(this), this.timeout_);
+    }
+    else {
+        this.actionElement_.addEventListener('click', function () {
+           this.cleanup_();
+        }.bind(this));
+    }
+};
 
 // Taken from https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
 function formatBytes(bytes, decimals) {
@@ -64,17 +107,14 @@ $(document).ready(function () {
     for (var item in UISortState) {
         var sortBy = UISortState[item].sortBy;
         var order = UISortState[item].order;
+        var orderInt = order === "asc" ? 1 : -1;
 
         var ul = $("ul[data-sort-target='" + item + "']");
         ul.find("[data-sort-by='" + sortBy + "']").addClass("active");
         ul.find("[data-order='" + order + "']").addClass("active");
 
         $(item + ' .sortable').sort(function (a, b) {
-            if (order == "asc") {
-                return (a.dataset[sortBy] > b.dataset[sortBy]);
-            }
-
-            return (a.dataset[sortBy] < b.dataset[sortBy]);
+            return (a.dataset[sortBy] > b.dataset[sortBy] ? orderInt : -orderInt);
         }).appendTo(item);
 
         $(item).addClass("sorted");

@@ -1,4 +1,5 @@
 # ODM2DataSharingPortal
+
 This repository contains the code for a Python-Django web application enabling users to upload, share, and display data from their environmental monitoring sites. Data can either be automatically streamed from Internet of Things (IoT) devices, manually uploaded via CSV files, or manually entered into forms.
 
 The ODM2 Data Sharing Portal is built on the [Observations Data Model Version 2 (ODM2)](http://www.odm2.org) information model and supporting software ecosystem, includuing an ODM2 database instance in PostgreSQL for data storage in the backend. Any environmental IoT device or computer can upload data to the web app via HTTP POST. Complete documentation is available in our open-access journal article ["Low-Cost, Open-Source, and Low-Power: But What to Do With the Data?"](https://doi.org/10.3389/feart.2019.00067).

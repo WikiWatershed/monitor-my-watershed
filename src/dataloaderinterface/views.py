@@ -42,6 +42,10 @@ class PrivacyView(TemplateView):
     template_name = 'dataloaderinterface/privacy.html'
 
 
+class CookiePolicyView(TemplateView):
+    template_name = 'dataloaderinterface/cookie_policy.html'
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = 'sites'
