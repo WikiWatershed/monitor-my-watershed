@@ -1607,6 +1607,19 @@ class VariableExtensionPropertyValue(ExtensionPropertyBridge):
     class Meta:
         db_table = 'variableextensionpropertyvalues'
 
+
+class InstrumentOutputVariableExtensionPropertyValue(ExtensionPropertyBridge):
+    variable = models.ForeignKey('InstrumentOutputVariable', db_column='instrumentoutputvariableid')
+
+    def __repr__(self):
+        return "<InstrumentOutputVariable('%s', '%s', ExtensionProperty['%s', '%s'], Variable['%s', '%s'])>" % (
+            self.bridge_id, self.property_value, self.property_id, self.property,
+            self.variable_id, self.variable
+        )
+
+    class Meta:
+        db_table = 'instrumentoutputvariableextensionpropertyvalues'
+
 # endregion
 
 # region Extension Identifiers
