@@ -723,7 +723,7 @@ class Unit(models.Model):
 
     class Meta:
         db_table = 'units'
-        ordering = ['unit_type_id', 'unit_name']
+        ordering = ['unit_name', 'unit_type_id']
 
 
 @python_2_unicode_compatible
