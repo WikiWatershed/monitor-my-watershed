@@ -220,3 +220,5 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
+
+DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False

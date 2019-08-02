@@ -1,5 +1,6 @@
 {
   "secret_key": "",
+  "debug_mode": "True/False, False by default",
   "host": "-optional",
   "recaptcha_secret_key": "-optional",
   "recaptcha_user_key": "-optional",

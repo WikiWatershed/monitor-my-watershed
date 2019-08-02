@@ -12,7 +12,7 @@ import crontab_jobs
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "WebSDL.settings.linux_sandbox")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "WebSDL.settings.linux_server")
 
 crontab_jobs.start_jobs()
 
