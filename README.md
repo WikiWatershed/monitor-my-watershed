@@ -5,7 +5,7 @@ The ODM2 Data Sharing Portal is built on the [Observations Data Model Version 2 
 
 ![Data Sharing Portal Architecture](https://github.com/ODM2/ODM2DataSharingPortal/blob/master/doc/ArchitectureDiagram/Data%20Sharing%20Portal%20Architecture%20with%20Logos%20-%20Copy.png)
 
-The ODM2 Data Sharing Portal was initially designed to support the [EnviroDIY community](http://www.envirodiy.org) for do-it-yourself environmental science and monitoring and their network of open-source monitoring stations built with Arduino-framework dataloggers such as the [EnviroDIY Mayfly Datalogger](https://github.com/EnviroDIY/EnviroDIY_Mayfly_Logger). 
+The ODM2 Data Sharing Portal was initially designed to support the [EnviroDIY community](http://www.envirodiy.org) for do-it-yourself environmental science and monitoring and their network of open-source monitoring stations built with Arduino-framework dataloggers such as the [EnviroDIY Mayfly Datalogger](https://github.com/EnviroDIY/EnviroDIY_Mayfly_Logger).
 
 The ODM2 Data Sharing Portal was extended to also support the [Leaf Pack Network](https://leafpacknetwork.org) of teachers, students, and citizen monitors who assess aquatic ecosystem health through aquatic macroinvertebrate surveys using [Leaf Pack Experiment](https://leafpacknetwork.org/resources/equipment/) stream ecology kits.
 
@@ -20,7 +20,7 @@ The ODM2DataSharingPortal relies on devices that can push data to the web using 
 ## EnviroDIY Datalogger Code and Libraries
 The source code for the EnviroDIY Mayfly loggers, examples, and libraries are hosted in GitHub at https://github.com/EnviroDIY.
 
-## Credits 
-Funding for this work was provided by the William Penn Foundation under grant 158-15. 
+## Credits
+Funding for this work was provided by the William Penn Foundation under grant 158-15.
 
 The authors gratefully acknowledge the work and contributions of the EnviroDIY community and those who participated in testing and advancing the Monitor My Watershed Data Sharing Portal software.
