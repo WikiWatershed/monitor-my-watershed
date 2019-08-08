@@ -195,13 +195,13 @@ class SensorDataUploadView(APIView):
                     # oldest csv's from modular sensors have the result UUID's
                     # in the same row as the sampling feature UUID
                     # build dict with the rest of the columns
-                    if len(row) > 1 and not got_result_uuids:
-                        if len(row[1]) > 0:
+                    if len(row)>1:
+                        if row[1] != '' and not got_result_uuids:
                             results['results'] = {uuid:
-                                                  {'index': uuid_index,
-                                                   'values': []
-                                                   } for uuid_index, uuid in
-                                                  enumerate(row[1:], start=1)}
+                                              {'index': uuid_index,
+                                               'values': []
+                                               } for uuid_index, uuid in
+                                              enumerate(row[1:], start=1)}
                             got_result_uuids = True
 
             elif row[0].startswith('Result UUID:') and not got_result_uuids:
