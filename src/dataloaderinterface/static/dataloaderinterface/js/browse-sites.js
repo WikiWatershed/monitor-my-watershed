@@ -100,6 +100,12 @@ function initMap() {
     dataString = dataString.replace(/[\u0000-\u0019]+/g, "");
     // from https://stackoverflow.com/questions/14432165/uncaught-syntaxerror-unexpected-token-with-json-parse
 
+    let oms = new OverlappingMarkerSpiderfier(map, {
+        markersWontMove: true,
+        markersWontHide: true,
+        basicFormatEvents: true
+    });
+
     let markerData = JSON.parse(dataString);
 
     markerData.forEach(function(site) {
@@ -115,7 +121,7 @@ function initMap() {
             marker[filters[f].key] = site[filters[f].key];
         }
 
-        marker.addListener('click', function () {
+        marker.addListener('spider_click', function () {
             if (prevMarker) {
                 prevMarker.setZIndex(prevZIndex);
             }
@@ -130,6 +136,7 @@ function initMap() {
             marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); // Bring the marker to the front
         });
 
+        oms.addMarker(marker);
         markers.push(marker);
     });
 

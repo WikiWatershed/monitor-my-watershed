@@ -6,7 +6,7 @@ from dataloaderinterface.models import SensorOutput
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Generate `SensorOutput` objects for each Instrument Output Variable with every sampled medium.'
 
     def handle(self, *args, **options):
         sampled_media = SiteSensorForm.allowed_sampled_medium

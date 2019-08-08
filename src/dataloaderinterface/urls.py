@@ -17,7 +17,7 @@ from django.conf.urls import url, include
 
 from dataloaderinterface.views import SitesListView, SiteDetailView, SiteRegistrationView, SensorListUpdateView, \
     HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, \
-    TermsOfUseView, DMCAView, PrivacyView
+    TermsOfUseView, DMCAView, PrivacyView, CookiePolicyView
 
 urlpatterns = [
     url(r'^$', HomeView.as_view(), name='home'),
@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^terms/$', TermsOfUseView.as_view(), name='terms_of_use'),
     url(r'^dmca/$', DMCAView.as_view(), name='dmca'),
     url(r'^privacy/$', PrivacyView.as_view(), name='privacy'),
+    url(r'^cookies/$', CookiePolicyView.as_view(), name='cookie_policy'),
     url(r'^status/$', StatusListView.as_view(), name='status'),
     url(r'^browse/$', BrowseSitesListView.as_view(), name='browse_sites'),
     url(r'^sites/register/$', SiteRegistrationView.as_view(), name='site_registration'),

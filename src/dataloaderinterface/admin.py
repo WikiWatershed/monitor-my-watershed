@@ -31,12 +31,13 @@ class SiteRegistrationAdmin(admin.ModelAdmin):
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('organization_code', 'organization_name', 'organization_type', 'organization_link')
 
 
 @admin.register(EquipmentModel)
 class EquipmentModelAdmin(admin.ModelAdmin):
     sensor_fields = ['equipment_model_id']
+    list_display = ('model_name', 'model_manufacturer', 'model_description', 'model_link')
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -48,6 +49,7 @@ class EquipmentModelAdmin(admin.ModelAdmin):
 @admin.register(Variable)
 class VariableAdmin(admin.ModelAdmin):
     sensor_fields = ['variable_id']
+    list_display = ('variable_code', 'variable_name', 'variable_type', 'no_data_value')
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -59,6 +61,7 @@ class VariableAdmin(admin.ModelAdmin):
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
     sensor_fields = ['unit_id']
+    list_display = ('unit_name', 'unit_type', 'unit_abbreviation', 'unit_link')
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -69,6 +72,8 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(InstrumentOutputVariable)
 class InstrumentOutputVariableAdmin(admin.ModelAdmin):
+    list_display = ('variable', 'model', 'instrument_raw_output_unit', 'instrument_accuracy')
+
     def get_changelist_form(self, request, **kwargs):
         return super(InstrumentOutputVariableAdmin, self).get_changelist_form(request, **kwargs)
 

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
     'hydroshare',
     'leafpack',
+    'django_admin_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -122,6 +123,8 @@ for database in data['databases']:
         'TEST': database['test'] if 'test' in database else {},
     }
 
+INFLUX_CONNECTION = data['influx_connection']
+
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
@@ -181,6 +184,13 @@ EMAIL_SERVER = data['email_host'] if 'email_host' in data else '',
 
 EMAIL_HOST = EMAIL_SERVER[0] if isinstance(EMAIL_SERVER, tuple) else EMAIL_SERVER
 
+EMAIL_HOST_USER = data['email_user'] if 'email_user' in data else ''
+
+EMAIL_HOST_PASSWORD = data['email_password'] if 'email_password' in data else ''
+
+EMAIL_USE_TLS = True
+
+
 DATETIME_FORMAT = "N j, Y g:i a"
 
 HYDROSHARE_UTIL_CONFIG = {
@@ -210,3 +220,5 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
+
+DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False

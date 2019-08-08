@@ -669,22 +669,30 @@ class TimeSeriesValuesApi(APIView):
 
                 if not site_sensor.registration.deployment_date:
                     site_sensor.registration.deployment_date = measurement_datetime
-                    site_sensor.registration.deployment_date_utc_offset = utc_offset
+                    #site_sensor.registration.deployment_date_utc_offset = utc_offset
                     site_sensor.registration.save(update_fields=['deployment_date'])
 
-            result.save(update_fields=[
-                'result_datetime', 'value_count', 'result_datetime_utc_offset',
-                'valid_datetime', 'valid_datetime_utc_offset'
-            ])
+            try:
+                result.save(update_fields=[
+                    'result_datetime', 'value_count', 'result_datetime_utc_offset',
+                    'valid_datetime', 'valid_datetime_utc_offset'
+                ])
+            except Exception as e:
+                # Temporary fix. TODO: Use logger and be more specific. exception catch is too broad.
+                pass
 
             # Insert data value into influx instance.
-            influx_request_url = settings.INFLUX_UPDATE_URL
-            influx_request_body = settings.INFLUX_UPDATE_BODY.format(
-                result_uuid=str(site_sensor.result_uuid).replace('-', '_'),
-                data_value=result_value.data_value,
-                utc_offset=result_value.value_datetime_utc_offset,
-                timestamp_s=long((result_value.value_datetime - datetime.utcfromtimestamp(0)).total_seconds()),
-            )
-            requests.post(influx_request_url, influx_request_body.encode())
+            try:
+                influx_request_url = settings.INFLUX_UPDATE_URL
+                influx_request_body = settings.INFLUX_UPDATE_BODY.format(
+                    result_uuid=str(site_sensor.result_uuid).replace('-', '_'),
+                    data_value=result_value.data_value,
+                    utc_offset=result_value.value_datetime_utc_offset,
+                    timestamp_s=long((result_value.value_datetime - datetime.utcfromtimestamp(0)).total_seconds()),
+                )
+                requests.post(influx_request_url, influx_request_body.encode())
+            except Exception as e:
+                # Temporary fix. TODO: Use logger and be more specific. exception catch is too broad.
+                continue
 
         return Response({}, status.HTTP_201_CREATED)

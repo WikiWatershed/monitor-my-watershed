@@ -1,5 +1,6 @@
 {
   "secret_key": "{{django secret key}}",
+  "debug_mode": "{{True/False, False by default}}",
   "static_root": "{{static files root directory}}",
   "host": "{{server domain name}}",
   "host_alt": ["{{any other server domain names}}", "{{...}}"],
