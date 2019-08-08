@@ -20,7 +20,8 @@ def handle_user_pre_save(sender, instance, update_fields=None, **kwargs):
             primary_email=instance.email
         )
         instance.affiliation_id = affiliation.affiliation_id
-        instance.organization_name = organization.organization_name
+        if organization is not None:
+            instance.organization_name =organization.organization_name
     elif update_fields and 'organization_code' in update_fields:
         organization = Organization.objects.filter(organization_code=instance.organization_code).first()
         sender.objects.filter(pk=instance.pk).update(organization_name=organization.organization_name)
