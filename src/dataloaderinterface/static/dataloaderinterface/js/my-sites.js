@@ -54,6 +54,12 @@ function initMap() {
     var prevMarker;
     var prevZIndex;
 
+    let oms = new OverlappingMarkerSpiderfier(map, {
+        markersWontMove: true,
+        markersWontHide: true,
+        basicFormatEvents: true
+    });
+
     markerData.forEach(function(site) {
         var marker = new google.maps.Marker({
             position: { lat: site.latitude, lng: site.longitude },
@@ -64,7 +70,7 @@ function initMap() {
 
         bounds.extend(marker.getPosition());
 
-        marker.addListener('click', function () {
+        marker.addListener('spider_click', function () {
             if (prevMarker) {
                 prevMarker.setZIndex(prevZIndex);
             }
@@ -92,6 +98,7 @@ function initMap() {
                 scrollTop: 0
             }, 150);
         });
+        oms.addMarker(marker);
     });
 
     if (!sessionStorage.getItem('MY_CURRENT_CENTER')){

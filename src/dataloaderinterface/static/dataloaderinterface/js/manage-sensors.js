@@ -391,16 +391,16 @@ $(document).ready(function () {
             contentType: false,
             processData: false
         }).done(function (response) {
-            console.log(response);
+            // console.log(response);
             snackbarMsg("Data was uploaded successfully!");
             uploadFileButton.prop("disabled", false);
         }).fail(function (error) {
             console.log(error);
             try {
-                snackbarMsg("Failed to upload data. " + error.responseJSON.error)
+                snackbarMsg("Failed to upload data. " + error.responseJSON.error, true)
             }
             catch (err) {
-                snackbarMsg("Failed to upload data.")
+                snackbarMsg("Failed to upload data.", true)
             }
 
             uploadFileButton.prop("disabled", true);

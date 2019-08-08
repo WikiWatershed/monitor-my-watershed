@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
     'hydroshare',
     'leafpack',
+    'django_admin_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -121,6 +122,8 @@ for database in data['databases']:
         'OPTIONS': database['options'] if 'options' in database else {},
         'TEST': database['test'] if 'test' in database else {},
     }
+
+INFLUX_CONNECTION = data['influx_connection']
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -217,3 +220,5 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
+
+DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False

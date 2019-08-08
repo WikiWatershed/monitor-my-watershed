@@ -9,7 +9,8 @@ from dataloaderinterface.models import SiteAlert
 
 
 class Command(BaseCommand):
-    help = ''
+    help = 'Checks for sites that haven\'t received any data for longer than the threshold ' \
+           'set by the user who set up the alert, and sends an email alert.'
 
     @staticmethod
     def send_email(email_address, subject, message):
