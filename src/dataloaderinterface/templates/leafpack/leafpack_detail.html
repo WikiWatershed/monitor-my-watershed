@@ -84,6 +84,11 @@
                                 <small> °C</small>
                             </td>
                         </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-globe" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Stream Habitat Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.deployment_type }}</td>
+                        </tr>
                     </table>
                 </div>
 
@@ -275,7 +280,7 @@
 
                 <div class="col-12">
                     <br>
-                    <h5 class="headline">Water Quality Index Values</h5>
+                    <h5 class="headline">Summary Analysis</h5>
                 </div>
 
                 <div class="col-sm-12 col-lg-7">
@@ -295,7 +300,7 @@
                 </div>
 
                 <div class="col-12">
-                    <h6 class="title">Summary</h6>
+                    <h6 class="title">Results Overview</h6>
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
                         <tr>
@@ -303,12 +308,12 @@
                             <td class="mdl-data-table__cell--non-numeric">{{ leafpack.taxon_count }}</td>
                         </tr>
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Biotic Index</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.biotic_index|floatformat:2 }}</td>
+                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Score</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.PTI_score|floatformat:0 }}</td>
                         </tr>
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Water Quality Category</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.water_quality }}</td>
+                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Rating</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.PollutionToleranceIndexRating }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Percent EPT</td>

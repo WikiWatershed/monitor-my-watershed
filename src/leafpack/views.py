@@ -106,7 +106,8 @@ class LeafPackDetailView(DetailView):
         leafpack = self.get_object()
 
         # order taxon by pollution_tolerance, then by sort_priority in descending order
-        taxon = Macroinvertebrate.objects.filter(family_of=None)\
+        taxon = Macroinvertebrate.objects.filter(family_of=None, displayflag= True)\
+            .order_by('sens_group')\
             .order_by('pollution_tolerance')\
             .order_by('sort_priority')
 
