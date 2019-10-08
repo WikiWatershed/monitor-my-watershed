@@ -199,84 +199,36 @@
                 <div class="col-12">
                     <h5 class="headline">Macroinvertebrate Counts</h5>
                 </div>
-                <div class="col-sm-12 col-md-6">
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
-                        <tr>
-                            <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
-                            <th class="mdl-data-table__header">Tally</th>
-                        </tr>
-                        {% for bug_data in leafpack_bugs %}
-                            {% if forloop.counter0 <= 7 %}
-                                <tr class="taxon">
-                                    <td class="mdl-data-table__cell--non-numeric" data-name>
-                                        {% if bug_data.0.bug.url != None %}
-                                            <a href="{{ bug_data.0.bug.url }}"
-                                               target="_blank">{{ bug_data.0.bug.display_name|capfirst }}</a>
-                                        {% else %}
-                                            {{ bug_data.0.bug.display_name|capfirst }}
-                                        {% endif %}
-                                    </td>
-                                    <td data-count>{{ bug_data.0.bug_count }}</td>
-                                </tr>
+                {% for group in leafpack_groups%}
 
-                                {% for child_bug in bug_data.1 %}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric indent-left">
-                                            {% if child_bug.bug.url != "None" %}
-                                                <a href="{{ child_bug.bug.url }}"
-                                                   target="_blank">{{ child_bug.bug.display_name|capfirst }}</a>
+                    <div class="col-sm-12 col-md-6">
+                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
+                                <tr>
+                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2"> {{group.name}}</th>
+                                </tr>
+                                <tr>
+                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
+                                    <th class="mdl-data-table__header">Tally</th>
+                                </tr>
+                                {% for bug_data in group.list %}
+                                    <tr class="taxon">
+                                        <td class="mdl-data-table__cell--non-numeric" data-name>
+                                            {% if bug_data.bug.url != None %}
+                                                <a href="{{ bug_data.bug.url }}"
+                                                   target="_blank">{{ bug_data.bug.display_name|capfirst }}</a>
                                             {% else %}
-                                                {{ child_bug.bug.display_name|capfirst }}
+                                                {{ bug_data.bug.display_name|capfirst }}
                                             {% endif %}
                                         </td>
-                                        <td>{{ child_bug.bug_count }}</td>
+                                        <td data-count>{{ bug_data.bug_count }}</td>
                                     </tr>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </table>
-                </div>
+    
 
-                <div class="col-sm-12 col-md-6">
-                    <table id="table-macro-extra" class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
-                        <tr>
-                            <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
-                            <th class="mdl-data-table__header">Tally</th>
-                        </tr>
-                        {% for bug_data in leafpack_bugs %}
-                            {% if forloop.counter0 > 7 %}
-                                <tr class="taxon">
-                                    <td class="mdl-data-table__cell--non-numeric" data-name>
-                                        {% if bug_data.0.bug.url != "None" %}
-                                            <a href="{{ bug_data.0.bug.url }}"
-                                               target="_blank">{{ bug_data.0.bug.display_name|capfirst }}</a>
-                                        {% else %}
-                                            {{ bug_data.0.bug.display_name|capfirst }}
-                                        {% endif %}
-                                    </td>
-                                    <td data-count>{{ bug_data.0.bug_count }}</td>
-                                </tr>
-
-                                {% for child_bug in bug_data.1 %}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric indent-left">
-                                           {% if child_bug.bug.url != "None" %}
-                                                <a href="{{ child_bug.bug.url }}"
-                                                   target="_blank">{{ child_bug.bug.display_name|capfirst }}
-                                                </a>
-                                            {% else %}
-                                                {{ child_bug.bug.display_name|capfirst }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ child_bug.bug_count }}</td>
-                                    </tr>
                                 {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </table>
-                    <br>
-                    {% include 'includes/macroinv-link.template.html' %}
-                </div>
+                            </table>
+                    </div>
+                {% endfor %}
+                {% include 'includes/macroinv-link.template.html' %}
 
                 <div class="col-12">
                     <br>

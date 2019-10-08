@@ -11,7 +11,7 @@ from django.core.management import call_command
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
-from .models import LeafPack, Macroinvertebrate, LeafPackType
+from .models import LeafPack, Macroinvertebrate, LeafPackType, LeafPackSensitivityGroup
 from .forms import LeafPackForm, LeafPackBugForm, LeafPackBugFormFactory, LeafPackBug
 
 from csv_writer import LeafPackCSVWriter
@@ -137,10 +137,41 @@ class LeafPackDetailView(DetailView):
 
         return lptaxons
 
+    # bugs in sensitive groups
+    def get_groups(self):
+        lptGroups =[]
+        leafpack = self.get_object()
+
+        groupRS= LeafPackSensitivityGroup.objects.all()
+        
+        for gr in groupRS:
+
+            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr)
+            taxons = []
+            for taxon in groupRS:
+                try:
+                    lpg = LeafPackBug.objects.get(leaf_pack=leafpack, bug=taxon)
+                except ObjectDoesNotExist:
+                    """
+                    ObjectDoesNotExist is raised when a taxon is added to the database after a leafpack experiment
+                    was created. In such cases, a new LeafPackBug object needs to be created that links 'leafpack' 
+                    and the new taxon.
+                    """
+                    lpg = LeafPackBug.objects.create(leaf_pack=leafpack, bug=taxon, bug_count=0)
+
+                taxons.append(lpg)
+            group ={}
+            group['name']= 'Group {0}: {1}'.format(str(gr.id), gr.name)
+            group['list']= taxons
+            lptGroups.append(group)
+
+        return lptGroups
+
     def get_context_data(self, **kwargs):
         context = super(LeafPackDetailView, self).get_context_data(**kwargs)
         context['leafpack'] = self.get_object()
         context['leafpack_bugs'] = self.get_taxon()
+        context['leafpack_groups'] = self.get_groups()
         context['sampling_feature_code'] = self.get_object().site_registration.sampling_feature_code
 
         user = self.request.user
