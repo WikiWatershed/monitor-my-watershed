@@ -170,7 +170,7 @@ class LeafPackDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(LeafPackDetailView, self).get_context_data(**kwargs)
         context['leafpack'] = self.get_object()
-        context['leafpack_bugs'] = self.get_taxon()
+        #context['leafpack_bugs'] = self.get_taxon()
         context['leafpack_groups'] = self.get_groups()
         context['sampling_feature_code'] = self.get_object().site_registration.sampling_feature_code
 
@@ -251,7 +251,8 @@ class LeafPackUpdateView(LoginRequiredMixin, LeafPackUpdateCreateMixin, LeafPack
         context = super(LeafPackUpdateView, self).get_context_data(**kwargs)
 
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
-        context['taxon_forms'] = LeafPackBugFormFactory.formset_factory(self.get_object())
+        #context['taxon_forms'] = LeafPackBugFormFactory.formset_factory(self.get_object())
+        context['grouped_taxon_forms'] = LeafPackBugFormFactory.grouped_formset_factory(self.get_object())
 
         if 'leafpack' not in context:
             context['leafpack'] = self.get_object()
