@@ -202,7 +202,7 @@
                 {% for group in leafpack_groups%}
 
                     <div class="col-sm-12 col-md-6">
-                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
+                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv" data-group="{{group.name}}">
                                 <tr>
                                     <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2"> {{group.name}}</th>
                                 </tr>
@@ -247,6 +247,16 @@
 
                 <div class="col-sm-12 col-lg-5">
                     <div id="legend-container">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-7">
+                    <div class="svg-container2 mdl-shadow--2dp"></div>
+                    <br><br>
+                </div>
+                <div class="col-sm-12 col-lg-5">
+                    <div id="legend-container2">
                         <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
                     </div>
                 </div>
@@ -321,4 +331,5 @@
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>
 {% endblock %}
