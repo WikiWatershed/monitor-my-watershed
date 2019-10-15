@@ -161,6 +161,8 @@ class LeafPackDetailView(DetailView):
 
                 taxons.append(lpg)
             group ={}
+            group['wFactor']= gr.weightfactor
+            group['GroupIndexValue']= gr.weightfactor * groupRS.count()
             group['name']= 'Group {0}: {1}'.format(str(gr.id), gr.name)
             group['list']= taxons
             lptGroups.append(group)
