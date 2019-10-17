@@ -301,7 +301,7 @@ class LeafPackBugFormFactory(forms.BaseFormSet):
 
         for gr in groupRS:
 
-            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr)
+            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr).order_by('display_order')
             bug_forms=[]
             for taxon in groupRS:
                 if leafpack is not None:

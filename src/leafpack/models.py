@@ -19,7 +19,7 @@ class Macroinvertebrate(models.Model):
     class Meta:
         db_table = 'macroinvertebrate'
 
-    scientific_name = models.CharField(max_length=255, unique=True)
+    scientific_name = models.CharField(max_length=255)
     # 'latin_name' is basically the same as 'scientific_name', but it
     # can be blank. This was added to resolve an issue with displaying
     # names on the website.
@@ -34,8 +34,10 @@ class Macroinvertebrate(models.Model):
     itis_serial_number = models.CharField(max_length=255, null=True, blank=True)
     url = models.CharField(max_length=255, null=True, blank=True)
     displayflag = models.BooleanField(default=True)
-    sens_group = models.ForeignKey('LeafPackSensitivityGroup', on_delete=models.CASCADE)
+    display_order = models.FloatField(default=0)
+    gui_scientific_name = models.CharField(max_length=255, default='')
 
+    sens_group = models.ForeignKey('LeafPackSensitivityGroup', on_delete=models.CASCADE)
 
     """
     'sort_priority' is used to determine the order taxon appear on things like django forms. HIGHER values  
@@ -54,7 +56,7 @@ class Macroinvertebrate(models.Model):
     def __str__(self):
         if not len(self.latin_name):
             return '{0}'.format(self.common_name, self.latin_name)
-        return '{0} ({1})'.format(self.common_name, self.latin_name)
+        return '{0} ({1})'.format(self.common_name, self.gui_scientific_name)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.family_of is not None and len(self.families.all()):

@@ -146,7 +146,7 @@ class LeafPackDetailView(DetailView):
         
         for gr in groupRS:
 
-            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr)
+            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr).order_by('display_order')
             taxons = []
             for taxon in groupRS:
                 try:
