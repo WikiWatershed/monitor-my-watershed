@@ -8,7 +8,21 @@ from dataloaderinterface.models import SensorOutput
 class Command(BaseCommand):
     help = 'Generate `SensorOutput` objects for each Instrument Output Variable with every sampled medium.'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--clean',
+            action='store_true',
+            dest='clean',
+            help='Drop all SensorOutput Objects before creating new ones',
+        )
+
     def handle(self, *args, **options):
+
+        recreate_table = options.get('clean')
+
+        if recreate_table:
+            SensorOutput.objects.all().delete()
+
         sampled_media = SiteSensorForm.allowed_sampled_medium
         instrument_output_variables = InstrumentOutputVariable.objects.all()
         output_variables_count = instrument_output_variables.count()
