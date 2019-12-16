@@ -1,0 +1,9 @@
+{% load widget_tweaks %}
+<tr>
+    <td>
+        <label for="{{ bform.bug_count.id_for_label }}">
+            {{ bform.bug_count.label|capfirst }}
+        </label>
+    </td>
+    <td class="text-right">{{ bform.bug_count|add_class:"form-control bug-total-count" }}</td>
+</tr>

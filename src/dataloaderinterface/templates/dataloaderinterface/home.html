@@ -149,7 +149,11 @@
                                     <div class="card">
                                         <h3 class="step-number bg-light-teal">2</h3>
                                         <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
-                                        <h4><a href="{% url 'login' %}">Register</a>
+                                        {% if user.is_authenticated %}
+                                            <h4><a href="{% url 'site_registration' %}">Register</a>
+                                        {% else %}
+                                            <h4><a href="{% url 'login' %}">Register</a>
+                                        {% endif %}
                                             your location and enter your data.</h4>
                                     </div>
                                 </div>

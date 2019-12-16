@@ -117,7 +117,7 @@ class SiteDetailView(DetailView):
         context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
         context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
         context['is_site_owner'] = self.request.user == self.object.django_user
-        context['tsa_url'] = settings.TSA_URL
+        context['tsa_url'] = settings.TSA_URL 
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk)
 

@@ -212,27 +212,19 @@
                             </div>
                             <div class="mdl-card__supporting-text mdl-card--border default-font">
                                 <div class="row">
-                                    <div class="col-sm-12 col-md-6">
-                                        {% for forms in taxon_forms %}
-                                            {% with parent_form=forms.0 %}
-                                                {% if forloop.counter0 <= 7 %}
-                                                    {% include 'includes/bug_form.template.html' %}
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endfor %}
-                                    </div>
+                                    {% for group in grouped_taxon_forms %}
+                                        <div class="col-sm-12 col-md-6">
+                                            <table class="full-width">
+                                                <tr>
+                                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2"> {{group.name}}</th>
+                                                </tr>
 
-                                    <div class="col-sm-12 col-md-6">
-                                        {% for forms in taxon_forms %}
-                                            {% with parent_form=forms.0 %}
-                                                {% if forloop.counter0 > 7 %}
-                                                    {% include 'includes/bug_form.template.html' %}
-                                                {% endif %}
-                                            {% endwith %}
-                                        {% endfor %}
-                                        <br>
-                                        {% include 'includes/macroinv-link.template.html' %}
-                                    </div>
+                                                {% for bform in group.list %}
+                                                    {% include 'includes/bug_group_form.template.html' %} 
+                                                {% endfor %} 
+                                            </table>
+                                        </div>
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>

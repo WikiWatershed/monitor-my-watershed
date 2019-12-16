@@ -156,6 +156,7 @@ function change() {
         .call(xAxis)
         .selectAll("g")
         .delay(delay);
+    
 }
 
 $(document).ready(function () {
