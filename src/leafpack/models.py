@@ -56,7 +56,7 @@ class Macroinvertebrate(models.Model):
     def __str__(self):
         if not len(self.latin_name):
             return '{0}'.format(self.common_name, self.latin_name)
-        return '{0} ({1})'.format(self.common_name, self.gui_scientific_name)
+        return '{0} ({1}, {2})'.format(self.common_name, self.gui_scientific_name, self.scientific_name)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.family_of is not None and len(self.families.all()):

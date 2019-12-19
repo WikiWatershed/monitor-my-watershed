@@ -210,9 +210,11 @@ class LeafPackCreateView(LoginRequiredMixin, LeafPackUpdateCreateMixin, LeafPack
             context['form'] = LeafPackForm(initial={'site_registration': site_registration})
 
         if 'taxon_forms' in kwargs:
-            context['taxon_forms'] = LeafPackBugFormFactory.formset_factory(taxon_forms=kwargs.pop('taxon_forms'))
+            #context['taxon_forms'] = LeafPackBugFormFactory.formset_factory(taxon_forms=kwargs.pop('taxon_forms'))
+            context['grouped_taxon_forms'] = LeafPackBugFormFactory.grouped_formset_factory(taxon_forms=kwargs.pop('taxon_forms'))
         else:
-            context['taxon_forms'] = LeafPackBugFormFactory.formset_factory()
+            #context['taxon_forms'] = LeafPackBugFormFactory.formset_factory()
+            context['grouped_taxon_forms'] = LeafPackBugFormFactory.grouped_formset_factory()
 
         return context
 
