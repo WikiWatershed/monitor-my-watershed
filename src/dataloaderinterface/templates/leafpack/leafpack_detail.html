@@ -198,10 +198,12 @@
             <div class="row">
                 <div class="col-12">
                     <h5 class="headline">Macroinvertebrate Counts</h5>
+                    {% include 'includes/macroinv-link.template.html' %}
                 </div>
+                
                 {% for group in leafpack_groups%}
 
-                    <div class="col-sm-12 col-md-6">
+                    <div class="col-sm-12 col-md-4">
                             <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv" data-group="{{group.name}}">
                                 <tr>
                                     <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2"> {{group.name}}</th>
@@ -224,9 +226,9 @@
                                     </tr>
                                 {% endfor %}
                                 <tr class="taxon_sum">
-                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Total # of Taxa Groups Present
-                                    </th>
-                                    <th class="mdl-data-table__header" data-count>{{ group.presentCount }}</th>
+                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Total # of Taxa Groups Present
+                                    </td>
+                                    <td class="mdl-data-table__header" data-count>{{ group.presentCount }}</td>
                                 </tr>
                                 <tr class="taxon_sum">
                                     <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Group Weighting Factor
@@ -239,41 +241,14 @@
                                     <td class="mdl-data-table__header" data-count>{{ group.GroupIndexValue }}</td>
                                 </tr>
                             </table>
+                            <br>
                     </div>
                 {% endfor %}
-                {% include 'includes/macroinv-link.template.html' %}
 
                 <div class="col-12">
                     <br>
                     <h5 class="headline">Summary Analysis</h5>
                 </div>
-
-                <div class="col-sm-12 col-lg-7">
-                    <label id="chkSortContainer" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
-                           for="chkSortBars">
-                        <input id="chkSortBars" type="checkbox" class="mdl-checkbox__input">
-                        <span class="mdl-checkbox__label">Sort values</span>
-                    </label>
-                    <div class="svg-container mdl-shadow--2dp"></div>
-                    <br><br>
-                </div>
-
-                <div class="col-sm-12 col-lg-5">
-                    <div id="legend-container">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                </div>
-
-                <div class="col-sm-12 col-lg-7">
-                    <div class="svg-container2 mdl-shadow--2dp"></div>
-                    <br><br>
-                </div>
-                <div class="col-sm-12 col-lg-5">
-                    <div id="legend-container2">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                </div>
-
                 <div class="col-12">
                     <h6 class="title">Results Overview</h6>
                     <hr class="dotted">
@@ -295,6 +270,32 @@
                             <td class="mdl-data-table__cell--non-numeric">{{ leafpack.percent_EPT|floatformat:2 }}%</td>
                         </tr>
                     </table>
+                </div>
+
+                <div class="col-sm-12 col-lg-7">
+                    <div class="svg-container2 mdl-shadow--2dp"></div>
+                    <br><br>
+                </div>
+                <div class="col-sm-12 col-lg-5">
+                    <div id="legend-container2">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-7">
+                    <label id="chkSortContainer" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
+                           for="chkSortBars">
+                        <input id="chkSortBars" type="checkbox" class="mdl-checkbox__input">
+                        <span class="mdl-checkbox__label">Sort values</span>
+                    </label>
+                    <div class="svg-container mdl-shadow--2dp"></div>
+                    <br><br>
+                </div>
+
+                <div class="col-sm-12 col-lg-5">
+                    <div id="legend-container">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
                 </div>
 
                 {% if leafpack.notes %}
