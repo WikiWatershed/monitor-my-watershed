@@ -3,7 +3,7 @@
 
 $(document).ready(function(){
 
-    var margin = {top: 40, right: 20, bottom: 60, left: 80},
+    var margin = {top: 80, right: 20, bottom: 60, left: 80},
     width = $(".svg-container2").width() - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
@@ -104,7 +104,16 @@ $(document).ready(function(){
         .attr("y", -(margin.left - 10))
         .attr("dy", ".71em")
         .style("text-anchor", "middle")
-        .text("Count");
+        .text("% of Total Individuals");
+
+    svg2.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Relative Abundance by Sensitivity Group");
+    
 
     svg2.selectAll(".bar")
         .data(group)

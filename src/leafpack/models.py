@@ -108,7 +108,8 @@ class LeafPack(models.Model):
         :return: total taxon count.
         """
         queryset = LeafPackBug.objects.filter(leaf_pack=self)
-        taxon_counts = [lpg.bug_count - self.sub_taxon_count(lpg.bug) for lpg in queryset]
+        #taxon_counts = [lpg.bug_count - self.sub_taxon_count(lpg.bug) for lpg in queryset if lpg.bug.displayflag]
+        taxon_counts = [lpg.bug_count for lpg in queryset if lpg.bug.displayflag]
 
         return sum(taxon_counts)
 
@@ -130,7 +131,7 @@ class LeafPack(models.Model):
         if total == 0:
             return 0
 
-        ept_filter = reduce(OR, [Q(bug__scientific_name=name) for name in ['Ephemeroptera', 'Plecoptera', 'Trichoptera']])
+        ept_filter = reduce(OR, [Q(bug__scientific_name=name) for name in ['Ephemeroptera', 'Plecoptera']]) #, 'Trichoptera']])
 
         queryset = LeafPackBug.objects.filter(ept_filter, leaf_pack=self)
 
@@ -196,12 +197,13 @@ class LeafPack(models.Model):
         score =0
         for lpg in lpgs:
             if lpg.bug_count > 0 and lpg.bug.displayflag:
-                if lpg.bug.sens_group.id==1:
-                    score +=3
-                elif lpg.bug.sens_group.id ==2:
-                    score +=2
-                else:
-                    score +=1
+                score += lpg.bug.sens_group.weightfactor
+                #if lpg.bug.sens_group.id==1:
+                #    score +=3
+                #elif lpg.bug.sens_group.id ==2:
+                #    score +=2
+                #else:
+                #    score +=1
 
         return score
 
