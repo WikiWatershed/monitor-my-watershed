@@ -131,7 +131,7 @@ class LeafPack(models.Model):
         if total == 0:
             return 0
 
-        ept_filter = reduce(OR, [Q(bug__scientific_name=name) for name in ['Ephemeroptera', 'Plecoptera']]) #, 'Trichoptera']])
+        ept_filter = reduce(OR, [Q(bug__scientific_name=name) for name in ['Ephemeroptera', 'Plecoptera', 'Trichoptera other than Hydropsychidae']])
 
         queryset = LeafPackBug.objects.filter(ept_filter, leaf_pack=self)
 
