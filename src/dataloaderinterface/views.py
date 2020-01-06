@@ -144,6 +144,9 @@ class SensorListUpdateView(DetailView):
     context_object_name = 'site_registration'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('login'))
+
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise Http404
@@ -166,6 +169,9 @@ class LeafPackListUpdateView(DetailView):
     slug_url_kwarg = 'sampling_feature_code'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('login'))
+
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise Http404
@@ -186,6 +192,9 @@ class SiteDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('sites_list')
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('login'))
+
         if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
             raise Http404
         return super(SiteDeleteView, self).dispatch(request, *args, **kwargs)
@@ -210,6 +219,9 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     object = None
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated():
+            return HttpResponseRedirect(reverse('login'))
+
         if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
             raise Http404
 
