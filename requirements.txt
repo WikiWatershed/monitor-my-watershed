@@ -12,7 +12,7 @@ patterns==0.3
 psycopg2==2.7.1
 six==1.10.0
 sqlparse==0.2.2
-waitress==1.0.1
+waitress==1.4.2
 WebOb==1.6.2
 WebTest==2.0.23
 requests==2.20.0
