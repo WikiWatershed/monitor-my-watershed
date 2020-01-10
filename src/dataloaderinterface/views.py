@@ -4,6 +4,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponseRedirect, Http404
@@ -136,13 +138,14 @@ class SiteDetailView(DetailView):
         return context
 
 
-class SensorListUpdateView(LoginRequiredMixin, DetailView):
+class SensorListUpdateView(DetailView):
     template_name = 'dataloaderinterface/manage_sensors.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
     slug_url_kwarg = 'sampling_feature_code'
     context_object_name = 'site_registration'
 
+    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
