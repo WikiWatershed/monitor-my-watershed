@@ -138,14 +138,13 @@ class SiteDetailView(DetailView):
         return context
 
 
-class SensorListUpdateView(DetailView):
+class SensorListUpdateView(LoginRequiredMixin, DetailView):
     template_name = 'dataloaderinterface/manage_sensors.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
     slug_url_kwarg = 'sampling_feature_code'
     context_object_name = 'site_registration'
 
-    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
