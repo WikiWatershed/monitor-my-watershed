@@ -50,6 +50,7 @@
                                         </div>
 
                                     </th>
+                                    <th class="mdl-data-table__cell--non-numeric">Notes</th>
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
                                 </tr>
@@ -86,6 +87,9 @@
                                         </td>
                                         <td data-field="height" class="mdl-data-table__cell--non-numeric">
                                             <span class="field-text">{% if sensor.height != None %}{{ sensor.height }} m{% endif %}</span>
+                                        </td>
+                                        <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
+                                            <span class="field-text">{{ sensor.sensor_notes }}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">
