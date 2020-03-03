@@ -80,10 +80,11 @@ class LeafPackCSVWriter(object):
         # write water quality index values
         self.make_header(['Water Quality Index Values'])
         self.writerow(['Total number of individuals found', str(leafpack.taxon_count())])
-        biotic_index = leafpack.biotic_index()
-        self.writerow(['Biotic Index', round(biotic_index, 2)])
-        self.writerow(['Water Quality Category', leafpack.water_quality(biotic_index=biotic_index)])
+        PTI_score = leafpack.PTI_score()
+        self.writerow(['Pollution Tolerance Index', round(PTI_score, 2)])
+        self.writerow(['Pollution Tolerance Index Rating', leafpack.PollutionToleranceIndexRating(PTI_score=PTI_score)])
         self.writerow(['Percent EPT', round(leafpack.percent_EPT(), 2)])
+
 
     def read(self):
         return self.output.getvalue()

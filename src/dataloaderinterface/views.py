@@ -4,6 +4,8 @@ from datetime import timedelta
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
 from django.core.urlresolvers import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponseRedirect, Http404
@@ -117,9 +119,9 @@ class SiteDetailView(DetailView):
         context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
         context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
         context['is_site_owner'] = self.request.user == self.object.django_user
-        context['tsa_url'] = settings.TSA_URL
+        context['tsa_url'] = settings.TSA_URL 
 
-        context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk)
+        context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
 
         try:
             context["hydroshare_account"] = self.request.user.hydroshare_account
@@ -136,7 +138,7 @@ class SiteDetailView(DetailView):
         return context
 
 
-class SensorListUpdateView(DetailView):
+class SensorListUpdateView(LoginRequiredMixin, DetailView):
     template_name = 'dataloaderinterface/manage_sensors.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
@@ -159,7 +161,7 @@ class SensorListUpdateView(DetailView):
         return context
 
 
-class LeafPackListUpdateView(DetailView):
+class LeafPackListUpdateView(LoginRequiredMixin, DetailView):
     template_name = 'dataloaderinterface/manage_leafpack.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
@@ -186,6 +188,7 @@ class SiteDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('sites_list')
 
     def dispatch(self, request, *args, **kwargs):
+
         if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
             raise Http404
         return super(SiteDeleteView, self).dispatch(request, *args, **kwargs)

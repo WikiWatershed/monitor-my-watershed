@@ -1,5 +1,5 @@
 from django import forms
-from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug
+from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from dataloaderinterface.models import SiteRegistration
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -62,6 +62,7 @@ class LeafPackForm(forms.ModelForm):
     types = forms.ModelMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         label='Enter the three predominant leaf species:',
+        required=False,
         queryset=LeafPackType.objects.filter(created_by=None),
     )
 
@@ -277,3 +278,63 @@ class LeafPackBugFormFactory(forms.BaseFormSet):
 
         return form_list
 
+    @staticmethod
+    def grouped_formset_factory(leafpack=None, taxon_forms=None):
+        """
+        2019/10/11
+        Factory method to create a customized form set
+
+        :param leafpack: An instance of LeafPack (optional).
+        :param taxon_forms: An array of LeafPackBugForms(optional).
+
+        :return []:
+
+        Example:
+        [
+            {'name':'group 1', 'list':[LeafPackBugForm, LeafPackBugForm, ...]},
+            {'name':'group 2', 'list':[LeafPackBugForm, LeafPackBugForm, ...]},
+            {'name':'group 3', 'list':[LeafPackBugForm, LeafPackBugForm, ...]}
+        ]
+
+        """
+        groupedform_list = []
+        groupRS= LeafPackSensitivityGroup.objects.all()
+
+        for gr in groupRS:
+
+            groupRS = Macroinvertebrate.objects.filter(displayflag= True, sens_group=gr).order_by('display_order')
+            bug_forms=[]
+            for taxon in groupRS:
+                if leafpack is not None:
+                    try:
+                        lpg = LeafPackBug.objects.get(bug=taxon.id, leaf_pack=leafpack.id)
+                    except ObjectDoesNotExist:
+                        lpg = LeafPackBug(bug=taxon, leaf_pack=leafpack)
+                        lpg.save()
+                else:
+                    lpg = LeafPackBug(bug=taxon)
+                
+                bug_form = LeafPackBugForm(instance=lpg)
+                bug_forms.append(bug_form)
+            
+            group ={}
+            group['name']= 'Group {0}: {1}'.format(str(gr.id), gr.name)
+            group['list']= bug_forms
+            groupedform_list.append(group)
+
+        # If taxon_forms is not None, plug bug_count values into new formset
+        if taxon_forms is not None:
+
+            def get_taxon_count(taxon_):
+                for tf in taxon_forms:
+                    if tf.instance.bug == taxon_:
+                        return tf.instance.bug_count
+                return 0
+
+            for forms_ in taxon_forms:
+                forms_[0].initial['bug_count'] = get_taxon_count(forms_[0].instance.bug)
+
+                for form in forms_[1]:
+                    form.initial['bug_count'] = get_taxon_count(form.instance.bug)
+
+        return groupedform_list

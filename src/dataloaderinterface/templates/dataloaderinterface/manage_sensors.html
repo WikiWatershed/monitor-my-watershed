@@ -50,6 +50,7 @@
                                         </div>
 
                                     </th>
+                                    <th class="mdl-data-table__cell--non-numeric">Notes</th>
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
                                 </tr>
@@ -86,6 +87,9 @@
                                         </td>
                                         <td data-field="height" class="mdl-data-table__cell--non-numeric">
                                             <span class="field-text">{% if sensor.height != None %}{{ sensor.height }} m{% endif %}</span>
+                                        </td>
+                                        <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
+                                            <span class="field-text">{{ sensor.sensor_notes }}</span>
                                         </td>
                                         <td data-behaviour="edit"
                                             class="mdl-data-table__cell--non-numeric">
@@ -230,24 +234,7 @@
                                 </div>
                             {% endfor %}
                         </div>
-                        <div class="col-12">
-                            <div class="alert alert-light mdl-card"
-                                 style="width: 100%; min-height: initial;">
-                                <strong>Don't see your sensor in the list of equipment models?</strong>
-                                <small>Click <a
-                                        href="mailto:help@monitormywatershed.org?Subject=Request%20for%20new%20sensor">here</a>
-                                    to send an email to a system administrator with a request to add new sensors. Please
-                                    provide us with the manufacturer and make/model information for the sensor, as well
-                                    as a link to a website description if you can.
-                                </small>
 
-                                <div class="input-group">
-                                    <input readonly id="adminEmail" type="text" class="form-control"
-                                           value="help@monitormywatershed.org"
-                                           aria-label="Administrator's email" data-copy-target="adminEmail">
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="clearfix"></div>
@@ -267,6 +254,25 @@
                             class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         Cancel
                     </button>
+                </div>
+
+                <div class="col-12">
+                    <div class="alert alert-light mdl-card"
+                         style="width: 100%; min-height: initial;">
+                        <strong>Don't see your sensor in the list of equipment models?</strong>
+                        <small>Click <a
+                                href="mailto:help@monitormywatershed.org?Subject=Request%20for%20new%20sensor">here</a>
+                            to send an email to a system administrator with a request to add new sensors. Please
+                            provide us with the manufacturer and make/model information for the sensor, as well
+                            as a link to a website description if you can.
+                        </small>
+
+                        <div class="input-group">
+                            <input readonly id="adminEmail" type="text" class="form-control"
+                                   value="help@monitormywatershed.org"
+                                   aria-label="Administrator's email" data-copy-target="adminEmail">
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

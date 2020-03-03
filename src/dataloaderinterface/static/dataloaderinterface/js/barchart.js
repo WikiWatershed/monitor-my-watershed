@@ -3,7 +3,7 @@
  */
 var c20 = d3.scale.category20();
 
-var margin = {top: 40, right: 20, bottom: 60, left: 80},
+var margin = {top: 80, right: 20, bottom: 60, left: 80},
     width = $(".svg-container").width() - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
@@ -51,15 +51,26 @@ $(".taxon").each(function () {
     total += count;
 });
 
-var legendContainer = $("#legend-container table");
+var legendContainert0 = $("#legend-container-t0 table");
+var legendContainert1 = $("#legend-container-t1 table");
+var legendContainert2 = $("#legend-container-t2 table");
 
 // Compute percentages
 for (var i = 0; i < data.length; i++) {
     data[i].frequency = data[i].frequency / total;
     var f = isNaN(data[i].frequency) ? "0" : (data[i].frequency * 100).toFixed(2);
+    var id = i % 3;
+    var $container;
 
+    if (id===0) {
+        $container = legendContainert0;
+    } else if (id===1) {
+        $container = legendContainert1;
+    } else {
+        $container = legendContainert2;
+    }
     // Populate legend container
-    legendContainer.append(
+    $container.append(
         '<tr>' +
         '<td><i style="color: ' + c20(i) + '" class="fa fa-square mdl-list__item-icon" aria-hidden="true"></i></td>' +
         '<td class="mdl-data-table__cell--non-numeric">' +
@@ -156,6 +167,7 @@ function change() {
         .call(xAxis)
         .selectAll("g")
         .delay(delay);
+    
 }
 
 $(document).ready(function () {
@@ -181,6 +193,14 @@ $(document).ready(function () {
         .attr("dy", ".71em")
         .style("text-anchor", "middle")
         .text("% of Total Individuals");
+
+    svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "16px") 
+        .style("text-decoration", "underline")  
+        .text("Relative Abundance of Macroinvertebrate Taxa");
 
     svg.selectAll(".bar")
         .data(data)

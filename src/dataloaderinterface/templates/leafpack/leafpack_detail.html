@@ -84,6 +84,11 @@
                                 <small> °C</small>
                             </td>
                         </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-globe" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Stream Habitat Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.deployment_type }}</td>
+                        </tr>
                     </table>
                 </div>
 
@@ -193,92 +198,91 @@
             <div class="row">
                 <div class="col-12">
                     <h5 class="headline">Macroinvertebrate Counts</h5>
-                </div>
-                <div class="col-sm-12 col-md-6">
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
-                        <tr>
-                            <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
-                            <th class="mdl-data-table__header">Tally</th>
-                        </tr>
-                        {% for bug_data in leafpack_bugs %}
-                            {% if forloop.counter0 <= 7 %}
-                                <tr class="taxon">
-                                    <td class="mdl-data-table__cell--non-numeric" data-name>
-                                        {% if bug_data.0.bug.url != None %}
-                                            <a href="{{ bug_data.0.bug.url }}"
-                                               target="_blank">{{ bug_data.0.bug.display_name|capfirst }}</a>
-                                        {% else %}
-                                            {{ bug_data.0.bug.display_name|capfirst }}
-                                        {% endif %}
-                                    </td>
-                                    <td data-count>{{ bug_data.0.bug_count }}</td>
-                                </tr>
-
-                                {% for child_bug in bug_data.1 %}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric indent-left">
-                                            {% if child_bug.bug.url != "None" %}
-                                                <a href="{{ child_bug.bug.url }}"
-                                                   target="_blank">{{ child_bug.bug.display_name|capfirst }}</a>
-                                            {% else %}
-                                                {{ child_bug.bug.display_name|capfirst }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ child_bug.bug_count }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </table>
-                </div>
-
-                <div class="col-sm-12 col-md-6">
-                    <table id="table-macro-extra" class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv">
-                        <tr>
-                            <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
-                            <th class="mdl-data-table__header">Tally</th>
-                        </tr>
-                        {% for bug_data in leafpack_bugs %}
-                            {% if forloop.counter0 > 7 %}
-                                <tr class="taxon">
-                                    <td class="mdl-data-table__cell--non-numeric" data-name>
-                                        {% if bug_data.0.bug.url != "None" %}
-                                            <a href="{{ bug_data.0.bug.url }}"
-                                               target="_blank">{{ bug_data.0.bug.display_name|capfirst }}</a>
-                                        {% else %}
-                                            {{ bug_data.0.bug.display_name|capfirst }}
-                                        {% endif %}
-                                    </td>
-                                    <td data-count>{{ bug_data.0.bug_count }}</td>
-                                </tr>
-
-                                {% for child_bug in bug_data.1 %}
-                                    <tr>
-                                        <td class="mdl-data-table__cell--non-numeric indent-left">
-                                           {% if child_bug.bug.url != "None" %}
-                                                <a href="{{ child_bug.bug.url }}"
-                                                   target="_blank">{{ child_bug.bug.display_name|capfirst }}
-                                                </a>
-                                            {% else %}
-                                                {{ child_bug.bug.display_name|capfirst }}
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ child_bug.bug_count }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    </table>
-                    <br>
                     {% include 'includes/macroinv-link.template.html' %}
                 </div>
+                
+                {% for group in leafpack_groups%}
+
+                    <div class="col-sm-12 col-md-4">
+                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv" data-group="{{group.name}}">
+                                <tr>
+                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2" style="font-size:16px; color:#048a8a;"> {{group.name}}</th>
+                                </tr>
+                                <tr>
+                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
+                                    <th class="mdl-data-table__header">Tally</th>
+                                </tr>
+                                {% for bug_data in group.list %}
+                                    <tr class="taxon">
+                                        <td class="mdl-data-table__cell--non-numeric" data-name>
+                                            {% if bug_data.bug.url != None %}
+                                                <a href="{{ bug_data.bug.url }}"
+                                                   target="_blank">{{ bug_data.bug.display_name|capfirst }}</a>
+                                            {% else %}
+                                                {{ bug_data.bug.display_name|capfirst }}
+                                            {% endif %}
+                                        </td>
+                                        <td data-count>{{ bug_data.bug_count }}</td>
+                                    </tr>
+                                {% endfor %}
+                                <tr class="taxon_sum">
+                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Total # of Taxa Groups Present
+                                    </td>
+                                    <td class="mdl-data-table__header" data-count>{{ group.presentCount }}</td>
+                                </tr>
+                                <tr class="taxon_sum">
+                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Group Weighting Factor
+                                    </td>
+                                    <td class="mdl-data-table__header" data-count>{{ group.wFactor }}</td>
+                                </tr>
+                                <tr class="taxon_sum">
+                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Group Index Value
+                                    </td>
+                                    <td class="mdl-data-table__header" data-count>{{ group.GroupIndexValue }}</td>
+                                </tr>
+                            </table>
+                            <br>
+                    </div>
+                {% endfor %}
 
                 <div class="col-12">
                     <br>
-                    <h5 class="headline">Water Quality Index Values</h5>
+                    <h5 class="headline">Summary Analysis</h5>
+                </div>
+                <div class="col-12">
+                    <h6 class="title">Results Overview</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Total Number of Individuals Found</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.taxon_count }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Score</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.PTI_score|floatformat:0 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Rating</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.PollutionToleranceIndexRating }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent EPT</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.percent_EPT|floatformat:2 }}%</td>
+                        </tr>
+                    </table>
                 </div>
 
                 <div class="col-sm-12 col-lg-7">
+                    <div class="svg-container2 mdl-shadow--2dp"></div>
+                    <br><br>
+                </div>
+                <div class="col-sm-12 col-lg-5">
+                    <div id="legend-container2">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-lg-7"> 
                     <label id="chkSortContainer" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
                            for="chkSortBars">
                         <input id="chkSortBars" type="checkbox" class="mdl-checkbox__input">
@@ -288,33 +292,16 @@
                     <br><br>
                 </div>
 
-                <div class="col-sm-12 col-lg-5">
-                    <div id="legend-container">
+                <div class="row">
+                    <div class="col-sm-12 col-md-4" id="legend-container-t0">
                         <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
                     </div>
-                </div>
-
-                <div class="col-12">
-                    <h6 class="title">Summary</h6>
-                    <hr class="dotted">
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Total Number of Individuals Found</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.taxon_count }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Biotic Index</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.biotic_index|floatformat:2 }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Water Quality Category</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.water_quality }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Percent EPT</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.percent_EPT|floatformat:2 }}%</td>
-                        </tr>
-                    </table>
+                    <div class="col-sm-12 col-md-4" id="legend-container-t1">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
+                    <div class="col-sm-12 col-md-4" id="legend-container-t2">
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
+                    </div>
                 </div>
 
                 {% if leafpack.notes %}
@@ -364,4 +351,5 @@
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>
 {% endblock %}
