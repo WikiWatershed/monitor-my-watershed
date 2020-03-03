@@ -62,6 +62,7 @@ class LeafPackForm(forms.ModelForm):
     types = forms.ModelMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         label='Enter the three predominant leaf species:',
+        required=False,
         queryset=LeafPackType.objects.filter(created_by=None),
     )
 
