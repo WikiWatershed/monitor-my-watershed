@@ -121,7 +121,7 @@ class SiteDetailView(DetailView):
         context['is_site_owner'] = self.request.user == self.object.django_user
         context['tsa_url'] = settings.TSA_URL 
 
-        context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk)
+        context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
 
         try:
             context["hydroshare_account"] = self.request.user.hydroshare_account
