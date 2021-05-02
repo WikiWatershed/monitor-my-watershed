@@ -4,7 +4,7 @@ import os
 from collections import OrderedDict
 from datetime import timedelta, datetime
 
-from StringIO import StringIO
+from io import StringIO
 
 import requests
 from django.conf import settings

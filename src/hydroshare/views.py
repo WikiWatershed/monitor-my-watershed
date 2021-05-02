@@ -438,7 +438,7 @@ class OAuthAuthorize(TemplateView):
                 token_dict = AuthUtil.authorize_client_callback(request)  # type: dict
                 auth_util = AuthUtil.authorize(token=token_dict)  # type: AuthUtil
             except Exception as e:
-                print 'Authorizition failure: {}'.format(e)
+                print('Authorizition failure: {}'.format(e))
                 return HttpResponse(mark_safe("<p>Error: Authorization failure!</p><p>{e}</p>".format(e=e)))
 
             client = auth_util.get_client()  # type: HydroShareAdapter
