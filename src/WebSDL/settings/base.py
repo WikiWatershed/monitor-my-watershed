@@ -103,7 +103,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'WebSDL.wsgi.application'
+#WSGI_APPLICATION = 'WebSDL.wsgi.application'
 
 
 # Database
