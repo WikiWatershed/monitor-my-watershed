@@ -11,7 +11,7 @@ from dataloaderservices.views import CSVDataApi
 
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponse, JsonResponse, HttpResponseServerError
 from django.shortcuts import redirect
