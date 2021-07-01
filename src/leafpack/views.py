@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from .models import LeafPack, Macroinvertebrate, LeafPackType, LeafPackSensitivityGroup
 from .forms import LeafPackForm, LeafPackBugForm, LeafPackBugFormFactory, LeafPackBug
 
-from csv_writer import LeafPackCSVWriter
+from leafpack.csv_writer import LeafPackCSVWriter
 
 
 class LeafPackViewMixin(object):
