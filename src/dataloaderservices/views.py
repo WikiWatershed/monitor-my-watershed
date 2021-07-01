@@ -16,7 +16,9 @@ from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
 from rest_framework.generics import GenericAPIView
-from unicodecsv.py2 import UnicodeWriter
+
+#PRT - replace with CSV
+#from unicodecsv.py2 import UnicodeWriter
 
 from dataloader.models import SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
 from django.db.models.expressions import F
@@ -404,7 +406,7 @@ class CSVDataApi(View):
             raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
 
         csv_file = StringIO()
-        csv_writer = UnicodeWriter(csv_file)
+        csv_writer = csv.writer(csv_file)
         csv_file.write(CSVDataApi.generate_metadata(time_series_result, request=request))
         csv_writer.writerow(CSVDataApi.get_csv_headers(time_series_result))
         csv_writer.writerows(CSVDataApi.get_data_values(time_series_result))
