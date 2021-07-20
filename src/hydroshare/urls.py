@@ -1,7 +1,6 @@
 from django.conf.urls import url
 
-from hydroshare.views import HydroShareResourceUpdateView, HydroShareResourceCreateView, HydroShareResourceDeleteView, \
-    OAuthAuthorize, OAuthRedirect
+from hydroshare.views import (HydroShareResourceUpdateView, HydroShareResourceCreateView, HydroShareResourceDeleteView, OAuthAuthorize, OAuthRedirect)
 
 app_name = 'hydroshare'
 urlpatterns = [

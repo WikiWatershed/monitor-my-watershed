@@ -7,7 +7,7 @@ from re import search as regex_search
 from hs_restclient import HydroShareNotFound, HydroShareNotAuthorized
 from hydroshare_util.adapter import HydroShareAdapter
 from . import HydroShareUtilityBaseClass
-from coverage import CoverageFactory, Coverage
+from hydroshare_util.coverage import CoverageFactory, Coverage
 
 TMP_FILE_PATH = '~$hydroshare_tmp_files'
 
