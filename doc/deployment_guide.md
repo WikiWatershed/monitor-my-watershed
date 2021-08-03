@@ -30,7 +30,7 @@ While deploying the web application server, I recommend following the instructio
     - `conda activate ODM2DataSharingPortal`
 3. **Create a symlink so the Web App will use the settings.json file in the config repo:** Note the instructions below use the development/staging settings. You may need to point to a different file for the production deployment.
 	- `sudo ln -s /opt/ODM2DataSharingPortalConfig/django/dev_aws.settings.json /opt/ODM2DataSharingPortal/src/WebSDL/settings/dev_aws.settings.json`
-4. **Set Up Guicorn:**
+4. **Set Up Gunicorn:**
     - Gunicorn is not in the default mini conda channel, so we'll need to get it from conda forge.
         - `conda config --add channels conda-forge`
         - `conda install -c conda-forge gunicorn`
@@ -52,8 +52,22 @@ While deploying the web application server, I recommend following the instructio
         - `sudo nginx -t`
     - If there were no errors during the test, start nginx which should make the site accessable online.
         - `sudo systemctl start nginx`
-6. **Set up SSL Certificate**
-    - Placeholder - Tad to develop more specific instructions
+        
+6. **Set up SSL certificate**
+
+  - The following commands are taken verbatim from https://certbot.eff.org/lets-encrypt/ubuntufocal-nginx.html:
+
+    - Install current version of certbot
+      - `sudo snap install core; sudo snap refresh core`
+      - `sudo snap install --classic certbot`
+      - `sudo ln -s /snap/bin/certbot /usr/bin/certbot`
+    - Get certificate
+      - `sudo certbot --nginx` (enter domain name `staging.monitormywatershed.org` when prompted)
+      - `sudo nginx 
+    - Verify installation and auto-renewal
+      - `sudo certbot certificates`
+      - `sudo certbot renew --dry-run`
+
 ---
 
 ## Python 2.7 
