@@ -61,9 +61,8 @@ While deploying the web application server, I recommend following the instructio
       - `sudo snap install core; sudo snap refresh core`
       - `sudo snap install --classic certbot`
       - `sudo ln -s /snap/bin/certbot /usr/bin/certbot`
-    - Get certificate
+    - Install certificate
       - `sudo certbot --nginx` (enter domain name `staging.monitormywatershed.org` when prompted)
-      - `sudo nginx 
     - Verify installation and auto-renewal
       - `sudo certbot certificates`
       - `sudo certbot renew --dry-run`
