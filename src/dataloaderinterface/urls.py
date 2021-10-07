@@ -19,6 +19,8 @@ from dataloaderinterface.views import SitesListView, SiteDetailView, SiteRegistr
     HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, \
     TermsOfUseView, DMCAView, PrivacyView, CookiePolicyView
 
+import dataloaderinterface.views as views
+
 urlpatterns = [
     url(r'^$', HomeView.as_view(), name='home'),
     url(r'^sites/$', SitesListView.as_view(), name='sites_list'),
@@ -35,4 +37,6 @@ urlpatterns = [
     url(r'^sites/delete/(?P<sampling_feature_code>.*)/$', SiteDeleteView.as_view(), name='site_delete'),
     url(r'^sites/(?P<sampling_feature_code>.*)/leafpack/', include(('leafpack.urls', 'leafpack'), namespace='leafpack')),
     url(r'^sites/(?P<sampling_feature_code>.*)/$', SiteDetailView.as_view(), name='site_detail'),
+    url(r'^dataloader/ajax/', views.ajax_router, name='ajax'),
+
 ]

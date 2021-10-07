@@ -21,6 +21,13 @@ from dataloaderinterface.forms import SiteAlertForm, SiteRegistrationForm, SiteS
 from hydroshare.models import HydroShareResource, HydroShareAccount
 from leafpack.models import LeafPack
 
+from django.views.decorators.csrf import csrf_exempt
+import dataloaderinterface.ajax as ajax
+from django.core.handlers.wsgi import WSGIRequest
+
+import json
+from django.http import HttpResponse, JsonResponse
+from typing import Union
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -332,3 +339,13 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         else:
             messages.error(request, 'There are still some required fields that need to be filled out!')
             return self.form_invalid(form)
+
+@csrf_exempt
+def ajax_router(request: WSGIRequest) -> Union[JsonResponse,HttpResponse]:
+    request_data = json.loads(request.POST.get('request_data'))
+    try:
+        method = getattr(ajax, request_data['method'])
+        response = method(request_data)
+        return JsonResponse(response, safe=False)
+    except AttributeError: #Invalid method specified
+        return HttpResponse(status=405)
