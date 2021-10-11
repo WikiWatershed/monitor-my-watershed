@@ -35,9 +35,10 @@ function format_date(date) {
 
 function fillValueTable(table, data) {
     var rows = data.map(function (dataValue) {
+        //looks to be 1 hour offset between python datetime integer and JS
+        date = new Date(dataValue.valuedatetime - 3600000);
         var row_string = "<tr><td class='mdl-data-table__cell--non-numeric'>" + 
-            format_date(new Date(dataValue.valuedatetime)) + 
-            "</td><td class='mdl-data-table__cell--non-numeric'>" + 
+            format_date(date) + "</td><td class='mdl-data-table__cell--non-numeric'>" + 
             dataValue.valuedatetimeutcoffset + "</td><td>" +
             dataValue.datavalue + "</td></tr>";
         return row_string;
