@@ -23,10 +23,20 @@ function initMap() {
     });
 }
 
+function format_date(date) {
+    year = String(date.getFullYear()).padStart(4, '0');
+    month = String(date.getMonth()).padStart(2, '0');
+    day = String(date.getDay()).padStart(2, '0');
+    hour = String(date.getHours()).padStart(2, '0');
+    minute = String(date.getMinutes()).padStart(2, '0');
+    second = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 function fillValueTable(table, data) {
     var rows = data.map(function (dataValue) {
         var row_string = "<tr><td class='mdl-data-table__cell--non-numeric'>" + 
-            new Date(dataValue.valuedatetime).toISOString().slice(0,24) + 
+            format_date(new Date(dataValue.valuedatetime)) + 
             "</td><td class='mdl-data-table__cell--non-numeric'>" + 
             dataValue.valuedatetimeutcoffset + "</td><td>" +
             dataValue.datavalue + "</td></tr>";
