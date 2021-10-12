@@ -1,10 +1,10 @@
-import codecs
 import csv
 import os
 from collections import OrderedDict
 from datetime import timedelta, datetime
 
 from io import StringIO
+from django.utils import encoding
 
 import requests
 from django.conf import settings
@@ -35,6 +35,9 @@ from dataloaderservices.auth import UUIDAuthentication
 from dataloaderservices.serializers import OrganizationSerializer
 
 from leafpack.models import LeafPack
+
+from typing import List, Tuple
+from django.core.handlers.wsgi import WSGIRequest
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
@@ -349,7 +352,7 @@ class CSVDataApi(View):
 
     date_format = '%Y-%m-%d %H:%M:%S'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request:WSGIRequest, *args, **kwargs) -> HttpResponse:
         """
         Downloads csv file for given result id's.
 
@@ -364,9 +367,7 @@ class CSVDataApi(View):
             result_ids = [request.GET.get('result_id', [])]
         elif 'result_ids' in request.GET:
             result_ids = request.GET['result_ids'].split(',')
-
-        result_ids = filter(lambda x: len(x) > 0, result_ids)
-
+        
         if not len(result_ids):
             return Response({'error': 'Result ID(s) not found.'})
 
@@ -380,7 +381,7 @@ class CSVDataApi(View):
         return response
 
     @staticmethod
-    def get_csv_file(result_ids, request=None):  # type: (list, any) -> (str, StringIO)
+    def get_csv_file(result_ids:List[str], request:WSGIRequest=None) -> Tuple[str, StringIO]:
         """
         Gathers time series data for the passed in result id's to generate a csv file for download
         """
@@ -427,13 +428,13 @@ class CSVDataApi(View):
         return filename, csv_file
 
     @staticmethod
-    def get_csv_headers(ts_results):  # type: ([TimeSeriesResult]) -> None
+    def get_csv_headers(ts_results:List[TimeSeriesResult]) -> None:
         headers = ['DateTime', 'TimeOffset', 'DateTimeUTC']
         var_codes = [ts_result.result.variable.variable_code for ts_result in ts_results]
         return headers + CSVDataApi.clean_variable_codes(var_codes)
 
     @staticmethod
-    def clean_variable_codes(varcodes):  # type: ([str]) -> [str]
+    def clean_variable_codes(varcodes:List[str]) -> List[str]:
         """
         Looks for duplicate variable codes and appends a number if collisions exist.
 
@@ -453,7 +454,7 @@ class CSVDataApi(View):
         return varcodes
 
     @staticmethod
-    def get_data_values(time_series_results):  # type: (QuerySet) -> object
+    def get_data_values(time_series_results:QuerySet) -> object:
         result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
         data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
         data_values_map = OrderedDict()
@@ -465,7 +466,7 @@ class CSVDataApi(View):
             })
 
         data = []
-        for timestamp, values in data_values_map.iteritems():
+        for timestamp, values in data_values_map.items():
             local_timestamp = timestamp + timedelta(hours=values['utc_offset'])
             row = [
                 local_timestamp.strftime(CSVDataApi.date_format),   # Local DateTime
@@ -483,22 +484,23 @@ class CSVDataApi(View):
         return data
 
     @staticmethod
-    def read_file(fname):
+    def read_file(fname:str) -> str:
         fpath = os.path.join(os.path.dirname(__file__), 'csv_templates', fname)
-        with codecs.open(fpath, 'r', encoding='utf-8') as fin:
-            return fin.read()
+        with open(fpath, 'r', encoding='utf8') as f:
+            contents = f.read()
+        return contents
 
     @staticmethod
-    def generate_metadata(time_series_results, request=None):  # type: (QuerySet, any) -> str
-        metadata = str()
+    def generate_metadata(time_series_results:QuerySet, request:WSGIRequest=None) -> str:
+        metadata = ''
 
         # Get the first TimeSeriesResult object and use it to get values for the
         # "Site Information" block in the header of the CSV
         tsr = time_series_results.first()
         site_sensor = SiteSensor.objects.select_related('registration').filter(result_id=tsr.result.result_id).first()
-        metadata += CSVDataApi.read_file('site_information.txt').format(
-            site=site_sensor.registration
-        ).encode('utf-8')
+        site_info_template = CSVDataApi.read_file('site_information.txt')
+        site_info_template = site_info_template.format(site=site_sensor.registration) 
+        metadata += site_info_template
 
         time_series_results_as_list = [tsr for tsr in time_series_results]
 

@@ -2,6 +2,8 @@ const EXTENT_HOURS = 72;
 const GAP_HOURS = 6;
 const STALE_DATA_CUTOFF = new Date(new Date() - 1000 * 60 * 60 * EXTENT_HOURS);
 
+const LOCAL_UTC_OFFSET = new Date().getTimezoneOffset() / 60; //in hours
+
 function initMap() {
     var defaultZoomLevel = 18;
     var latitude = parseFloat($('#site-latitude').val());
@@ -23,9 +25,25 @@ function initMap() {
     });
 }
 
+function format_date(date) {
+    year = String(date.getFullYear()).padStart(4, '0');
+    month = String(date.getMonth()+1).padStart(2, '0');
+    day = String(date.getDate()).padStart(2, '0');
+    hour = String(date.getHours()).padStart(2, '0');
+    minute = String(date.getMinutes()).padStart(2, '0');
+    second = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+}
+
 function fillValueTable(table, data) {
     var rows = data.map(function (dataValue) {
-        return "<tr><td class='mdl-data-table__cell--non-numeric'>" + dataValue.DateTime + "</td><td class='mdl-data-table__cell--non-numeric'>" + dataValue.TimeOffset + "</td><td>" + dataValue.Value + "</td></tr>";
+        //looks to be 1 hour offset between python datetime integer and JS
+        date = new Date(dataValue.valuedatetime + (dataValue.valuedatetimeutcoffset + LOCAL_UTC_OFFSET) * 3600000);
+        var row_string = "<tr><td class='mdl-data-table__cell--non-numeric'>" + 
+            format_date(date) + "</td><td class='mdl-data-table__cell--non-numeric'>" + 
+            dataValue.valuedatetimeutcoffset + "</td><td>" +
+            dataValue.datavalue + "</td></tr>";
+        return row_string;
     });
     table.append($(rows.join('')));
 }
@@ -69,18 +87,18 @@ function drawSparklinePlot(seriesInfo, seriesData) {
     }
 
     var lastRead = Math.max.apply(Math, seriesData.map(function(value){
-        return new Date(value.DateTime);
+        return new Date(value.valuedatetime);
     }));
 
     var dataTimeOffset = Math.min.apply(Math, seriesData.map(function(value){
-        return new Date(value.DateTime);
+        return new Date(value.valuedatetime);
     }));
 
     var xAxis = d3.scaleTime().range([0, width]);
     var yAxis = d3.scaleLinear().range([height, 0]);
 
     var yDomain = d3.extent(seriesData, function(d) {
-        return parseFloat(d.Value);
+        return parseFloat(d.datavalue);
     });
     var yPadding = (yDomain[1] - yDomain[0]) / 20;  // 5% padding
     yDomain[0] -= yPadding;
@@ -91,11 +109,11 @@ function drawSparklinePlot(seriesInfo, seriesData) {
 
     var line = d3.line()
         .x(function(d) {
-            var date = new Date(d.DateTime);
+            var date = new Date(d.valuedatetime);
             return xAxis(date);
         })
         .y(function(d) {
-            return yAxis(d.Value);
+            return yAxis(d.datavalue);
         });
 
     var svg = d3.select(plotBox.get(0)).append("svg")
@@ -118,7 +136,7 @@ function drawSparklinePlot(seriesInfo, seriesData) {
     var paths = [];
 
     for (var i = 0; i < seriesData.length; i++) {
-        var currentDate = new Date(seriesData[i].DateTime);
+        var currentDate = new Date(seriesData[i].valuedatetime);
 
         if (previousDate) {
             gapOffset = new Date(currentDate - 1000 * 60 * 60 * GAP_HOURS);
@@ -144,7 +162,7 @@ function drawSparklinePlot(seriesInfo, seriesData) {
             svg.append("circle")
                 .attr("r", 2)
                 .style("fill", "steelblue")
-                .attr("transform", "translate(" + xAxis(new Date(paths[i][0].DateTime)) + ", " + yAxis(paths[i][0].Value) + ")")
+                .attr("transform", "translate(" + xAxis(new Date(paths[i][0].valuedatetime)) + ", " + yAxis(paths[i][0].datavalue) + ")")
         }
         else {
             svg.append("path")
@@ -156,37 +174,48 @@ function drawSparklinePlot(seriesInfo, seriesData) {
 }
 
 function getTimeSeriesData(sensorInfo) {
-    if (sensorInfo['influxUrl'] === 'None' ) { return; }
+    request_data = {method:'get_result_timeseries', 'resultid': sensorInfo['resultId']}
     $.ajax({
-        url: sensorInfo['influxUrl']
-    }).done(function(influx_data) {
-        var resultSet = influx_data.results ? influx_data.results.shift() : null;
-        if (resultSet && resultSet.series && resultSet.series.length) {
-            var influxSeries = resultSet.series.shift();
-            var indexes = {
-                time: influxSeries.columns.indexOf("time"),
-                value: influxSeries.columns.indexOf("DataValue"),
-                offset: influxSeries.columns.indexOf("UTCOffset")
-            };
-            var values = influxSeries.values.map(function(influxValue) {
-                return {
-                    DateTime: influxValue[indexes.time].match(/^(\d{4}\-\d\d\-\d\d([tT][\d:]*)?)/).shift(),
-                    Value: influxValue[indexes.value],
-                    TimeOffset: influxValue[indexes.offset]
-                }
-            });
+        url: '../../dataloader/ajax/',
+        data: {request_data: JSON.stringify(request_data)},
+        method: 'POST',
+        success: function(data) {
+            response_data = JSON.parse(data)
+            $table = $('table.data-values[data-result-id=' + sensorInfo['resultId'] + ']');
+            fillValueTable($table, response_data);
+            drawSparklineOnResize(sensorInfo, response_data);
+            drawSparklinePlot(sensorInfo, response_data);
+            /*
+            var resultSet = influx_data.results ? influx_data.results.shift() : null;
+            if (resultSet && resultSet.series && resultSet.series.length) {
+                var influxSeries = resultSet.series.shift();
+                var indexes = {
+                    time: influxSeries.columns.indexOf("time"),
+                    value: influxSeries.columns.indexOf("DataValue"),
+                    offset: influxSeries.columns.indexOf("UTCOffset")
+                };
+                var values = influxSeries.values.map(function(influxValue) {
+                    return {
+                        DateTime: influxValue[indexes.time].match(/^(\d{4}\-\d\d\-\d\d([tT][\d:]*)?)/).shift(),
+                        Value: influxValue[indexes.value],
+                        TimeOffset: influxValue[indexes.offset]
+                    }
+                });
 
-            fillValueTable($('table.data-values[data-result-id=' + sensorInfo['resultId'] + ']'), values);
-            drawSparklineOnResize(sensorInfo, values);
-            drawSparklinePlot(sensorInfo, values);
-        } else {
-            console.log('No data values were found for this site');
+                fillValueTable($('table.data-values[data-result-id=' + sensorInfo['resultId'] + ']'), values);
+                drawSparklineOnResize(sensorInfo, values);
+                drawSparklinePlot(sensorInfo, values);
+            } else {
+                console.log('No data values were found for this site');
+                drawSparklinePlot(sensorInfo, []);  // Will just render the empty message
+                // console.info(series.getdatainflux);
+            }
+            */
+        },
+        fail: function() {
             drawSparklinePlot(sensorInfo, []);  // Will just render the empty message
-            // console.info(series.getdatainflux);
+            console.log('data failed to load.');
         }
-    }).fail(function() {
-        drawSparklinePlot(sensorInfo, []);  // Will just render the empty message
-        console.log('data failed to load.');
     });
 }
 
