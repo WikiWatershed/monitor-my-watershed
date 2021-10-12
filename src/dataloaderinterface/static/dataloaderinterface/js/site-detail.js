@@ -2,6 +2,8 @@ const EXTENT_HOURS = 72;
 const GAP_HOURS = 6;
 const STALE_DATA_CUTOFF = new Date(new Date() - 1000 * 60 * 60 * EXTENT_HOURS);
 
+const LOCAL_UTC_OFFSET = new Date().getTimezoneOffset() / 60; //in hours
+
 function initMap() {
     var defaultZoomLevel = 18;
     var latitude = parseFloat($('#site-latitude').val());
@@ -36,7 +38,7 @@ function format_date(date) {
 function fillValueTable(table, data) {
     var rows = data.map(function (dataValue) {
         //looks to be 1 hour offset between python datetime integer and JS
-        date = new Date(dataValue.valuedatetime - 3600000);
+        date = new Date(dataValue.valuedatetime + (dataValue.valuedatetimeutcoffset + LOCAL_UTC_OFFSET) * 3600000);
         var row_string = "<tr><td class='mdl-data-table__cell--non-numeric'>" + 
             format_date(date) + "</td><td class='mdl-data-table__cell--non-numeric'>" + 
             dataValue.valuedatetimeutcoffset + "</td><td>" +
