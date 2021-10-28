@@ -1,5 +1,5 @@
 # Develop Environments for ODM2DataSharingPortal
-name: djangoenv_py38_dj22_dev
+name: ODM2DataSharingPortal
 channels:
     - conda-forge
     - defaults
@@ -7,7 +7,7 @@ channels:
 dependencies:
     # For ODM2DataSharingPortal migration to AWS
     - python =3.8.10  # May 3, 2021: final regular Py 3.8 release. https://www.python.org/downloads/release/python-3810/
-    # - django =2.2.*  # Installs 2.2.14 but lastest is 2.2.24. Use pip to install. 
+    # - django =2.2.*  # Installs 2.2.14 but lastest is 2.2.24. Use pip to install.
                        # https://docs.djangoproject.com/en/3.2/releases
 
     # # Other Requirements
@@ -19,7 +19,7 @@ dependencies:
     # - oauthlib >=3.1.1  # with google api
     - pandas >=1.3
     - psycopg2 >=2.9.1
-    - python-crontab  >=2.5.1 
+    - python-crontab  >=2.5.1
     # - requests  # with python 3.8
     # - six  # with python 3.8
 
