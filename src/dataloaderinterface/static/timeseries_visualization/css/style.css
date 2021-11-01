@@ -393,3 +393,13 @@ highcharts implementation
     display: inline-block;
     line-height: 16px;
 }
+
+.series-panel>input {
+    vertical-align: top;
+    padding-right: 2px;;
+}
+
+.series-panel>span>.uuid {
+    line-height:0px;
+    font-size:8px;
+}

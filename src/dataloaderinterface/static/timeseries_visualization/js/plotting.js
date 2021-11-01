@@ -203,7 +203,13 @@ function addYAxis(align="left") {
 
 function addSeries(yAxis, metadata, x, y) {
     data = x.map((e,i) => [e,y[i]]);
-    axis_title = `${metadata.variablecode} (${metadata.unitsabbreviation})`;
+
+	zlocation_text = ''
+	if (metadata.zlocation !== undefined) {
+		zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
+	}
+
+    axis_title = `${metadata.variablecode} - ${metadata.sampledmediumcv}${zlocation_text} (${metadata.unitsabbreviation})`;
     series_name =  `${metadata.variablecode} (${metadata.unitsabbreviation})`;
     series = _chart.addSeries({
         type:'line',

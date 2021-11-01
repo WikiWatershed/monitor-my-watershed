@@ -55,14 +55,21 @@ function populateSeriesBlock(){
 }
 
 function makeSeriesPanel(metadata) {
+	zlocation_text = ''
+	if (metadata.zlocation !== undefined) {
+		zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
+	}
+
 	$panel = $(`<div class="series-panel" id="series-panel_${metadata.resultid}">`)
+	$panel.append(`<input id="plot-series-check_${metadata.resultid}"` + 
+		`class="plottable-series" type="checkbox" </input>`);
 	$panel.append(`<span>` +
-		`<input id="plot-series-check_${metadata.resultid}"` + 
-		`class="plottable-series" type="checkbox" </input>` +
 		`${metadata.variablecode} ` + 
 		`(${metadata.unitsabbreviation}) </br>` +
-		`${metadata.samplingfeaturecode} - ${metadata.sampledmediumcv} </br>` +
-		`<span style="font-size:8pt">(${metadata.resultuuid})</span>` +
+		`${metadata.samplingfeaturecode} `+
+		`(${metadata.sampledmediumcv}`+
+		`${zlocation_text}) </br>` +
+		`<span class="uuid">UUID: ${metadata.resultuuid}</span>` +
 		`</span>`);
 	return $panel
 }
