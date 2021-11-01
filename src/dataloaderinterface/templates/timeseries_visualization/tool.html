@@ -1,0 +1,94 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+<div id="graphArea">
+	<div id="graphContainer">
+		<div id="charts-container" style="margin-left: 0px;">
+			<!--Pie charts-->
+			<div id="cht_pie1" class="cht_pie">
+			</div>
+			<div id="cht_pie2" class="cht_pie">
+			</div>
+
+			<!--Bar charts-->
+			<div id="cht_bar1" class="cht_bar">
+			</div>
+			<div id="cht_bar2" class="cht_bar">
+			</div>
+
+			<!--Time series (XY) chart-->
+			<div id="cht_ts" class="cht_xy">
+			</div>
+		</div>
+	</div>
+	<div id="panel-right">
+		{% comment %}
+		<button id="btnCollapseToggle" type="button" class="btn btn-default btn-sm">
+			<span class="glyphicon glyphicon-chevron-right"></span>
+		</button>
+		{% endcomment %}
+		<div id="panel-right-container">
+			<div id="plotOptionsContainer" class="panel panel-default ">
+				<div class="panel-heading glyphicon glyphicon-cog"><span
+						class="container-title"> Plot Options</span></div>
+				<div class="panel-content">
+					<table class="table">
+						<div id="dateIntervals" class="btn-group">
+							<button id="btnAll" type="button" class="btn btn-default">All</button>
+							<button id="btnLastYear" type="button" class="btn btn-default">Last Year</button>
+							<button id="btnLastMonth" type="button" class="btn btn-default">Last Month</button>
+						</div>
+
+						<tbody>
+						<tr>
+							<td>Begin Date</td>
+							<td><input id="dpd1" type="text" class="datepicker" data-date-format="m/dd/yyyy"></td>
+						</tr>
+						<tr>
+							<td>End Date</td>
+							<td><input id="dpd2" type="text" class="datepicker" data-date-format="m/dd/yyyy"></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								<button id="btnSetPlotOptions" type="button"
+										class="btn btn-block btn-primary">Update Plot
+								</button>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="plotedSeriesContainer" class="panel panel-default ">
+				<div class="panel-heading glyphicon glyphicon-th-list"><span class="container-title">Plotted Series</span>
+				</div>
+				<div id="plottedSeries"></div>
+			</div>
+			<div id="plotableSeriesContainer" class="panel panel-default">
+				<div class="panel-heading  glyphicon glyphicon-list-alt"><span class="container-title">Add Series</span>
+				</div>
+				<div id='plottableSeries'>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<link rel="stylesheet" href="{% static 'timeseries_visualization/css/style.css' %}">
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
+	crossorigin="anonymous"
+	integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
+</script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/boost.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+<script src="{% static 'timeseries_visualization/js/plotting.js' %}"></script>
+<script src="{% static 'timeseries_visualization/js/visualization.js' %}"></script>
+
+{% endblock content %}

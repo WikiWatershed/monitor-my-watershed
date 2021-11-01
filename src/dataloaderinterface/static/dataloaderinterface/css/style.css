@@ -642,6 +642,7 @@ footer {
     color: #FFF;
     min-height: 300px;
     padding: 60px 0;
+    overflow: hidden;
 }
 
 footer h5 {

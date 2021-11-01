@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     'requests',
-    'reset_migrations'
+    'reset_migrations',
+    'timeseries_visualization'
 ]
 
 MIDDLEWARE = [

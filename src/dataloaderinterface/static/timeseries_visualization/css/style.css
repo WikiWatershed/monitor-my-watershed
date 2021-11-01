@@ -1,0 +1,395 @@
+/* Glyphicons for collapsible panels*/
+.panel-heading .accordion-toggle:after {
+    /* symbol for "opening" panels */
+    font-family: 'Glyphicons Halflings'; /* essential for enabling glyphicon */
+    content: "\e114"; /* adjust as needed, taken from bootstrap.css */
+    float: right; /* adjust as needed */
+    color: grey; /* adjust as needed */
+}
+
+.panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\e080"; /* adjust as needed, taken from bootstrap.css */
+}
+
+button span {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.428571429;
+}
+
+.bar rect {
+    shape-rendering: crispEdges;
+    stroke-width: 1;
+    stroke: black;
+    stroke-opacity: 0.8;
+}
+
+line.tick {
+    stroke: #cccccc;
+    fill: none;
+    shape-rendering: crispEdges;
+}
+
+/* body*/
+
+.panel-body {
+    padding: 0px;
+}
+
+/* Left Panel*/
+
+#leftPanel .list-group {
+    padding: 0;
+    margin: 0px;
+}
+
+.align-center {
+    list-style: none;
+    text-align: center;
+}
+
+.CheckBoxLabel {
+    /* Some browsers use different cursor notations*/
+    cursor: pointer;
+    cursor: hand;
+}
+
+#leftPanel .list-group-item {
+    border-top-right-radius: 0px !important;
+    border-top-left-radius: 0px !important;
+    border: 0px;
+    padding: 0px 15px;
+}
+
+#leftPanel li:hover {
+    background: #ddd;
+}
+
+.highlight {
+    background: #C1F9FC;
+}
+
+#leftPanel .panel, .row {
+    border-radius: 0;
+    margin: 0;
+    border-top: 0px;
+}
+
+#leftPanel .panel-group {
+    margin-bottom: 0;
+    height: 100%;
+    width: 300px;
+}
+
+.facets-container {
+    height: calc(100% - 26px);
+    overflow-y: auto;
+    margin-left: 25px;
+    margin-bottom: 0;
+}
+
+.facets-container .glyphicon {
+    color: #999;
+    left: -5px;
+}
+
+.facets-container .glyphicon:hover {
+    color: #555;
+}
+
+.panel-toolbar-left {
+    float: left;
+    height: 100%;
+    background: #fff;
+    display: inline;
+    clear: none;
+    width: 26px;
+    position: fixed;
+    z-index: 20;
+    border-right: 1px solid #ddd;
+}
+
+.toolbar-top-button {
+    float: right;
+    margin-right: 8px;
+    color: #999;
+    padding: 3px;
+    cursor: default;
+}
+
+.panel-toolbar-top {
+    background: #fff;
+    height: 26px;
+    border: 1px solid #ddd;
+    border-right: 0;
+}
+
+.toolbar-left-button {
+    margin-left: -16px;
+    margin-top: 16px;
+    height: 26px;
+    color: #555;
+    padding-right: 10px;
+    padding-left: 10px;
+    cursor: default;
+}
+
+.toolbar-left-button[data-enabled="true"]:hover {
+    color: #000;
+    background: #ddd;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.toolbar-left-button[data-enabled="false"] {
+    opacity: 0.6; /* Real browsers */
+    filter: alpha(opacity=60); /* IE */
+}
+
+.toolbar-top-button:hover {
+    color: #555;
+}
+
+.rotate {
+    display: inline-block;
+    -webkit-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+
+    /* also accepts left, right, top, bottom coordinates; not required, but a good idea for styling */
+    -webkit-transform-origin: 50% 50%;
+    -moz-transform-origin: 50% 50%;
+    -ms-transform-origin: 50% 50%;
+    -o-transform-origin: 50% 50%;
+    transform-origin: 50% 50%;
+
+    /* Should be unset in IE9+ I think. */
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.col-sm-3, .col-sm-9 {
+    padding: 0px;
+    height: 100%;
+    border-right: 1px solid #ddd;
+    float: left;
+}
+
+.col-sm-3 {
+    width: auto;
+    min-width: 25px;
+}
+
+.col-sm-9 {
+    float: none;
+    overflow: hidden;
+    width: inherit;
+}
+
+.row {
+    margin-right: 0px;
+    margin-left: 0px;
+    height: -moz-calc(100% - 81px);
+    height: -webkit-calc(100% - 81px);
+    height: calc(100% - 81px);
+}
+
+#btnSetPlotOptions {
+    float: right;
+}
+
+#datePanel {
+    float: right;
+}
+
+#leftPanel .list-group li.active {
+    background: #a6cae9;
+}
+
+#lblSelectData {
+    float: left;
+}
+
+.datepicker {
+    text-align: center;
+}
+
+#visualizationContent {
+    width: 100%;
+    overflow: hidden;
+    padding: 0;
+}
+
+#graphArea {
+    display: inline-block;
+    height: 100%;
+    width: 100%;
+}
+
+#graphContainer {
+    width: -moz-calc(100% - 307px);
+    width: -webkit-calc(100% - 307px);
+    width: calc(100% - 307px);
+    float: left;
+    padding-top: 5px;
+}
+
+#graphContainer .label {
+    font-size: 100%;
+    font-weight: normal;
+}
+
+#panel-right ul li {
+    padding: 3px 15px;
+}
+
+#panel-right {
+    background: white;
+    right: 0;
+    width: 307px;
+    float: right;
+    border-left: 1px solid #aaa;
+}
+
+#panel-right-container {
+    overflow-x: hidden;
+    padding: 10px;
+    padding-bottom: 0;
+}
+
+#panel-right .panel {
+    min-height: 80px;
+    border: 1px solid #aaa;
+    border-radius: 4px 4px 0 0;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+}
+
+#panel-right .panel-heading {
+    background: #ddd;
+
+}
+
+.panel-heading {
+    padding-left:10px;
+}
+
+#btnCollapseToggle .glyphicon {
+    top: 2px;
+    right: 2px;
+}
+
+#btnCollapseToggleLeft .glyphicon {
+    top: 2px;
+    right: 2px;
+}
+
+#btnCollapseToggle {
+    float: left;
+    margin-left: -21px;
+    margin-top: 6px;
+    position: absolute;
+    width: 10px;
+    border: 1px solid #aaa;
+    border-right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+#btnCollapseToggleLeft {
+    float: right;
+    margin-left: 0px;
+    margin-top: 6px;
+    position: absolute;
+    width: 10px;
+    border: 1px solid #aaa;
+    border-right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+#btnCollapseToggle:active, #btnCollapseToggle:focus, .close:active, .close:focus {
+    outline: 0px !important;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+#btnCollapseToggle span {
+    margin-left: -5px;
+}
+
+.container-title {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+#plotOptionsContainer .panel-content {
+    padding: 10px;
+}
+
+#plotOptionsContainer table {
+    margin-bottom: 0;
+}
+
+#plotOptionsContainer td {
+    border-top: 0;
+    vertical-align: middle;
+    padding-bottom: 2px;
+}
+
+#plotOptionsContainer tr td:first-child {
+    text-align: right;
+}
+
+#visualizationDropDown, #plotOptionsContainer .btn-group {
+    width: 100%;
+}
+
+#plotOptionsContainer input {
+    border: 1px solid #ddd;
+    width: 100%;
+}
+
+#graphArea .alert {
+    opacity: 0.9;
+    text-align: center;
+}
+
+#legendContainer {
+    margin-bottom: 4px;
+}
+
+#legendContainer span {
+    cursor: default;
+}
+
+#legendContainer font {
+    font-size: 22px;
+    line-height: 1;
+}
+
+button.close {
+    margin-left: 3px;
+}
+
+
+
+/* =================================================================
+highcharts implementation
+*/
+
+.series-panel {
+    font-size: 14px;
+    line-height: 16px;
+    margin-bottom: 6px;;
+}
+
+.series-panel>span {
+    display: inline-block;
+    line-height: 16px;
+}
