@@ -11,6 +11,11 @@ var _init = true;
 
 $(function () {
 	initChart('cht_ts');
+	//default to last year for xaxis
+	max_date = new Date(Date.now());
+	min_date = new Date(Date.now());
+	min_date.setFullYear(min_date.getFullYear() - 1);
+	updatePlotDateRange(min_date, max_date);
 
 	if (_samplingfeaturecode !== undefined) {
 		getSamplingFeatureMetadata(_samplingfeaturecode);
