@@ -201,20 +201,10 @@ line.tick {
     height: calc(100% - 81px);
 }
 
-#btnSetPlotOptions {
-    float: right;
-}
-
+#btnSetPlotOptions, 
+#load-site, 
 #datePanel {
     float: right;
-}
-
-#leftPanel .list-group li.active {
-    background: #a6cae9;
-}
-
-#lblSelectData {
-    float: left;
 }
 
 .datepicker {
@@ -260,67 +250,20 @@ line.tick {
 
 #panel-right-container {
     overflow-x: hidden;
-    padding: 10px;
     padding-bottom: 0;
 }
 
 #panel-right .panel {
     min-height: 80px;
     border: 1px solid #aaa;
-    border-radius: 4px 4px 0 0;
-    padding-bottom: 3px;
-    margin-bottom: 5px;
 }
 
 #panel-right .panel-heading {
     background: #ddd;
-
 }
 
 .panel-heading {
     padding-left:10px;
-}
-
-#btnCollapseToggle .glyphicon {
-    top: 2px;
-    right: 2px;
-}
-
-#btnCollapseToggleLeft .glyphicon {
-    top: 2px;
-    right: 2px;
-}
-
-#btnCollapseToggle {
-    float: left;
-    margin-left: -21px;
-    margin-top: 6px;
-    position: absolute;
-    width: 10px;
-    border: 1px solid #aaa;
-    border-right: 0;
-    border-radius: 3px 0 0 3px;
-}
-
-#btnCollapseToggleLeft {
-    float: right;
-    margin-left: 0px;
-    margin-top: 6px;
-    position: absolute;
-    width: 10px;
-    border: 1px solid #aaa;
-    border-right: 0;
-    border-radius: 3px 0 0 3px;
-}
-
-#btnCollapseToggle:active, #btnCollapseToggle:focus, .close:active, .close:focus {
-    outline: 0px !important;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
-
-#btnCollapseToggle span {
-    margin-left: -5px;
 }
 
 .container-title {
@@ -328,8 +271,11 @@ line.tick {
     font-size: 14px;
 }
 
-#plotOptionsContainer .panel-content {
+#plotOptionsContainer .panel-content,
+.panel-content {
     padding: 10px;
+    height: 100%;
+    display: inline-block;
 }
 
 #plotOptionsContainer table {
@@ -355,29 +301,9 @@ line.tick {
     width: 100%;
 }
 
-#graphArea .alert {
-    opacity: 0.9;
-    text-align: center;
-}
-
-#legendContainer {
-    margin-bottom: 4px;
-}
-
-#legendContainer span {
-    cursor: default;
-}
-
-#legendContainer font {
-    font-size: 22px;
-    line-height: 1;
-}
-
 button.close {
     margin-left: 3px;
 }
-
-
 
 /* =================================================================
 highcharts implementation

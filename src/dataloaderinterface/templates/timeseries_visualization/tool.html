@@ -38,11 +38,11 @@
 
 						<tbody>
 						<tr>
-							<td>Begin Date</td>
+							<td>Begin</td>
 							<td><input id="dpd1" type="date" class="datepicker" data-date-format="m/dd/yyyy"></td>
 						</tr>
 						<tr>
-							<td>End Date</td>
+							<td>End</td>
 							<td><input id="dpd2" type="date" class="datepicker" data-date-format="m/dd/yyyy"></td>
 						</tr>
 						<tr>
@@ -65,8 +65,12 @@
 			<div id="plotableSeriesContainer" class="panel panel-default">
 				<div class="panel-heading  glyphicon glyphicon-list-alt"><span class="container-title">Add Series</span>
 				</div>
-				<div id='plottableSeries'>
-
+				<div class="panel-content">
+					<div id='plottableSeriesFilter'>
+						<label for="series-filter">Filter </label>
+						<input id="series-filter" type="text" placeholder="Type filter text">
+					</div>
+					<div id='plottableSeries'> </div>
 				</div>
 			</div>
 

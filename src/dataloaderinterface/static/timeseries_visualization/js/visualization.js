@@ -7,10 +7,6 @@ var _resultMetadata = {};
 var min_date;
 var max_date;
 
-// PRT - these are hardcoded for testing remove before production
-//var _samplingfeaturecode = 'WCC019';
-//var _samplingfeaturecode = 'CWS-ThomasDairy2';
-
 $(function () {
 	initChart('cht_ts');
 
@@ -57,12 +53,26 @@ $(function () {
 		updatePlotDateRange(min_date, max_date);
 	});
 
+	$('#series-filter').on('change', function() {
+		filter_text = $('#series-filter').val().toLowerCase();
+		$series = $('#plottableSeries')
+		$series.find('.series-panel').each(function(index, element) {
+			if (element.innerText.toLowerCase().includes(filter_text)) {
+				$(element).show();
+			}
+			else {
+				$(element).hide();
+			}
+		});
+	});
+
 });
 
 function updatePlotDateRange(min, max) {
 	if (min != null) {min = min.getTime();}
 	if (max != null) {max = max.getTime();}	
 	_chart.xAxis[0].update({'min':min, 'max':max}); 
+	_chart.xAxis[0].setExtremes();
 }
 
 function changeTimeSeries(result_id, checked) {
@@ -100,7 +110,7 @@ function populateSeriesBlock(){
 
 function makeSeriesPanel(metadata) {
 	zlocation_text = ''
-	if (metadata.zlocation !== undefined) {
+	if (metadata.zlocation !== undefined && metadata.zlocation !== null) {
 		zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
 	}
 
