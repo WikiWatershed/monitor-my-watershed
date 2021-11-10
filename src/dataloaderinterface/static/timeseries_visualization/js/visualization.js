@@ -70,7 +70,17 @@ $(function () {
 		});
 	});
 
+	$('.message-box>input').on('click', function(){
+		$('.message-box').hide();
+	});
+
 });
+
+function displayMessage(title, msg) {
+	$('.message-box #title').text(title);
+	$('.message-box #msg').text(msg);
+	$('.message-box').show();
+}
 
 function updatePlotDateRange(min, max) {
 	if (min != null) {min = min.getTime();}
@@ -86,6 +96,11 @@ function changeTimeSeries(result_id, checked) {
 	if ($plotted.children().length == 6 && checked) {
 		$input = $panel.find('input')
 		$($input).prop("checked",false);
+		displayMessage("Warning: Too Many Time Series Selected", 
+			"A maximum of six(6) time series can be at a single time. Please " +
+			"remove a plot series by unchecking it prior to plotting any additional " +
+			"time series."
+		);
 		return;
 	}
 
@@ -144,7 +159,6 @@ function getEmptyAxis() {
 			return i;
 		};
 	}
-	//error handling needed - add warning cannot plot empty
 	return -1;
 }
 
@@ -230,3 +244,4 @@ function populateSamplingFeatureSelect(response) {
 		$select.append(option);
 	}	
 }
+

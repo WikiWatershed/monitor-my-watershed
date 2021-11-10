@@ -333,3 +333,44 @@ highcharts implementation
 #site-select {
     width:100%; 
 }
+
+/*----------------------------------------------------------------
+   messaging 
+*/
+
+.message-box {
+    position: fixed;
+    top:40%;
+    left:50%;
+    min-width:300px;
+    max-width:500px;
+    display:none;
+    z-index: 999;
+
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.message-box>#title {
+    border-bottom: 2px solid black;
+    background: lightgray;
+    width: 100%;
+    display: block;
+    border-radius: 10px 10px 0px 0px;
+    padding-left: 5px;
+    font-weight: bold;
+    color: black;
+}
+
+.message-box>#msg{
+    padding: 10px;
+    font-size:16;
+    display:block;
+}
+
+.message-box>input {
+    margin: 3px;
+    border-radius: 3px;
+    float:right;
+}
