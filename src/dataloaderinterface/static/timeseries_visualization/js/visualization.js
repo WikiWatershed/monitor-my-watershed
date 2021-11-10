@@ -83,6 +83,12 @@ function changeTimeSeries(result_id, checked) {
 	$plotted = $('#plottedSeries');
 	$notplotted = $('#plottableSeries');
 	$panel = $(`#series-panel_${result_id}`)
+	if ($plotted.children().length == 6) {
+		$input = $panel.find('input')
+		$($input).prop("checked",false);
+		return;
+	}
+
 	if (checked) {
 		getTimeseriesData(result_id, new Date('2000/10/01'), new Date('2021/10/28'));
 		$panel.remove();
