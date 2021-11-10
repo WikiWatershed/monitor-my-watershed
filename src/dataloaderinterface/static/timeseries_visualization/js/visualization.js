@@ -4,6 +4,9 @@ var _axes = [];
 var _plottedTimeseries = {};
 var _resultMetadata = {};
 
+var min_date;
+var max_date;
+
 // PRT - these are hardcoded for testing remove before production
 //var _samplingfeaturecode = 'WCC019';
 //var _samplingfeaturecode = 'CWS-ThomasDairy2';
@@ -28,7 +31,39 @@ $(function () {
 		getSamplingFeatureMetadata(samplingfeaturecode);
 	});
 
+	$('#btnSetPlotOptions').on('click', function() {
+		min_date = new Date($('#dpd1').val());
+		max_date = new Date($('#dpd2').val());
+		updatePlotDateRange(min_date, max_date);
+	});
+
+	$('#btnLastYear').on('click', function() {
+		max_date = new Date(Date.now());
+		min_date = new Date(Date.now());
+		min_date.setFullYear(min_date.getFullYear() - 1);
+		updatePlotDateRange(min_date, max_date);
+	});
+
+	$('#btnLastMonth').on('click', function() {
+		max_date = new Date(Date.now());
+		min_date = new Date(Date.now());
+		min_date.setMonth(min_date.getMonth() - 1);
+		updatePlotDateRange(min_date, max_date);
+	})
+
+	$('#btnAll').on('click', function() {
+		min_date = null;
+		max_date = null;
+		updatePlotDateRange(min_date, max_date);
+	});
+
 });
+
+function updatePlotDateRange(min, max) {
+	if (min != null) {min = min.getTime();}
+	if (max != null) {max = max.getTime();}	
+	_chart.xAxis[0].update({'min':min, 'max':max}); 
+}
 
 function changeTimeSeries(result_id, checked) {
 	$plotted = $('#plottedSeries');
@@ -174,7 +209,4 @@ function populateSamplingFeatureSelect(response) {
 			`${samplingFeature.samplingfeaturename}</option>`;
 		$select.append(option);
 	}	
-	prt = 1;
-	// PRT - pick up here tomorrow
-	//make load button trigger getSamplingFeatureMetadata function with selection
 }

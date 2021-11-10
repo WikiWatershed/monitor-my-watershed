@@ -41,8 +41,6 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 	with _db_engine.connect() as connection:		
 		query = f'SELECT valueid, datavalue, valuedatetime, valuedatetimeutcoffset ' \
 			f'FROM odm2.timeseriesresultvalues WHERE resultid = {result_id} ' \
-			f"AND valuedatetime >= '{start_date}' " \
-			f"AND valuedatetime <= '{end_date}' "\
 			'ORDER BY valuedatetime;'	
 		df = pd.read_sql(query, connection)
 		data = df.to_json(orient='columns')
