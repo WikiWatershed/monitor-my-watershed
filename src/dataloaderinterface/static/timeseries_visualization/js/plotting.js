@@ -224,4 +224,5 @@ function removeSeries(yAxis) {
     axis = _chart.yAxis[yAxis];
     axis.series[0].remove();
     axis.setTitle({text:''})
+    axis.setExtremes();
 }

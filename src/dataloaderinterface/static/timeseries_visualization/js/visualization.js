@@ -162,11 +162,11 @@ function makeSeriesPanel(metadata) {
 	$panel.append(`<input id="plot-series-check_${metadata.resultid}"` + 
 		`class="plottable-series" type="checkbox" </input>`);
 	$panel.append(`<span>` +
-		`${metadata.variablecode} ` + 
-		`(${metadata.unitsabbreviation}) </br>` +
 		`${metadata.samplingfeaturecode} `+
 		`(${metadata.sampledmediumcv}`+
 		`${zlocation_text}) </br>` +
+		`${metadata.variablecode} ` + 
+		`(${metadata.unitsabbreviation}) </br>` +
 		`<span class="uuid">UUID: ${metadata.resultuuid}</span>` +
 		`</span>`);
 	return $panel
