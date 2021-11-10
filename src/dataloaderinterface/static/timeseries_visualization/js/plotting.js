@@ -199,16 +199,9 @@ function addYAxis(align="left") {
     _chart.redraw();
 }
 
-function addSeries(yAxis, metadata, x, y) {
+function addSeries(yAxis, axis_title, series_name, x, y) {
     data = x.map((e,i) => [e,y[i]]);
 
-	zlocation_text = ''
-	if (metadata.zlocation !== undefined) {
-		zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
-	}
-
-    axis_title = `${metadata.variablecode} - ${metadata.sampledmediumcv}${zlocation_text} (${metadata.unitsabbreviation})`;
-    series_name =  `${metadata.variablecode} (${metadata.unitsabbreviation})`;
     series = _chart.addSeries({
         type:'line',
         data:data,
@@ -218,7 +211,6 @@ function addSeries(yAxis, metadata, x, y) {
         gapSize: 10,
     });
     series_color = series.color;
-    series
 
     axis = _chart.yAxis[yAxis]
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});

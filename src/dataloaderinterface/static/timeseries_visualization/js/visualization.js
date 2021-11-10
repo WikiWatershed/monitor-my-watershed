@@ -180,7 +180,16 @@ function plotSeries(response_data) {
 	axis = getEmptyAxis()
 	if (axis >= 0) {
 		_axes[axis] = resultid;
-		addSeries(axis, metadata, x, y);
+
+		zlocation_text = ''
+		if (metadata.zlocation !== undefined && metadata.zlocation !== null) {
+			zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
+		}
+
+		axis_title = `${metadata.variablecode} - ${metadata.sampledmediumcv}${zlocation_text} (${metadata.unitsabbreviation})`;
+		series_name =  `${metadata.sitecode} ${metadata.variablecode} (${metadata.unitsabbreviation})`;
+		
+		addSeries(axis, axis_title, series_name, x, y);
 	}
 }
 
