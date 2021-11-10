@@ -83,7 +83,7 @@ function changeTimeSeries(result_id, checked) {
 	$plotted = $('#plottedSeries');
 	$notplotted = $('#plottableSeries');
 	$panel = $(`#series-panel_${result_id}`)
-	if ($plotted.children().length == 6) {
+	if ($plotted.children().length == 6 && checked) {
 		$input = $panel.find('input')
 		$($input).prop("checked",false);
 		return;
