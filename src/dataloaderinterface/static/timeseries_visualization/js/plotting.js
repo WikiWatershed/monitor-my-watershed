@@ -216,6 +216,8 @@ function addSeries(yAxis, axis_title, series_name, x, y) {
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.update({'ColorString':series_color});
+    extremes = axis.getExtremes();
+    axis.setExtremes(extremes.dataMin,extremes.dataMax);
 }
 
 function removeSeries(yAxis) {

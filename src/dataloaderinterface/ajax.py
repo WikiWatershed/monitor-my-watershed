@@ -8,6 +8,7 @@ from typing import List, Dict, Any
 
 import sqlalchemy
 import pandas as pd
+import numpy as np
 from django.conf import settings
 
 _dbsettings = settings.DATABASES['odm2']
@@ -43,6 +44,9 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 			f'FROM odm2.timeseriesresultvalues WHERE resultid = {result_id} ' \
 			'ORDER BY valuedatetime;'	
 		df = pd.read_sql(query, connection)
+		#-9999 is used for NaN alternative by sensors
+		df = df.replace(-9999,np.nan)
+		df = df.dropna()
 		data = df.to_json(orient='columns')
 		response = f'{{"result_id":{result_id}, "data":{data} }}'
 		return response
