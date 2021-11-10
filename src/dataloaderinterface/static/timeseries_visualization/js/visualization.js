@@ -3,6 +3,7 @@ var _chart;
 var _axes = [];
 var _plottedTimeseries = {};
 var _resultMetadata = {};
+var _resultsTimeSeries = {};
 
 var min_date;
 var max_date;
@@ -107,9 +108,12 @@ function changeTimeSeries(result_id, checked) {
 	}
 
 	if (checked) {
-		getTimeseriesData(result_id, new Date('2000/10/01'), new Date('2021/10/28'));
 		$panel.remove();
 		$plotted.append($panel);
+		if (result_id in _resultsTimeSeries) {
+			plotSeries(_resultsTimeSeries[result_id], result_id)
+		} 
+		getTimeseriesData(result_id);
 	}
 	if (!checked) { 
 		unPlotSeries(result_id);
@@ -180,11 +184,19 @@ function unPlotSeries(resultid) {
 	}
 }
 
-function plotSeries(response_data) {
+function getTimeseriesDataCallback(response_data) {
 	response_json = JSON.parse(response_data);
-	resultid = response_json.result_id;
-	x = Object.values(response_json.data.valuedatetime)
-	y = Object.values(response_json.data.datavalue)
+	resultid = response_json.result_id;	
+	_resultsTimeSeries[resultid] = {
+		'x':Object.values(response_json.data.valuedatetime), 
+		'y':Object.values(response_json.data.datavalue)
+	};
+	plotSeries(_resultsTimeSeries[resultid],resultid);
+}
+
+function plotSeries(timeseriesData, resultid) {
+	x = timeseriesData['x'];
+	y = timeseriesData['y'];
 	metadata = _resultMetadata[resultid]
 	axis = getEmptyAxis()
 	if (axis >= 0) {
@@ -241,7 +253,7 @@ function getTimeseriesData(resultid, startdate, enddate) {
 		startdate: startdate,
 		enddate: enddate
 	}
-	ajax(request_data, plotSeries);
+	ajax(request_data, getTimeseriesDataCallback);
 }
 
 function populateSamplingFeatureSelect(response) {
