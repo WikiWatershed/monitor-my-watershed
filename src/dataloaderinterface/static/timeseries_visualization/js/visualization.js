@@ -1,7 +1,6 @@
 var _chart;
 
 var _axes = [];
-var _plottedTimeseries = {};
 var _resultMetadata = {};
 var _resultsTimeSeries = {};
 
@@ -112,8 +111,10 @@ function changeTimeSeries(result_id, checked) {
 		$plotted.append($panel);
 		if (result_id in _resultsTimeSeries) {
 			plotSeries(_resultsTimeSeries[result_id], result_id)
+		}
+		else {
+			getTimeseriesData(result_id);
 		} 
-		getTimeseriesData(result_id);
 	}
 	if (!checked) { 
 		unPlotSeries(result_id);
