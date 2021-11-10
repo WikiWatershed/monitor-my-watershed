@@ -100,7 +100,7 @@ function changeTimeSeries(result_id, checked) {
 		$input = $panel.find('input')
 		$($input).prop("checked",false);
 		displayMessage("Warning: Too Many Time Series Selected", 
-			"A maximum of six(6) time series can be at a single time. Please " +
+			"A maximum of six(6) time series can be plotted at a single time. Please " +
 			"remove a plot series by unchecking it prior to plotting any additional " +
 			"time series."
 		);

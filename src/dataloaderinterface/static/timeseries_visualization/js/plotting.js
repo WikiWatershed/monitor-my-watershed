@@ -44,7 +44,7 @@ function createChart(renderTo) {
                 */
             },
             title: {
-                text: 'Monitoring Date',
+                text: 'Monitoring Date (local time of sensor)',
                 style: {
                     fontSize: '16px'
                 }
@@ -208,7 +208,7 @@ function addSeries(yAxis, axis_title, series_name, x, y) {
         yAxis: yAxis,
         connectNulls:false,
         name: series_name,
-        gapSize: 10,
+        gapSize: 1000,
     });
     series_color = series.color;
 
