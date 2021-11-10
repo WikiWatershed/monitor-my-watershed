@@ -1,5 +1,3 @@
-
-
 function initChart(target_element) {
     _chart = createChart(target_element);
     _axes = [-999, -999, -999, -999, -999, -999];

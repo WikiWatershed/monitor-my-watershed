@@ -68,18 +68,10 @@ def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 		df = pd.read_sql(query, connection)
 		return df.to_json(orient='records', default_handler=str)
 
-
-"""
-SELECT rs.resultid, rs.resultuuid, samplingfeaturecode, samplingfeaturename, sampledmediumcv, un.unitsabbreviation, 
-un.unitsname, variablenamecv, variablecode, zlocation, untrs.unitsabbreviation AS zlocationunits
-FROM odm2.samplingfeatures AS sf
-JOIN odm2.featureactions AS fa ON fa.samplingfeatureid=sf.samplingfeatureid
-JOIN odm2.results AS rs ON rs.featureactionid = fa.featureactionid
-JOIN odm2.variables AS vr ON vr.variableid = rs.variableid
-JOIN odm2.units AS un ON un.unitsid = rs.unitsid
-JOIN odm2.timeseriesresults AS tsr ON tsr.resultid = rs.resultid
-JOIN odm2.units AS untrs ON untrs.unitsid = tsr.zlocationunitsid 
-WHERE sf.samplingfeaturecode = 'CWS-ThomasDairy2'; 	
-
-
-"""
+def get_sampling_features(request_data:Dict[str,Any]) -> str:
+	with _db_engine.connect() as connection:
+		query = f'SELECT samplingfeatureuuid, samplingfeaturecode, samplingfeaturename ' \
+			f'FROM odm2.samplingfeatures ' \
+			f'ORDER BY samplingfeaturecode;'
+		df = pd.read_sql(query, connection)
+		return df.to_json(orient='records', default_handler=str)	

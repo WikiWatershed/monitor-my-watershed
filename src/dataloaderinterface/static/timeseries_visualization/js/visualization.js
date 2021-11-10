@@ -5,18 +5,27 @@ var _plottedTimeseries = {};
 var _resultMetadata = {};
 
 // PRT - these are hardcoded for testing remove before production
-var _samplingfeaturecode = 'WCC019';
+//var _samplingfeaturecode = 'WCC019';
 //var _samplingfeaturecode = 'CWS-ThomasDairy2';
 
 $(function () {
 	initChart('cht_ts');
 
-	getSamplingFeatureMetadata('CWS-ThomasDairy2');
+	if (_samplingfeaturecode !== undefined) {
+		getSamplingFeatureMetadata(_samplingfeaturecode);
+	}
+
+	ajax({method:'get_sampling_features'}, populateSamplingFeatureSelect);
 
 	$(document).on('click', '.plottable-series', function() {
 		resultid = $(this).attr('id').split("_")[1];
 		checked = $(this).prop('checked');
 		changeTimeSeries(resultid, checked);
+	});
+
+	$('#load-site').on('click', function() {
+		samplingfeaturecode = $('#site-select').find(':selected').prop('id');
+		getSamplingFeatureMetadata(samplingfeaturecode);
 	});
 
 });
@@ -100,8 +109,10 @@ function plotSeries(response_data) {
 	y = Object.values(response_json.data.datavalue)
 	metadata = _resultMetadata[resultid]
 	axis = getEmptyAxis()
-	_axes[axis] = resultid;
-	addSeries(axis, metadata, x, y);
+	if (axis >= 0) {
+		_axes[axis] = resultid;
+		addSeries(axis, metadata, x, y);
+	}
 }
 
 function ajax(request_data, callback_success, callback_fail, url='../../dataloader/ajax/') {
@@ -136,7 +147,6 @@ function getSamplingFeatureMetadata(sampling_feature_code) {
 	ajax(request_data, initAddSeries);
 }
 
-
 function getTimeseriesData(resultid, startdate, enddate) {
 	request_data = {
 		method: 'get_result_timeseries',
@@ -147,4 +157,24 @@ function getTimeseriesData(resultid, startdate, enddate) {
 	ajax(request_data, plotSeries);
 }
 
+function populateSamplingFeatureSelect(response) {
+	$select = $('#site-select');
+	$select.empty();
 
+	data = JSON.parse(response);
+	
+	for ([index, samplingFeature] of Object.entries(data)) {
+		var selected = ''
+		if (samplingFeature.samplingfeaturecode == _samplingfeaturecode) {
+			selected = 'selected'
+		}
+		option = `<option id="${samplingFeature.samplingfeaturecode}" ` +
+			`${selected} >` + 
+			`(${samplingFeature.samplingfeaturecode}) ` +
+			`${samplingFeature.samplingfeaturename}</option>`;
+		$select.append(option);
+	}	
+	prt = 1;
+	// PRT - pick up here tomorrow
+	//make load button trigger getSamplingFeatureMetadata function with selection
+}

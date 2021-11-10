@@ -29,9 +29,18 @@
 		</button>
 		{% endcomment %}
 		<div id="panel-right-container">
-			<div id="plotOptionsContainer" class="panel panel-default ">
+			<div id="siteSelection" class="panel panel-default">
+				<div class="panel-heading glyphicon glyphicon-cog">
+					<span class="container-title">Load Site</span>
+				</div>
+				<div class="panel-content">
+					<select id="site-select"></select>
+					<button id="load-site" class="btn btn-primary">Load Site</button>
+				</div>
+			</div>
+			<div id="plotDateContainer" class="panel panel-default ">
 				<div class="panel-heading glyphicon glyphicon-cog"><span
-						class="container-title"> Plot Options</span></div>
+						class="container-title">Date Range</span></div>
 				<div class="panel-content">
 					<table class="table">
 						<div id="dateIntervals" class="btn-group">
@@ -61,7 +70,7 @@
 					</table>
 				</div>
 			</div>
-			<div id="plotedSeriesContainer" class="panel panel-default ">
+			<div id="plottedSeriesContainer" class="panel panel-default ">
 				<div class="panel-heading glyphicon glyphicon-th-list"><span class="container-title">Plotted Series</span>
 				</div>
 				<div id="plottedSeries"></div>
@@ -89,6 +98,7 @@
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 
 <script src="{% static 'timeseries_visualization/js/plotting.js' %}"></script>
+<script>var _samplingfeaturecode='{{sampling_feature_code}}'</script>
 <script src="{% static 'timeseries_visualization/js/visualization.js' %}"></script>
 
 {% endblock content %}

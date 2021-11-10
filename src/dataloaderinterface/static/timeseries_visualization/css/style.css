@@ -403,3 +403,7 @@ highcharts implementation
     line-height:0px;
     font-size:8px;
 }
+
+#site-select {
+    width:100%; 
+}
