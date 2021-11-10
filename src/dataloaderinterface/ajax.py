@@ -36,8 +36,6 @@ def get_result_timeseries_recent(request_data:Dict[str,Any]) -> str:
 
 def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 	result_id = int(request_data['resultid'])
-	start_date = str(request_data['startdate'])
-	end_date = str(request_data['enddate'])
 
 	with _db_engine.connect() as connection:		
 		query = f'SELECT valueid, datavalue, valuedatetime, valuedatetimeutcoffset ' \
@@ -63,9 +61,9 @@ def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 			"JOIN odm2.featureactions AS fa ON fa.samplingfeatureid=sf.samplingfeatureid " \
 			"JOIN odm2.results AS rs ON rs.featureactionid = fa.featureactionid " \
 			"JOIN odm2.variables AS vr ON vr.variableid = rs.variableid " \
-			"JOIN odm2.units AS un ON un.unitsid = rs.unitsid " \
-			f"JOIN odm2.timeseriesresults AS tsr ON tsr.resultid = rs.resultid " \
-			f"JOIN odm2.units AS untrs ON untrs.unitsid = tsr.zlocationunitsid "\
+			"LEFT JOIN odm2.units AS un ON un.unitsid = rs.unitsid " \
+			f"LEFT JOIN odm2.timeseriesresults AS tsr ON tsr.resultid = rs.resultid " \
+			f"LEFT JOIN odm2.units AS untrs ON untrs.unitsid = tsr.zlocationunitsid "\
 			f"WHERE sf.samplingfeaturecode = '{sampling_feature_code}'; " 
 		df = pd.read_sql(query, connection)
 		return df.to_json(orient='records', default_handler=str)

@@ -308,7 +308,7 @@
 
                 <div class="col-sm-12 col-lg-5">
                     <a class="link-card" style="margin-bottom: 1em;"
-                       href="{{ tsa_url }}?sitecode={{ site.sampling_feature_code }}&view=datasets&plot=false"
+                       href="/tsv/{{site.sampling_feature_code}}"
                        target="_blank">
                         <div class="mdl-card mdl-shadow--2dp mdl-js-ripple-effect" style="width: 260px;">
                             <span class="mdl-ripple"></span>
@@ -371,16 +371,16 @@
                                                     Download Data
                                                 </div>
 
-                                                {#  View on TSA button  #}
+                                                {#  View in TSV button  #}
                                                 <a target="_blank"
-                                                   href="{{ tsa_url }}?sitecode={{ site.sampling_feature_code }}&variablecode={{ sensor.sensor_output.variable_code }}&view=visualization&plot=true">
+                                                   href="/tsv/{{site.sampling_feature_code}}/{{sensor.result_id}}">
                                                     <span id="tsa-trigger-{{ forloop.counter0 }}"
                                                           class="fa fa-external-link tsa-trigger pull-right text-black"
                                                           aria-hidden="false"></span>
                                                 </a>
                                                 <div class="mdl-tooltip mdl-tooltip--left"
                                                      data-mdl-for="tsa-trigger-{{ forloop.counter0 }}">
-                                                    Open in Time Series Analyst
+                                                    Open in Time Series Visualization
                                                 </div>
                                             </div>
                                         </div>

@@ -7,6 +7,8 @@ var _resultMetadata = {};
 var min_date;
 var max_date;
 
+var _init = true;
+
 $(function () {
 	initChart('cht_ts');
 
@@ -122,6 +124,13 @@ function initAddSeries(response) {
 		_resultMetadata[metadata.resultid] = metadata
 	}	
 	populateSeriesBlock();
+	if (_init) {
+		_init = false;
+		if (_result_id !== undefined && _result_id !== '') {
+			changeTimeSeries(_result_id, true);
+			$(`#plot-series-check_${_result_id}`).prop('checked', true);
+		}
+	}
 }
 
 function populateSeriesBlock(){
@@ -193,7 +202,7 @@ function plotSeries(response_data) {
 	}
 }
 
-function ajax(request_data, callback_success, callback_fail, url='../../dataloader/ajax/') {
+function ajax(request_data, callback_success, callback_fail, url='/dataloader/ajax/') {
     $.ajax({
         url: url,
         data: {request_data: JSON.stringify(request_data)},
