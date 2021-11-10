@@ -28,8 +28,12 @@ $(function () {
 	});
 
 	$('#btnSetPlotOptions').on('click', function() {
-		min_date = new Date($('#dpd1').val());
-		max_date = new Date($('#dpd2').val());
+		min = $('#dpd1').val();
+		min_date = null;
+		if (min !== '') {min_date = new Date(min);}
+		max = $('#dpd2').val();
+		max_date = null;
+		if (max !== '') {max_date = new Date(max);}
 		updatePlotDateRange(min_date, max_date);
 	});
 
