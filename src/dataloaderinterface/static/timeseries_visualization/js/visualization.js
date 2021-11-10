@@ -186,10 +186,10 @@ function plotSeries(response_data) {
 			zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
 		}
 
-		axis_title = `${metadata.variablecode} - ${metadata.sampledmediumcv}${zlocation_text} (${metadata.unitsabbreviation})`;
-		series_name =  `${metadata.sitecode} ${metadata.variablecode} (${metadata.unitsabbreviation})`;
+		axis_title =  `[${metadata.samplingfeaturecode} ${metadata.sampledmediumcv} ${zlocation_text}] ` +
+			`${metadata.variablecode} (${metadata.unitsabbreviation})`;
 		
-		addSeries(axis, axis_title, series_name, x, y);
+		addSeries(axis, axis_title, axis_title, x, y);
 	}
 }
 
