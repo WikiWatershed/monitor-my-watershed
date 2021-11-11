@@ -1,0 +1,104 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="message-box">
+	<span id="title"></span>
+	<span id="msg"></span>
+	<br>
+	<input type="button" value="OK">
+</div>
+
+<div id="graphArea">
+	<div id="graphContainer">
+		<div id="charts-container" style="margin-left: 0px;">
+			<div id="cht_ts" class="cht_xy">
+			</div>
+		</div>
+	</div>
+	<div id="panel-right">
+		{% comment %}
+		<button id="btnCollapseToggle" type="button" class="btn btn-default btn-sm">
+			<span class="glyphicon glyphicon-chevron-right"></span>
+		</button>
+		{% endcomment %}
+		<div id="panel-right-container">
+			<div id="siteSelection" class="panel panel-default">
+				<div class="panel-heading glyphicon glyphicon-cog">
+					<span class="container-title">Load Site</span>
+				</div>
+				<div class="panel-content">
+					<select id="site-select"></select>
+					<button id="load-site" class="btn btn-primary">Load Site</button>
+				</div>
+			</div>
+			<div id="plotDateContainer" class="panel panel-default ">
+				<div class="panel-heading glyphicon glyphicon-cog"><span
+						class="container-title">Date Range</span></div>
+				<div class="panel-content">
+					<table class="table">
+						<div id="dateIntervals" class="btn-group">
+							<button id="btnAll" type="button" class="btn btn-default">All</button>
+							<button id="btnLastYear" type="button" class="btn btn-default">Last Year</button>
+							<button id="btnLastMonth" type="button" class="btn btn-default">Last Month</button>
+						</div>
+
+						<tbody>
+						<tr>
+							<td>Begin</td>
+							<td><input id="dpd1" type="date" class="datepicker" data-date-format="m/dd/yyyy"></td>
+						</tr>
+						<tr>
+							<td>End</td>
+							<td><input id="dpd2" type="date" class="datepicker" data-date-format="m/dd/yyyy"></td>
+						</tr>
+						<tr>
+							<td></td>
+							<td>
+								<button id="btnSetPlotOptions" type="button"
+										class="btn btn-block btn-primary">Update Plot
+								</button>
+							</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div id="plottedSeriesContainer" class="panel panel-default ">
+				<div class="panel-heading glyphicon glyphicon-th-list"><span class="container-title">Plotted Series</span>
+				</div>
+				<div id="plottedSeries"></div>
+			</div>
+			<div id="plotableSeriesContainer" class="panel panel-default">
+				<div class="panel-heading  glyphicon glyphicon-list-alt"><span class="container-title">Add Series</span>
+				</div>
+				<div class="panel-content">
+					<div id='plottableSeriesFilter'>
+						<label for="series-filter">Filter </label>
+						<input id="series-filter" type="text" placeholder="Type filter text">
+					</div>
+					<div id='plottableSeries'> </div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<link rel="stylesheet" href="{% static 'timeseries_visualization/css/style.css' %}">
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
+	crossorigin="anonymous"
+	integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
+</script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/boost.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+<script src="{% static 'timeseries_visualization/js/plotting.js' %}"></script>
+<script>var _samplingfeaturecode='{{sampling_feature_code}}'</script>
+<script>var _result_id='{{result_id}}'</script>
+<script src="{% static 'timeseries_visualization/js/visualization.js' %}"></script>
+
+{% endblock content %}

@@ -22,7 +22,8 @@ from django.urls import reverse_lazy
 from accounts.views import UserRegistrationView, UserUpdateView
 
 
-BASE_URL = settings.SITE_URL[1:]
+#BASE_URL = settings.SITE_URL[1:]
+BASE_URL = ''
 
 login_configuration = {
     'redirect_field_name': 'next'
@@ -53,7 +54,8 @@ urlpatterns = [
     url(r'^' + BASE_URL + 'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^' + BASE_URL + 'hydroshare/', include('hydroshare.urls', namespace='hydroshare')),
     url(BASE_URL, include('dataloaderinterface.urls')),
-    url(BASE_URL, include('dataloaderservices.urls'))
+    url(BASE_URL, include('dataloaderservices.urls')),
+    url(BASE_URL, include('timeseries_visualization.urls'))
 ]
 
 # if settings.DEBUG:
