@@ -89,9 +89,27 @@ function displayMessage(title, msg) {
 	$('.message-box').show();
 }
 
+function dateToString(date) {
+	if (date !== null && date !== undefined) {
+		year = date.getFullYear();
+		month = date.getMonth() + 1;
+		day =  date.getDate();
+		return `${year}-${month}-${day}`;
+	}	
+	return '';
+}
+
 function updatePlotDateRange(min, max) {
-	if (min != null) {min = min.getTime();}
-	if (max != null) {max = max.getTime();}	
+	$('#dpd1').val('');
+	$('#dpd2').val('');
+	if (min != null) {
+		$('#dpd1').val(dateToString(min));
+		min = min.getTime();
+	}
+	if (max != null) {
+		$('#dpd2').val(dateToString(max));
+		max = max.getTime();
+	}	
 	_chart.xAxis[0].update({'min':min, 'max':max}); 
 	_chart.xAxis[0].setExtremes();
 }
