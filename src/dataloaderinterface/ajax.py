@@ -45,6 +45,9 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 		#-9999 is used for NaN alternative by sensors
 		df = df.replace(-9999,np.nan)
 		df = df.dropna()
+		#convert from utc to local sensor time
+		df['valuedatetime'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
+		df = df.dropna()
 		data = df.to_json(orient='columns')
 		response = f'{{"result_id":{result_id}, "data":{data} }}'
 		return response
