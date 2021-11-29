@@ -33,8 +33,10 @@ from dataloaderservices.serializers import OrganizationSerializer
 
 from leafpack.models import LeafPack
 
-from typing import List, Tuple
+from typing import Iterable, List, Tuple
 from django.core.handlers.wsgi import WSGIRequest
+
+import pandas as pd
 
 #PRT - temporary work around after replacing InfluxDB but not replacement models
 import sqlalchemy
@@ -181,11 +183,15 @@ class FollowSiteApi(APIView):
 class SensorDataUploadView(APIView):
     authentication_classes = (SessionAuthentication,)
     header_row_indicators = ('Data Logger', 'Sampling Feature',
-                             'Sensor', 'Variable', 'Result', 'Date and Time')
+                             'Sensor', 'Variable', 'Result', 'Date and Time','Code')
 
     def should_skip_row(self, row):
         if row[0].startswith(self.header_row_indicators):
             return True
+
+    def decode_utf8_sig(self, input_iterator:Iterable) -> str:
+        for item in input_iterator:
+            yield item.decode('utf-8-sig')
 
     def build_results_dict(self, data_file):
         results = {'utc_offset': 0, 'site_uuid': '', 'results': {}}
@@ -193,7 +199,7 @@ class SensorDataUploadView(APIView):
         got_result_uuids = False
         got_UTC_offset = False
 
-        for index, row in enumerate(csv.reader(data_file)):
+        for row in csv.reader(self.decode_utf8_sig(data_file)):
 
             if row[0].startswith('Sampling Feature') and not got_feature_uuid:
                     results['site_uuid'] = row[0].replace(
@@ -257,63 +263,55 @@ class SensorDataUploadView(APIView):
         data_value_units = Unit.objects.get(unit_name='hour minute')
         sensors = registration.sensors.all()
 
-        reader = csv.reader(data_file)
-        for row in reader:
+        warnings = []
+        for row in csv.reader(self.decode_utf8_sig(data_file)):
             if self.should_skip_row(row):
                 continue
             else:
-                # process data series
                 try:
                     measurement_datetime = parse_datetime(row[0])
-                except ValueError:
-                    print('invalid date {}'.format(row[0]))
+                    if not measurement_datetime:
+                        measurement_datetime = pd.to_datetime(row[0])
+                    if not measurement_datetime:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    warnings.append('Unrecognized date format: {}'.format(row[0]))
                     continue
-
-                if not measurement_datetime:
-                    print('invalid date format {}'.format(row[0]))
-                    continue
-
                 measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=results_mapping['utc_offset'])
 
                 for sensor in sensors:
                     uuid = str(sensor.result_uuid)
                     if uuid not in results_mapping['results']:
-                        print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
+                        #TODO - consider revised approach where we loop over column in CSV and not all sensors 
+                        #this would allow us to return warning that result uuid is not recognized.
                         continue
 
                     data_value = row[results_mapping['results'][uuid]['index']]
-
-                    results_mapping['results'][uuid]['values'].append((
-                        long((measurement_datetime - datetime.utcfromtimestamp(0)).total_seconds()),  # -> timestamp
-                        data_value  # -> data value (duh)
-                    ))
-
-                    try:
-                        # Create data value
-                        TimeSeriesResultValue.objects.create(
+                    result_value = TimeseriesResultValueTechDebt(
                             result_id=sensor.result_id,
-                            value_datetime_utc_offset=results_mapping['utc_offset'],
+                            data_value=data_value,
+                            utc_offset=results_mapping['utc_offset'],
                             value_datetime=measurement_datetime,
-                            censor_code_id='Not censored',
-                            quality_code_id='None',
+                            censor_code='Not censored',
+                            quality_code='None',
                             time_aggregation_interval=1,
-                            time_aggregation_interval_unit=data_value_units,
-                            data_value=data_value
-                        )
-                    except IntegrityError as ie:
-                        print('value not created for {}'.format(uuid))
+                            time_aggregation_interval_unit=data_value_units.unit_id,
+                            ) 
+                    try:
+                        result = InsertTimeseriesResultValues(result_value)
+                    except Exception as e:
+                        warnings.append(f"Error inserting value '{data_value}'"\
+                            f"at datetime '{measurement_datetime}' for result uuid '{uuid}'")
                         continue
 
-        print('updating sensor metadata')
+        #block is responsible for keeping separate dataloader database metadata in sync
+        #long term plan is to eliminate this, but need to keep for the now 
         for sensor in sensors:
             uuid = str(sensor.result_uuid)
             if uuid not in results_mapping['results']:
                 print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
                 continue
-
             last_data_value = row[results_mapping['results'][uuid]['index']]
-
-            # create last measurement object
             last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
             if not last_measurement or last_measurement and last_measurement.value_datetime < measurement_datetime:
                 last_measurement and last_measurement.delete()
@@ -323,31 +321,17 @@ class SensorDataUploadView(APIView):
                     value_datetime_utc_offset=timedelta(hours=results_mapping['utc_offset']),
                     data_value=last_data_value
                 )
+        #end meta data syncing block
 
-            # Insert data values into influx instance.
-            influx_request_url = settings.INFLUX_UPDATE_URL
-            influx_series_template = settings.INFLUX_UPDATE_BODY
-
-            all_values = results_mapping['results'][uuid]['values']  # -> [(timestamp, data_value), ]
-            influx_request_body = '\n'.join(
-                [influx_series_template.format(
-                    result_uuid=uuid.replace('-', '_'),
-                    data_value=value,
-                    utc_offset=results_mapping['utc_offset'],
-                    timestamp_s=timestamp
-                ) for timestamp, value in all_values]
-            )
-
-            requests.post(influx_request_url, influx_request_body.encode())
-
-        # send email informing the data upload is done
-        print('sending email')
-        subject = 'Data Sharing Portal data upload completed'
-        message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
-        sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
-        addresses = [request.user.email]
-        if send_mail(subject, message, sender, addresses, fail_silently=True):
-            print('email sent!')
+        #TODO: Decouple email from this method by having email sender class
+        #subject = 'Data Sharing Portal data upload completed'
+        #message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
+        #sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
+        #addresses = [request.user.email]
+        #if send_mail(subject, message, sender, addresses, fail_silently=True):
+        #    print('email sent!')
+        if warnings:
+            return Response({'warnings': warnings}, status.HTTP_206_PARTIAL_CONTENT)
         return Response({'message': 'file has been processed successfully'}, status.HTTP_200_OK)
 
 
