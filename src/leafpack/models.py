@@ -7,6 +7,7 @@ from accounts.models import User
 from django.db.models import Sum, Q
 from operator import __or__ as OR
 
+from functools import reduce
 
 class Macroinvertebrate(models.Model):
     """
