@@ -38,11 +38,16 @@ While deploying the web application server, I recommend following the instructio
         - `conda activate ODM2DataSharingPortal`
         - `cd  /opt/ODM2DataSharingPortal/src`
 		- `gunicorn wsgi:application --bind 0.0.0.0:8000`
-    - After we know the testing works, copy over the gunicorn file from the config repo to the server. I tried a symlink here but that did not work. I ended up just copying the file from the config repo to system services. Also note my copy command renames the file from envirodiy to gunicorn. 
+    - After we know the testing works, copy over the gunicorn service file from the config repo to the server. I tried a symlink here but that did not work (probably because it is a service). I ended up just copying the file from the config repo to system services. Also note my copy command renames the file from envirodiy to gunicorn. The service we just created will automatically gunicorn with the appropriate arugments and create a socket to the application that will become the entry point for nginx. 
         - `sudo cp /opt/ODM2DataSharingPortalConfig/GUnicorn/envirodiy.service /etc/systemd/system/gunicorn.service`
+    - As mentioned above, the service will automatically call gunicorn, but where gunicorn is on your system will depend on a variey of thing (i.e. how and where python was installed). In order to make the service file flexible and not dependent on the specifics of the installation I reference gunicorn located at '/usr/bin/gunicorn'. However this is very likely not were unicorn was installed. The solution is to create a symlink.
+        - optional `whereis gunicorn` to help find the install location
+        - `sudo ln /path/to/gunicorn /usr/bin/gunicorn`
     - Finally I needed to modify the permissions of wsgi.py so that gunicorn to spin up the application.
         - `cd /opt/ODM2DataSharingPortal/src`
         - `chmod +755 wsgi.py`
+    - Now we just need to start the GUnicorn service we created
+        - `sudo systemctl start gunicorn`` 
 5. **Set up nginx**
 	- Install nginx 
 	    - `sudo apt install nginx`
