@@ -181,21 +181,6 @@ class SiteSensor(models.Model):
     def sensor_identity(self):
         return "{0}_{1}_{2}".format(self.registration.sampling_feature_code, self.sensor_output.variable_code, self.result_id)
 
-    @property
-    def influx_url(self):
-        if not self.last_measurement:
-            return
-
-        return settings.INFLUX_URL_QUERY.format(
-            result_uuid=self.influx_identifier,
-            last_measurement=self.last_measurement.value_datetime.strftime('%Y-%m-%dT%H:%M:%SZ'),
-            days_of_data=settings.SENSOR_DATA_PERIOD
-        )
-
-    @property
-    def influx_identifier(self):
-        return 'uuid_{}'.format(str(self.result_uuid).replace('-', '_'))
-
     def __str__(self):
         return '%s' % (self.sensor_identity)
 
