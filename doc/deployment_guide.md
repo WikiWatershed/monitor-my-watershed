@@ -52,7 +52,7 @@ While deploying the web application server, I recommend following the instructio
 	- Install nginx 
 	    - `sudo apt install nginx`
     - Create symlink between config repo and nginx
-        - `sudo ln -s /opt/ODM2DataSharingPortalConfig/nginx/staging_data_environdiy /etc/nginx/sites-enabled`
+        - `sudo ln -s /opt/ODM2DataSharingPortalConfig/nginx/staging_data_environdiy /etc/nginx/sites-enabled/ODM2DataSharingPortal`
     - Test nginx
         - `sudo nginx -t`
     - If there were no errors during the test, start nginx which should make the site accessable online.
