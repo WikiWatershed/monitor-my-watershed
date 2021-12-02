@@ -29,7 +29,7 @@ While deploying the web application server, I recommend following the instructio
     - `conda env create -f /opt/ODM2DataSharingPortal/environment_py38_dj22.yml` Note I modified this yml file so that the environment name was 'ODM2DataSharingPortal'
     - `conda activate ODM2DataSharingPortal`
 3. **Create a symlink so the Web App will use the settings.json file in the config repo:** Note the instructions below use the development/staging settings. You may need to point to a different file for the production deployment.
-	- `sudo ln -s /opt/ODM2DataSharingPortalConfig/django/dev_aws.settings.json /opt/ODM2DataSharingPortal/src/WebSDL/settings/settings.json`
+	- `sudo ln -s /opt/ODM2DataSharingPortalConfig/django/staging.settings.json /opt/ODM2DataSharingPortal/src/WebSDL/settings/settings.json`
 4. **Set Up Gunicorn:**
     - Gunicorn is not in the default mini conda channel, so we'll need to get it from conda forge.
         - `conda config --add channels conda-forge`
