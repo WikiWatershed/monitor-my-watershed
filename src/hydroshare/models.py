@@ -51,7 +51,7 @@ class OAuthToken(models.Model):
 
 # HSUAccount - holds information for user's Hydroshare account
 class HydroShareAccount(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='hydroshare_account')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name='hydroshare_account', on_delete=models.CASCADE)
     is_enabled = models.BooleanField(default=False)
     ext_id = models.IntegerField(unique=True)  # external hydroshare account id
     token = models.ForeignKey(OAuthToken, db_column='token_id', null=True, on_delete=models.CASCADE)
@@ -118,7 +118,7 @@ class HydroShareResource(models.Model):
     hs_account = models.ForeignKey(HydroShareAccount, db_column='hs_account_id', on_delete=models.CASCADE, null=True,
                                    blank=True)
     ext_id = models.CharField(max_length=255, blank=True, null=True, unique=True)  # external hydroshare resource id
-    site_registration = models.OneToOneField(SiteRegistration, related_name='hydroshare_resource')
+    site_registration = models.OneToOneField(SiteRegistration, related_name='hydroshare_resource', on_delete=models.CASCADE)
     sync_type = models.CharField(max_length=255, default='manual', choices=HYDROSHARE_SYNC_TYPES)
     update_freq = models.CharField(max_length=32, verbose_name='Update Frequency', default='daily')
     is_enabled = models.BooleanField(default=True)

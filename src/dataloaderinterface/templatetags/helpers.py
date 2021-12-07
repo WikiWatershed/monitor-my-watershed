@@ -33,13 +33,17 @@ def replace_hour(value, argv):
         return ''
 
 
-@register.filter("is_stale")
+@register.filter("is_stale")  # Consider adding timezone: https://docs.djangoproject.com/en/3.2/howto/custom-template-tags/#filters-and-time-zones
 def is_stale(value, default):
+    '''
+    Used to test if `SiteAlert.last_alerted` datetime value has exceeded a threshold vs datetime.utcnow(), 
+    if and only if `site.latest_measurement.value_datetime` is null. (Anthony note: confirm this logic is correct.)
+    '''
     if not value:
         return ''
 
     try:
-        if default > 0:
+        if default.last_alterted > 0:
             return (datetime.utcnow() - value) > timedelta(hours=default.hours_threshold.total_seconds()/3600)
         return (datetime.utcnow() - value) > timedelta(hours=72)
     except AttributeError:

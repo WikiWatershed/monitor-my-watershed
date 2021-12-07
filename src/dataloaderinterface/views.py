@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
-from django.core.urlresolvers import reverse, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import HttpResponseRedirect, Http404
 from django.shortcuts import redirect
@@ -21,6 +21,13 @@ from dataloaderinterface.forms import SiteAlertForm, SiteRegistrationForm, SiteS
 from hydroshare.models import HydroShareResource, HydroShareAccount
 from leafpack.models import LeafPack
 
+from django.views.decorators.csrf import csrf_exempt
+import dataloaderinterface.ajax as ajax
+from django.core.handlers.wsgi import WSGIRequest
+
+import json
+from django.http import HttpResponse, JsonResponse
+from typing import Union
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -119,7 +126,6 @@ class SiteDetailView(DetailView):
         context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
         context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
         context['is_site_owner'] = self.request.user == self.object.django_user
-        context['tsa_url'] = settings.TSA_URL 
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
 
@@ -332,3 +338,13 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         else:
             messages.error(request, 'There are still some required fields that need to be filled out!')
             return self.form_invalid(form)
+
+@csrf_exempt
+def ajax_router(request: WSGIRequest) -> Union[JsonResponse,HttpResponse]:
+    request_data = json.loads(request.POST.get('request_data'))
+    try:
+        method = getattr(ajax, request_data['method'])
+        response = method(request_data)
+        return JsonResponse(response, safe=False)
+    except AttributeError: #Invalid method specified
+        return HttpResponse(status=405)

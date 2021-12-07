@@ -1,10 +1,10 @@
-import codecs
 import csv
 import os
 from collections import OrderedDict
-from datetime import timedelta, datetime
+from datetime import time, timedelta, datetime
 
-from StringIO import StringIO
+from io import StringIO
+from django.utils import encoding
 
 import requests
 from django.conf import settings
@@ -16,7 +16,6 @@ from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
 from rest_framework.generics import GenericAPIView
-from unicodecsv.py2 import UnicodeWriter
 
 from dataloader.models import SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
 from django.db.models.expressions import F
@@ -34,9 +33,21 @@ from dataloaderservices.serializers import OrganizationSerializer
 
 from leafpack.models import LeafPack
 
+from typing import Iterable, List, Tuple
+from django.core.handlers.wsgi import WSGIRequest
+
+import pandas as pd
+
+#PRT - temporary work around after replacing InfluxDB but not replacement models
+import sqlalchemy
+from sqlalchemy.sql import text
+from django.conf import settings
+_dbsettings = settings.DATABASES['odm2']
+_connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
+_db_engine = sqlalchemy.create_engine(_connection_str)
+
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
-
 
 class ModelVariablesApi(APIView):
     authentication_classes = (SessionAuthentication, )
@@ -172,11 +183,15 @@ class FollowSiteApi(APIView):
 class SensorDataUploadView(APIView):
     authentication_classes = (SessionAuthentication,)
     header_row_indicators = ('Data Logger', 'Sampling Feature',
-                             'Sensor', 'Variable', 'Result', 'Date and Time')
+                             'Sensor', 'Variable', 'Result', 'Date and Time','Code')
 
     def should_skip_row(self, row):
         if row[0].startswith(self.header_row_indicators):
             return True
+
+    def decode_utf8_sig(self, input_iterator:Iterable) -> str:
+        for item in input_iterator:
+            yield item.decode('utf-8-sig')
 
     def build_results_dict(self, data_file):
         results = {'utc_offset': 0, 'site_uuid': '', 'results': {}}
@@ -184,7 +199,7 @@ class SensorDataUploadView(APIView):
         got_result_uuids = False
         got_UTC_offset = False
 
-        for index, row in enumerate(csv.reader(data_file)):
+        for row in csv.reader(self.decode_utf8_sig(data_file)):
 
             if row[0].startswith('Sampling Feature') and not got_feature_uuid:
                     results['site_uuid'] = row[0].replace(
@@ -248,63 +263,55 @@ class SensorDataUploadView(APIView):
         data_value_units = Unit.objects.get(unit_name='hour minute')
         sensors = registration.sensors.all()
 
-        reader = csv.reader(data_file)
-        for row in reader:
+        warnings = []
+        for row in csv.reader(self.decode_utf8_sig(data_file)):
             if self.should_skip_row(row):
                 continue
             else:
-                # process data series
                 try:
                     measurement_datetime = parse_datetime(row[0])
-                except ValueError:
-                    print('invalid date {}'.format(row[0]))
+                    if not measurement_datetime:
+                        measurement_datetime = pd.to_datetime(row[0])
+                    if not measurement_datetime:
+                        raise ValueError
+                except (ValueError, TypeError):
+                    warnings.append('Unrecognized date format: {}'.format(row[0]))
                     continue
-
-                if not measurement_datetime:
-                    print('invalid date format {}'.format(row[0]))
-                    continue
-
                 measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=results_mapping['utc_offset'])
 
                 for sensor in sensors:
                     uuid = str(sensor.result_uuid)
                     if uuid not in results_mapping['results']:
-                        print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
+                        #TODO - consider revised approach where we loop over column in CSV and not all sensors 
+                        #this would allow us to return warning that result uuid is not recognized.
                         continue
 
                     data_value = row[results_mapping['results'][uuid]['index']]
-
-                    results_mapping['results'][uuid]['values'].append((
-                        long((measurement_datetime - datetime.utcfromtimestamp(0)).total_seconds()),  # -> timestamp
-                        data_value  # -> data value (duh)
-                    ))
-
-                    try:
-                        # Create data value
-                        TimeSeriesResultValue.objects.create(
+                    result_value = TimeseriesResultValueTechDebt(
                             result_id=sensor.result_id,
-                            value_datetime_utc_offset=results_mapping['utc_offset'],
+                            data_value=data_value,
+                            utc_offset=results_mapping['utc_offset'],
                             value_datetime=measurement_datetime,
-                            censor_code_id='Not censored',
-                            quality_code_id='None',
+                            censor_code='Not censored',
+                            quality_code='None',
                             time_aggregation_interval=1,
-                            time_aggregation_interval_unit=data_value_units,
-                            data_value=data_value
-                        )
-                    except IntegrityError as ie:
-                        print('value not created for {}'.format(uuid))
+                            time_aggregation_interval_unit=data_value_units.unit_id,
+                            ) 
+                    try:
+                        result = InsertTimeseriesResultValues(result_value)
+                    except Exception as e:
+                        warnings.append(f"Error inserting value '{data_value}'"\
+                            f"at datetime '{measurement_datetime}' for result uuid '{uuid}'")
                         continue
 
-        print('updating sensor metadata')
+        #block is responsible for keeping separate dataloader database metadata in sync
+        #long term plan is to eliminate this, but need to keep for the now 
         for sensor in sensors:
             uuid = str(sensor.result_uuid)
             if uuid not in results_mapping['results']:
                 print('uuid {} in file does not correspond to a measured variable in {}'.format(uuid, registration.sampling_feature_code))
                 continue
-
             last_data_value = row[results_mapping['results'][uuid]['index']]
-
-            # create last measurement object
             last_measurement = SensorMeasurement.objects.filter(sensor=sensor).first()
             if not last_measurement or last_measurement and last_measurement.value_datetime < measurement_datetime:
                 last_measurement and last_measurement.delete()
@@ -314,31 +321,17 @@ class SensorDataUploadView(APIView):
                     value_datetime_utc_offset=timedelta(hours=results_mapping['utc_offset']),
                     data_value=last_data_value
                 )
+        #end meta data syncing block
 
-            # Insert data values into influx instance.
-            influx_request_url = settings.INFLUX_UPDATE_URL
-            influx_series_template = settings.INFLUX_UPDATE_BODY
-
-            all_values = results_mapping['results'][uuid]['values']  # -> [(timestamp, data_value), ]
-            influx_request_body = '\n'.join(
-                [influx_series_template.format(
-                    result_uuid=uuid.replace('-', '_'),
-                    data_value=value,
-                    utc_offset=results_mapping['utc_offset'],
-                    timestamp_s=timestamp
-                ) for timestamp, value in all_values]
-            )
-
-            requests.post(influx_request_url, influx_request_body.encode())
-
-        # send email informing the data upload is done
-        print('sending email')
-        subject = 'Data Sharing Portal data upload completed'
-        message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
-        sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
-        addresses = [request.user.email]
-        if send_mail(subject, message, sender, addresses, fail_silently=True):
-            print('email sent!')
+        #TODO: Decouple email from this method by having email sender class
+        #subject = 'Data Sharing Portal data upload completed'
+        #message = 'Your data upload for site {} is complete.'.format(registration.sampling_feature_code)
+        #sender = "\"Data Sharing Portal Upload\" <data-upload@usu.edu>"
+        #addresses = [request.user.email]
+        #if send_mail(subject, message, sender, addresses, fail_silently=True):
+        #    print('email sent!')
+        if warnings:
+            return Response({'warnings': warnings}, status.HTTP_206_PARTIAL_CONTENT)
         return Response({'message': 'file has been processed successfully'}, status.HTTP_200_OK)
 
 
@@ -347,7 +340,7 @@ class CSVDataApi(View):
 
     date_format = '%Y-%m-%d %H:%M:%S'
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request:WSGIRequest, *args, **kwargs) -> HttpResponse:
         """
         Downloads csv file for given result id's.
 
@@ -362,9 +355,7 @@ class CSVDataApi(View):
             result_ids = [request.GET.get('result_id', [])]
         elif 'result_ids' in request.GET:
             result_ids = request.GET['result_ids'].split(',')
-
-        result_ids = filter(lambda x: len(x) > 0, result_ids)
-
+        
         if not len(result_ids):
             return Response({'error': 'Result ID(s) not found.'})
 
@@ -378,7 +369,7 @@ class CSVDataApi(View):
         return response
 
     @staticmethod
-    def get_csv_file(result_ids, request=None):  # type: (list, any) -> (str, StringIO)
+    def get_csv_file(result_ids:List[str], request:WSGIRequest=None) -> Tuple[str, StringIO]:
         """
         Gathers time series data for the passed in result id's to generate a csv file for download
         """
@@ -404,7 +395,7 @@ class CSVDataApi(View):
             raise ValueError('Time Series Result(s) not found (result id(s): {}).'.format(', '.join(result_ids)))
 
         csv_file = StringIO()
-        csv_writer = UnicodeWriter(csv_file)
+        csv_writer = csv.writer(csv_file)
         csv_file.write(CSVDataApi.generate_metadata(time_series_result, request=request))
         csv_writer.writerow(CSVDataApi.get_csv_headers(time_series_result))
         csv_writer.writerows(CSVDataApi.get_data_values(time_series_result))
@@ -425,13 +416,13 @@ class CSVDataApi(View):
         return filename, csv_file
 
     @staticmethod
-    def get_csv_headers(ts_results):  # type: ([TimeSeriesResult]) -> None
+    def get_csv_headers(ts_results:List[TimeSeriesResult]) -> None:
         headers = ['DateTime', 'TimeOffset', 'DateTimeUTC']
         var_codes = [ts_result.result.variable.variable_code for ts_result in ts_results]
         return headers + CSVDataApi.clean_variable_codes(var_codes)
 
     @staticmethod
-    def clean_variable_codes(varcodes):  # type: ([str]) -> [str]
+    def clean_variable_codes(varcodes:List[str]) -> List[str]:
         """
         Looks for duplicate variable codes and appends a number if collisions exist.
 
@@ -451,7 +442,7 @@ class CSVDataApi(View):
         return varcodes
 
     @staticmethod
-    def get_data_values(time_series_results):  # type: (QuerySet) -> object
+    def get_data_values(time_series_results:QuerySet) -> object:
         result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
         data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
         data_values_map = OrderedDict()
@@ -463,7 +454,7 @@ class CSVDataApi(View):
             })
 
         data = []
-        for timestamp, values in data_values_map.iteritems():
+        for timestamp, values in data_values_map.items():
             local_timestamp = timestamp + timedelta(hours=values['utc_offset'])
             row = [
                 local_timestamp.strftime(CSVDataApi.date_format),   # Local DateTime
@@ -481,22 +472,23 @@ class CSVDataApi(View):
         return data
 
     @staticmethod
-    def read_file(fname):
+    def read_file(fname:str) -> str:
         fpath = os.path.join(os.path.dirname(__file__), 'csv_templates', fname)
-        with codecs.open(fpath, 'r', encoding='utf-8') as fin:
-            return fin.read()
+        with open(fpath, 'r', encoding='utf8') as f:
+            contents = f.read()
+        return contents
 
     @staticmethod
-    def generate_metadata(time_series_results, request=None):  # type: (QuerySet, any) -> str
-        metadata = str()
+    def generate_metadata(time_series_results:QuerySet, request:WSGIRequest=None) -> str:
+        metadata = ''
 
         # Get the first TimeSeriesResult object and use it to get values for the
         # "Site Information" block in the header of the CSV
         tsr = time_series_results.first()
         site_sensor = SiteSensor.objects.select_related('registration').filter(result_id=tsr.result.result_id).first()
-        metadata += CSVDataApi.read_file('site_information.txt').format(
-            site=site_sensor.registration
-        ).encode('utf-8')
+        site_info_template = CSVDataApi.read_file('site_information.txt')
+        site_info_template = site_info_template.format(site=site_sensor.registration) 
+        metadata += site_info_template
 
         time_series_results_as_list = [tsr for tsr in time_series_results]
 
@@ -581,77 +573,57 @@ class TimeSeriesValuesApi(APIView):
     authentication_classes = (UUIDAuthentication, )
 
     def post(self, request, format=None):
-        #  make sure that the data is in the request (sampling_feature, timestamp(?), ...) if not return error response
-        # if 'sampling_feature' not in request.data or 'timestamp' not in request.data:
         if not all(key in request.data for key in ('timestamp', 'sampling_feature')):
             raise exceptions.ParseError("Required data not found in request.")
 
-        # parse the received timestamp
         try:
             measurement_datetime = parse_datetime(request.data['timestamp'])
         except ValueError:
             raise exceptions.ParseError('The timestamp value is not valid.')
-
         if not measurement_datetime:
             raise exceptions.ParseError('The timestamp value is not well formatted.')
-
         if measurement_datetime.utcoffset() is None:
             raise exceptions.ParseError('The timestamp value requires timezone information.')
-
         utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
-
-        # saving datetimes in utc time now.
         measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
 
-        # get odm2 sampling feature if it matches sampling feature uuid sent
         sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data['sampling_feature']).first()
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
-
-        # get all feature actions related to the sampling feature, along with the results, results variables, and actions.
         feature_actions = sampling_feature.feature_actions.prefetch_related('results__variable', 'action').all()
+        errors = []
         for feature_action in feature_actions:
             result = feature_action.results.all().first()
-            site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
-
-            is_first_value = result.value_count == 0
-
-            # don't create a new TimeSeriesValue for results that are not included in the request
             if str(result.result_uuid) not in request.data:
                 continue
 
-            result_value = TimeSeriesResultValue(
+            result_value = TimeseriesResultValueTechDebt(
                 result_id=result.result_id,
-                value_datetime_utc_offset=utc_offset,
+                data_value=request.data[str(result.result_uuid)],
                 value_datetime=measurement_datetime,
-                censor_code_id='Not censored',
-                quality_code_id='None',
+                utc_offset=utc_offset,
+                censor_code='Not censored',
+                quality_code='None',
                 time_aggregation_interval=1,
-                time_aggregation_interval_unit=Unit.objects.get(unit_name='hour minute'),
-                data_value=request.data[str(result.result_uuid)]
-            )
+                time_aggregation_interval_unit=(Unit.objects.get(unit_name='hour minute')).unit_id)
 
             try:
-                result_value.save()
+                query_result = InsertTimeseriesResultValues(result_value)
             except Exception as e:
-                # continue adding the remaining measurements in the request.
-                # TODO: use a logger to log the failed request information.
-                continue
-                # raise exceptions.ParseError("{variable_code} value not saved {exception_message}".format(
-                #     variable_code=result.variable.variable_code, exception_message=e
-                # ))
-
+                errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
+                
+            # PRT - long term we would like to remove dataloader database but for now 
+            # this block of code keeps dataloaderinterface_sensormeasurement table in sync
             result.value_count = F('value_count') + 1
             result.result_datetime = measurement_datetime
             result.result_datetime_utc_offset = utc_offset
-
-            # delete last measurement
+            site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
             last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
             if not last_measurement:
                 SensorMeasurement.objects.create(
                     sensor=site_sensor,
                     value_datetime=result_value.value_datetime,
-                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
                     data_value=result_value.data_value
                 )
             elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
@@ -659,11 +631,11 @@ class TimeSeriesValuesApi(APIView):
                 SensorMeasurement.objects.create(
                     sensor=site_sensor,
                     value_datetime=result_value.value_datetime,
-                    value_datetime_utc_offset=timedelta(hours=result_value.value_datetime_utc_offset),
+                    value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
                     data_value=result_value.data_value
                 )
 
-            if is_first_value:
+            if result.value_count == 0:
                 result.valid_datetime = measurement_datetime
                 result.valid_datetime_utc_offset = utc_offset
 
@@ -678,21 +650,57 @@ class TimeSeriesValuesApi(APIView):
                     'valid_datetime', 'valid_datetime_utc_offset'
                 ])
             except Exception as e:
-                # Temporary fix. TODO: Use logger and be more specific. exception catch is too broad.
+                #PRT - An exception here means the dataloaderinterface data tables will not in sync 
+                # for this sensor, but that is better than a fail state where data is lost so pass 
+                # expection for now. Long term plan is to remove this whole block of code.
                 pass
-
-            # Insert data value into influx instance.
-            try:
-                influx_request_url = settings.INFLUX_UPDATE_URL
-                influx_request_body = settings.INFLUX_UPDATE_BODY.format(
-                    result_uuid=str(site_sensor.result_uuid).replace('-', '_'),
-                    data_value=result_value.data_value,
-                    utc_offset=result_value.value_datetime_utc_offset,
-                    timestamp_s=long((result_value.value_datetime - datetime.utcfromtimestamp(0)).total_seconds()),
-                )
-                requests.post(influx_request_url, influx_request_body.encode())
-            except Exception as e:
-                # Temporary fix. TODO: Use logger and be more specific. exception catch is too broad.
-                continue
+            # End dataloaderinterface_sensormeasurement sync block
+        if errors: return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({}, status.HTTP_201_CREATED)
+
+class TimeseriesResultValueTechDebt():
+    def __init__(self, 
+            result_id:str, 
+            data_value:float, 
+            value_datetime:datetime, 
+            utc_offset:int, 
+            censor_code:str,
+            quality_code:str, 
+            time_aggregation_interval:int, 
+            time_aggregation_interval_unit:int) -> None:
+        self.result_id = result_id
+        self.data_value = data_value
+        self.utc_offset = utc_offset
+        self.value_datetime = value_datetime 
+        self.censor_code= censor_code
+        self.quality_code = quality_code
+        self.time_aggregation_interval = time_aggregation_interval
+        self.time_aggregation_interval_unit = time_aggregation_interval_unit
+
+def InsertTimeseriesResultValues(result_value : TimeseriesResultValueTechDebt) -> None: 
+    with _db_engine.connect() as connection:
+        query = text("INSERT INTO odm2.timeseriesresultvalues " \
+            "(valueid, resultid, datavalue, valuedatetime, valuedatetimeutcoffset, " \
+            "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) " \
+            "VALUES ( " \
+                "(SELECT nextval('odm2.\"timeseriesresultvalues_valueid_seq\"'))," \
+                ":result_id, " \
+                ":data_value, " \
+                ":value_datetime, " \
+                ":utc_offset, " \
+                ":censor_code, " \
+                ":quality_code, " \
+                ":time_aggregation_interval, " \
+                ":time_aggregation_interval_unit);")
+        result = connection.execute(query, 
+            result_id=result_value.result_id,
+            data_value=result_value.data_value,
+            value_datetime=result_value.value_datetime,
+            utc_offset=result_value.utc_offset,
+            censor_code=result_value.censor_code,
+            quality_code=result_value.quality_code,
+            time_aggregation_interval=result_value.time_aggregation_interval,
+            time_aggregation_interval_unit=result_value.time_aggregation_interval_unit,
+            )
+    return result

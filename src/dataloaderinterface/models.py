@@ -93,7 +93,7 @@ class SiteRegistration(models.Model):
 
 
 class SensorMeasurement(models.Model):
-    sensor = models.OneToOneField('SiteSensor', related_name='last_measurement', primary_key=True)
+    sensor = models.OneToOneField('SiteSensor', related_name='last_measurement', on_delete=models.CASCADE, primary_key=True)
     value_datetime = models.DateTimeField()
     value_datetime_utc_offset = models.DurationField()
     data_value = models.FloatField()
@@ -157,14 +157,14 @@ class SensorOutput(models.Model):
 
 
 class SiteSensor(models.Model):
-    registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', related_name='sensors')
+    registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', on_delete=models.CASCADE, related_name='sensors')
 
     result_id = models.IntegerField(db_column='ResultID', unique=True, null=True)
     result_uuid = models.UUIDField(db_column='ResultUUID', unique=True, null=True)
 
     height = models.FloatField(blank=True, null=True)
     sensor_notes = models.TextField(blank=True, null=True)
-    sensor_output = models.ForeignKey('SensorOutput', related_name='sensor_instances', null=True)
+    sensor_output = models.ForeignKey('SensorOutput', related_name='sensor_instances', on_delete=models.CASCADE, null=True)
 
     class Meta:
         ordering = ['result_id']
@@ -181,21 +181,6 @@ class SiteSensor(models.Model):
     def sensor_identity(self):
         return "{0}_{1}_{2}".format(self.registration.sampling_feature_code, self.sensor_output.variable_code, self.result_id)
 
-    @property
-    def influx_url(self):
-        if not self.last_measurement:
-            return
-
-        return settings.INFLUX_URL_QUERY.format(
-            result_uuid=self.influx_identifier,
-            last_measurement=self.last_measurement.value_datetime.strftime('%Y-%m-%dT%H:%M:%SZ'),
-            days_of_data=settings.SENSOR_DATA_PERIOD
-        )
-
-    @property
-    def influx_identifier(self):
-        return 'uuid_{}'.format(str(self.result_uuid).replace('-', '_'))
-
     def __str__(self):
         return '%s' % (self.sensor_identity)
 
@@ -206,8 +191,8 @@ class SiteSensor(models.Model):
 
 
 class SiteAlert(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, db_column='User', related_name='site_alerts')
-    site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', related_name='alerts')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, db_column='User', on_delete=models.CASCADE, related_name='site_alerts')
+    site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', on_delete=models.CASCADE, related_name='alerts')
     last_alerted = models.DateTimeField(db_column='LastAlerted', blank=True, null=True)
     hours_threshold = models.DurationField(db_column='HoursThreshold', default=timedelta(hours=1))
 

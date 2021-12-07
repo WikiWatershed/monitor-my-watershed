@@ -3,7 +3,7 @@ import re
 import requests
 from oauthlib.oauth2 import InvalidGrantError
 from hs_restclient import HydroShareAuthOAuth2, HydroShareAuthBasic
-from adapter import HydroShareAdapter
+from hydroshare_util.adapter import HydroShareAdapter
 from . import HydroShareUtilityBaseClass, ImproperlyConfiguredError
 from django.shortcuts import redirect
 import logging as logger

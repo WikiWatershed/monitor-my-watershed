@@ -3,6 +3,10 @@ from __future__ import unicode_literals
 import inspect
 import sys
 import uuid
+from django.db.models.deletion import CASCADE
+from django.db.models.fields.related import OneToOneField
+
+from django.utils.tree import Node
 
 from dataloader.querysets import AffiliationQuerySet, RelatedActionManager, ResultManager, \
     DataLoggerFileManager, InstrumentOutputVariableManager, \
@@ -50,7 +54,7 @@ class ControlledVocabulary(ODM2Model):
 @python_2_unicode_compatible
 class AnnotationBridge(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    annotation = models.ForeignKey('Annotation', db_column='annotationid')
+    annotation = models.ForeignKey('Annotation', db_column='annotationid', on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' % self.annotation
@@ -62,7 +66,7 @@ class AnnotationBridge(models.Model):
 @python_2_unicode_compatible
 class ExtensionPropertyBridge(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    property = models.ForeignKey('ExtensionProperty', db_column='propertyid')
+    property = models.ForeignKey('ExtensionProperty', db_column='propertyid', on_delete=models.CASCADE)
     property_value = models.CharField(db_column='propertyvalue', max_length=255)
 
     def __str__(self):
@@ -75,7 +79,7 @@ class ExtensionPropertyBridge(models.Model):
 @python_2_unicode_compatible
 class ExternalIdentifierBridge(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    external_identifier_system = models.ForeignKey('ExternalIdentifierSystem', db_column='externalidentifiersystemid')
+    external_identifier_system = models.ForeignKey('ExternalIdentifierSystem', db_column='externalidentifiersystemid', on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' % self.external_identifier_system
@@ -87,7 +91,7 @@ class ExternalIdentifierBridge(models.Model):
 @python_2_unicode_compatible
 class ObjectRelation(models.Model):
     relation_id = models.AutoField(db_column='relationid', primary_key=True)
-    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv')
+    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv', on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s' % self.relationship_type_id
@@ -100,8 +104,8 @@ class ObjectRelation(models.Model):
 
 @python_2_unicode_compatible
 class ExtendedResult(models.Model):
-    result = models.OneToOneField('Result', db_column='resultid', primary_key=True)
-    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid', blank=True, null=True)
+    result = models.OneToOneField('Result', db_column='resultid', on_delete=models.CASCADE, primary_key=True)
+    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return '%s' % self.result
@@ -136,7 +140,7 @@ class ResultValue(models.Model):
 @python_2_unicode_compatible
 class ResultValueAnnotation(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    annotation = models.ForeignKey('Annotation', db_column='annotationid')
+    annotation = models.ForeignKey('Annotation', db_column='annotationid', on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s %s' % (self.value_datetime, self.data_value)
@@ -151,7 +155,7 @@ class ResultValueAnnotation(models.Model):
 
 
 class AggregatedComponent(models.Model):
-    aggregation_statistic = models.ForeignKey('AggregationStatistic', db_column='aggregationstatisticcv')
+    aggregation_statistic = models.ForeignKey('AggregationStatistic', db_column='aggregationstatisticcv', on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -159,7 +163,7 @@ class AggregatedComponent(models.Model):
 
 class TimeAggregationComponent(models.Model):
     time_aggregation_interval = models.FloatField(db_column='timeaggregationinterval')
-    time_aggregation_interval_unit = models.ForeignKey('Unit', related_name='+', db_column='timeaggregationintervalunitsid', blank=True, null=True)
+    time_aggregation_interval_unit = models.ForeignKey('Unit', related_name='+', db_column='timeaggregationintervalunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -167,7 +171,7 @@ class TimeAggregationComponent(models.Model):
 
 class XOffsetComponent(models.Model):
     x_location = models.FloatField(db_column='xlocation')
-    x_location_unit = models.ForeignKey('Unit', related_name='+', db_column='xlocationunitsid', blank=True, null=True)
+    x_location_unit = models.ForeignKey('Unit', related_name='+', db_column='xlocationunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -175,7 +179,7 @@ class XOffsetComponent(models.Model):
 
 class YOffsetComponent(models.Model):
     y_location = models.FloatField(db_column='ylocation')
-    y_location_unit = models.ForeignKey('Unit', related_name='+', db_column='ylocationunitsid', blank=True, null=True)
+    y_location_unit = models.ForeignKey('Unit', related_name='+', db_column='ylocationunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -183,7 +187,7 @@ class YOffsetComponent(models.Model):
 
 class ZOffsetComponent(models.Model):
     z_location = models.FloatField(db_column='zlocation')
-    z_location_unit = models.ForeignKey('Unit', related_name='+', db_column='zlocationunitsid', blank=True, null=True)
+    z_location_unit = models.ForeignKey('Unit', related_name='+', db_column='zlocationunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -191,7 +195,7 @@ class ZOffsetComponent(models.Model):
 
 class XIntendedComponent(models.Model):
     intended_x_spacing = models.FloatField(db_column='intendedxspacing')
-    intended_x_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedxspacingunitsid', blank=True, null=True)
+    intended_x_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedxspacingunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -199,7 +203,7 @@ class XIntendedComponent(models.Model):
 
 class YIntendedComponent(models.Model):
     intended_y_spacing = models.FloatField(db_column='intendedyspacing', blank=True, null=True)
-    intended_y_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedyspacingunitsid', blank=True, null=True)
+    intended_y_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedyspacingunitsid',on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -207,7 +211,7 @@ class YIntendedComponent(models.Model):
 
 class ZIntendedComponent(models.Model):
     intended_z_spacing = models.FloatField(db_column='intendedzspacing', blank=True, null=True)
-    intended_z_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedzspacingunitsid', blank=True, null=True)
+    intended_z_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedzspacingunitsid',on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
@@ -215,15 +219,15 @@ class ZIntendedComponent(models.Model):
 
 class TimeIntendedComponent(models.Model):
     intended_time_spacing = models.FloatField(db_column='intendedtimespacing', blank=True, null=True)
-    intended_time_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedtimespacingunitsid', blank=True, null=True)
+    intended_time_spacing_unit = models.ForeignKey('Unit', related_name='+', db_column='intendedtimespacingunitsid',on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         abstract = True
 
 
 class QualityControlComponent(models.Model):
-    censor_code = models.ForeignKey('CensorCode', db_column='censorcodecv')
-    quality_code = models.ForeignKey('QualityCode', db_column='qualitycodecv')
+    censor_code = models.ForeignKey('CensorCode', db_column='censorcodecv',on_delete=models.CASCADE)
+    quality_code = models.ForeignKey('QualityCode', db_column='qualitycodecv',on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -420,12 +424,12 @@ class People(ODM2Model):
 @python_2_unicode_compatible
 class Organization(ODM2Model):
     organization_id = models.AutoField(db_column='organizationid', primary_key=True)
-    organization_type = models.ForeignKey('OrganizationType', db_column='organizationtypecv')
+    organization_type = models.ForeignKey('OrganizationType', db_column='organizationtypecv', on_delete=models.CASCADE)
     organization_code = models.CharField(db_column='organizationcode', max_length=50, unique=True)
     organization_name = models.CharField(db_column='organizationname', max_length=255)
     organization_description = models.CharField(db_column='organizationdescription', blank=True, max_length=500)
     organization_link = models.CharField(db_column='organizationlink', blank=True, max_length=255)
-    parent_organization = models.ForeignKey('self', db_column='parentorganizationid', blank=True, null=True)
+    parent_organization = models.ForeignKey('self', db_column='parentorganizationid', blank=True, null=True, on_delete=models.CASCADE)
 
     people = models.ManyToManyField('People', through='Affiliation')
 
@@ -447,8 +451,8 @@ class Organization(ODM2Model):
 @python_2_unicode_compatible
 class Affiliation(ODM2Model):
     affiliation_id = models.AutoField(db_column='affiliationid', primary_key=True)
-    person = models.ForeignKey('People', related_name='affiliations', db_column='personid')
-    organization = models.ForeignKey('Organization', related_name='affiliations', db_column='organizationid', blank=True, null=True)
+    person = models.ForeignKey('People', related_name='affiliations', db_column='personid', on_delete=models.CASCADE)
+    organization = models.ForeignKey('Organization', related_name='affiliations', db_column='organizationid', on_delete=models.CASCADE, blank=True, null=True)
     is_primary_organization_contact = models.NullBooleanField(db_column='isprimaryorganizationcontact', default=None)
     affiliation_start_date = models.DateField(db_column='affiliationstartdate')
     affiliation_end_date = models.DateField(db_column='affiliationenddate', blank=True, null=True)
@@ -480,12 +484,12 @@ class Affiliation(ODM2Model):
 @python_2_unicode_compatible
 class Method(ODM2Model):
     method_id = models.AutoField(db_column='methodid', primary_key=True)
-    method_type = models.ForeignKey('MethodType', db_column='methodtypecv')
+    method_type = models.ForeignKey('MethodType', db_column='methodtypecv', on_delete=models.CASCADE)
     method_code = models.CharField(db_column='methodcode', max_length=50)
     method_name = models.CharField(db_column='methodname', max_length=255)
     method_description = models.CharField(db_column='methoddescription', blank=True, max_length=500)
     method_link = models.CharField(db_column='methodlink', blank=True, max_length=255)
-    organization = models.ForeignKey('Organization', db_column='organizationid', blank=True, null=True)
+    organization = models.ForeignKey('Organization', db_column='organizationid', on_delete=models.CASCADE, blank=True, null=True)
 
     annotations = models.ManyToManyField('Annotation', related_name='annotated_methods', through='MethodAnnotation')
     extension_property_values = models.ManyToManyField('ExtensionProperty', related_name='methods', through='MethodExtensionPropertyValue')
@@ -507,8 +511,8 @@ class Method(ODM2Model):
 @python_2_unicode_compatible
 class Action(ODM2Model):
     action_id = models.AutoField(db_column='actionid', primary_key=True)
-    action_type = models.ForeignKey('ActionType', db_column='actiontypecv')
-    method = models.ForeignKey('Method', db_column='methodid')
+    action_type = models.ForeignKey('ActionType', db_column='actiontypecv', on_delete=models.CASCADE)
+    method = models.ForeignKey('Method', db_column='methodid', on_delete=CASCADE)
     begin_datetime = models.DateTimeField(db_column='begindatetime')
     begin_datetime_utc_offset = models.IntegerField(db_column='begindatetimeutcoffset')
     end_datetime = models.DateTimeField(db_column='enddatetime', blank=True, null=True)
@@ -541,8 +545,8 @@ class Action(ODM2Model):
 @python_2_unicode_compatible
 class ActionBy(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    action = models.ForeignKey('Action', related_name="action_by", db_column='actionid')
-    affiliation = models.ForeignKey('Affiliation', db_column='affiliationid')
+    action = models.ForeignKey('Action', related_name="action_by", db_column='actionid', on_delete=models.CASCADE)
+    affiliation = models.ForeignKey('Affiliation', db_column='affiliationid', on_delete=models.CASCADE)
     is_action_lead = models.BooleanField(db_column='isactionlead', default=None)
     role_description = models.CharField(db_column='roledescription', blank=True, max_length=255)
 
@@ -564,13 +568,13 @@ class ActionBy(models.Model):
 class SamplingFeature(models.Model):
     sampling_feature_id = models.AutoField(db_column='samplingfeatureid', primary_key=True)
     sampling_feature_uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_column='samplingfeatureuuid')
-    sampling_feature_type = models.ForeignKey('SamplingFeatureType', db_column='samplingfeaturetypecv')
+    sampling_feature_type = models.ForeignKey('SamplingFeatureType', db_column='samplingfeaturetypecv', on_delete=models.CASCADE)
     sampling_feature_code = models.CharField(db_column='samplingfeaturecode', max_length=50, unique=True)
     sampling_feature_name = models.CharField(db_column='samplingfeaturename', blank=True, max_length=255)
     sampling_feature_description = models.CharField(db_column='samplingfeaturedescription', blank=True, max_length=500)
-    sampling_feature_geo_type = models.ForeignKey('SamplingFeatureGeoType', db_column='samplingfeaturegeotypecv', blank=True, null=True)
+    sampling_feature_geo_type = models.ForeignKey('SamplingFeatureGeoType', db_column='samplingfeaturegeotypecv', on_delete=models.CASCADE, blank=True, null=True)
     elevation_m = models.FloatField(db_column='elevation_m', blank=True, null=True)
-    elevation_datum = models.ForeignKey('ElevationDatum', db_column='elevationdatumcv', blank=True, null=True)
+    elevation_datum = models.ForeignKey('ElevationDatum', db_column='elevationdatumcv', on_delete=models.CASCADE, blank=True, null=True)
     feature_geometry = models.BinaryField(db_column='featuregeometry', blank=True, null=True)
 
     actions = models.ManyToManyField('Action', related_name='sampling_features', through='FeatureAction')
@@ -602,8 +606,8 @@ class SamplingFeature(models.Model):
 @python_2_unicode_compatible
 class FeatureAction(models.Model):
     feature_action_id = models.AutoField(db_column='featureactionid', primary_key=True)
-    sampling_feature = models.ForeignKey('SamplingFeature', related_name="feature_actions", db_column='samplingfeatureid')
-    action = models.ForeignKey('Action', related_name="feature_actions", db_column='actionid')
+    sampling_feature = models.ForeignKey('SamplingFeature', related_name="feature_actions", db_column='samplingfeatureid', on_delete=models.CASCADE)
+    action = models.ForeignKey('Action', related_name="feature_actions", db_column='actionid', on_delete=models.CASCADE)
 
     objects = FeatureActionQuerySet.as_manager()
 
@@ -623,7 +627,7 @@ class FeatureAction(models.Model):
 class DataSet(models.Model):
     data_set_id = models.AutoField(db_column='datasetid', primary_key=True)
     data_set_uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_column='datasetuuid')
-    data_set_type = models.ForeignKey('DataSetType', db_column='datasettypecv')
+    data_set_type = models.ForeignKey('DataSetType', db_column='datasettypecv', on_delete=models.CASCADE)
     data_set_code = models.CharField(db_column='datasetcode', max_length=50)
     data_set_title = models.CharField(db_column='datasettitle', max_length=255)
     data_set_abstract = models.CharField(db_column='datasetabstract', max_length=500)
@@ -662,8 +666,8 @@ class ProcessingLevel(models.Model):
 
 
 class RelatedAction(ObjectRelation):
-    action = models.ForeignKey('Action', related_name='related_actions', db_column='actionid')
-    related_action = models.ForeignKey('Action', related_name='reverse_related_actions', db_column='relatedactionid')
+    action = models.ForeignKey('Action', related_name='related_actions', db_column='actionid', on_delete=models.CASCADE)
+    related_action = models.ForeignKey('Action', related_name='reverse_related_actions', db_column='relatedactionid', on_delete=models.CASCADE)
 
     objects = RelatedActionManager()
 
@@ -683,11 +687,11 @@ class RelatedAction(ObjectRelation):
 @python_2_unicode_compatible
 class TaxonomicClassifier(models.Model):
     taxonomic_classifier_id = models.AutoField(db_column='taxonomicclassifierid', primary_key=True)
-    taxonomic_classifier_type = models.ForeignKey('TaxonomicClassifierType', db_column='taxonomicclassifiertypecv')
+    taxonomic_classifier_type = models.ForeignKey('TaxonomicClassifierType', db_column='taxonomicclassifiertypecv', on_delete=models.CASCADE)
     taxonomic_classifier_name = models.CharField(db_column='taxonomicclassifiername', max_length=255)
     taxonomic_classifier_common_name = models.CharField(db_column='taxonomicclassifiercommonname', blank=True, max_length=255)
     taxonomic_classifier_description = models.CharField(db_column='taxonomicclassifierdescription', blank=True, max_length=500)
-    parent_taxonomic_classifier = models.ForeignKey('self', db_column='parenttaxonomicclassifierid', blank=True, null=True)
+    parent_taxonomic_classifier = models.ForeignKey('self', db_column='parenttaxonomicclassifierid', on_delete=models.CASCADE, blank=True, null=True)
 
     external_identifiers = models.ManyToManyField('ExternalIdentifierSystem', related_name='taxonomic_classifier',
                                                   through='TaxonomicClassifierExternalIdentifier')
@@ -708,7 +712,7 @@ class TaxonomicClassifier(models.Model):
 @python_2_unicode_compatible
 class Unit(models.Model):
     unit_id = models.AutoField(db_column='unitsid', primary_key=True)
-    unit_type = models.ForeignKey('UnitsType', db_column='unitstypecv')
+    unit_type = models.ForeignKey('UnitsType', db_column='unitstypecv', on_delete=models.CASCADE)
     unit_abbreviation = models.CharField(db_column='unitsabbreviation', max_length=255)
     unit_name = models.CharField(db_column='unitsname', max_length=255)
     unit_link = models.CharField(db_column='unitslink', blank=True, max_length=255)
@@ -729,11 +733,11 @@ class Unit(models.Model):
 @python_2_unicode_compatible
 class Variable(models.Model):
     variable_id = models.AutoField(db_column='variableid', primary_key=True)
-    variable_type = models.ForeignKey('VariableType', db_column='variabletypecv')
+    variable_type = models.ForeignKey('VariableType', db_column='variabletypecv', on_delete=models.CASCADE)
     variable_code = models.CharField(db_column='variablecode', max_length=50)
-    variable_name = models.ForeignKey('VariableName', db_column='variablenamecv')
+    variable_name = models.ForeignKey('VariableName', db_column='variablenamecv', on_delete=models.CASCADE)
     variable_definition = models.CharField(db_column='variabledefinition', blank=True, max_length=500)
-    speciation = models.ForeignKey('Speciation', db_column='speciationcv', blank=True, null=True)
+    speciation = models.ForeignKey('Speciation', db_column='speciationcv', on_delete=models.CASCADE, blank=True, null=True)
     no_data_value = models.FloatField(db_column='nodatavalue')
 
     extension_property_values = models.ManyToManyField('ExtensionProperty', related_name='variables',
@@ -758,18 +762,18 @@ class Variable(models.Model):
 class Result(models.Model):
     result_id = models.AutoField(db_column='resultid', primary_key=True)
     result_uuid = models.UUIDField(default=uuid.uuid4, editable=False, db_column='resultuuid')
-    feature_action = models.ForeignKey('FeatureAction', related_name='results', db_column='featureactionid')
-    result_type = models.ForeignKey('ResultType', db_column='resulttypecv')
-    variable = models.ForeignKey('Variable', db_column='variableid')
-    unit = models.ForeignKey('Unit', db_column='unitsid')
-    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', db_column='taxonomicclassifierid', blank=True, null=True)
-    processing_level = models.ForeignKey(ProcessingLevel, db_column='processinglevelid')
+    feature_action = models.ForeignKey('FeatureAction', related_name='results', db_column='featureactionid', on_delete=models.CASCADE)
+    result_type = models.ForeignKey('ResultType', db_column='resulttypecv', on_delete=models.CASCADE)
+    variable = models.ForeignKey('Variable', db_column='variableid', on_delete=models.CASCADE)
+    unit = models.ForeignKey('Unit', db_column='unitsid', on_delete=models.CASCADE)
+    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', db_column='taxonomicclassifierid', on_delete=models.CASCADE, blank=True, null=True)
+    processing_level = models.ForeignKey(ProcessingLevel, db_column='processinglevelid', on_delete=models.CASCADE)
     result_datetime = models.DateTimeField(db_column='resultdatetime', blank=True, null=True)
     result_datetime_utc_offset = models.BigIntegerField(db_column='resultdatetimeutcoffset', blank=True, null=True)
     valid_datetime = models.DateTimeField(db_column='validdatetime', blank=True, null=True)
     valid_datetime_utc_offset = models.BigIntegerField(db_column='validdatetimeutcoffset', blank=True, null=True)
-    status = models.ForeignKey('Status', db_column='statuscv', blank=True)
-    sampled_medium = models.ForeignKey('Medium', db_column='sampledmediumcv')
+    status = models.ForeignKey('Status', db_column='statuscv', blank=True, on_delete=models.CASCADE)
+    sampled_medium = models.ForeignKey('Medium', db_column='sampledmediumcv', on_delete=models.CASCADE)
     value_count = models.IntegerField(db_column='valuecount', default=0)
 
     data_sets = models.ManyToManyField('DataSet', related_name='results', through='DataSetResult')
@@ -803,7 +807,7 @@ class Result(models.Model):
 @python_2_unicode_compatible
 class DataLoggerProgramFile(models.Model):
     program_id = models.AutoField(db_column='programid', primary_key=True)
-    affiliation = models.ForeignKey('Affiliation', db_column='affiliationid', related_name='data_logger_programs')
+    affiliation = models.ForeignKey('Affiliation', db_column='affiliationid', on_delete=models.CASCADE, related_name='data_logger_programs')
     program_name = models.CharField(db_column='programname', max_length=255)
     program_description = models.CharField(db_column='programdescription', blank=True, max_length=500)
     program_version = models.CharField(db_column='programversion', blank=True, max_length=50)
@@ -824,7 +828,7 @@ class DataLoggerProgramFile(models.Model):
 @python_2_unicode_compatible
 class DataLoggerFile(models.Model):
     data_logger_file_id = models.AutoField(db_column='dataloggerfileid', primary_key=True)
-    program = models.ForeignKey('DataLoggerProgramFile', db_column='programid', related_name='data_logger_files')
+    program = models.ForeignKey('DataLoggerProgramFile', db_column='programid', on_delete=models.CASCADE, related_name='data_logger_files')
     data_logger_file_name = models.CharField(db_column='dataloggerfilename', max_length=255)
     data_logger_file_description = models.CharField(db_column='dataloggerfiledescription', blank=True, max_length=500)
     data_logger_file_link = models.FileField(db_column='dataloggerfilelink', blank=True)
@@ -847,17 +851,17 @@ class DataLoggerFile(models.Model):
 @python_2_unicode_compatible
 class DataLoggerFileColumn(models.Model):
     data_logger_file_column_id = models.AutoField(db_column='dataloggerfilecolumnid', primary_key=True)
-    result = models.ForeignKey('Result', related_name='data_logger_file_columns', db_column='resultid', blank=True, null=True)
-    data_logger_file = models.ForeignKey('DataLoggerFile', related_name='data_logger_file_columns', db_column='dataloggerfileid')
-    instrument_output_variable = models.ForeignKey('InstrumentOutputVariable', related_name='data_logger_file_columns', db_column='instrumentoutputvariableid')
+    result = models.ForeignKey('Result', related_name='data_logger_file_columns', db_column='resultid', on_delete=models.CASCADE, blank=True, null=True)
+    data_logger_file = models.ForeignKey('DataLoggerFile', related_name='data_logger_file_columns', db_column='dataloggerfileid', on_delete=models.CASCADE)
+    instrument_output_variable = models.ForeignKey('InstrumentOutputVariable', related_name='data_logger_file_columns', db_column='instrumentoutputvariableid', on_delete=models.CASCADE)
     column_label = models.CharField(db_column='columnlabel', max_length=50)
     column_description = models.CharField(db_column='columndescription', blank=True, max_length=500)
     measurement_equation = models.CharField(db_column='measurementequation', blank=True, max_length=255)
     scan_interval = models.FloatField(db_column='scaninterval', blank=True, null=True)
-    scan_interval_unit = models.ForeignKey('Unit', related_name='scan_interval_data_logger_file_columns', db_column='scanintervalunitsid', blank=True, null=True)
+    scan_interval_unit = models.ForeignKey('Unit', related_name='scan_interval_data_logger_file_columns', db_column='scanintervalunitsid', blank=True, null=True, on_delete=models.CASCADE)
     recording_interval = models.FloatField(db_column='recordinginterval', blank=True, null=True)
-    recording_interval_unit = models.ForeignKey('Unit', related_name='recording_interval_data_logger_file_columns', db_column='recordingintervalunitsid', blank=True, null=True)
-    aggregation_statistic = models.ForeignKey('AggregationStatistic', related_name='data_logger_file_columns', db_column='aggregationstatisticcv', blank=True)
+    recording_interval_unit = models.ForeignKey('Unit', related_name='recording_interval_data_logger_file_columns', db_column='recordingintervalunitsid', on_delete=models.CASCADE, blank=True, null=True)
+    aggregation_statistic = models.ForeignKey('AggregationStatistic', related_name='data_logger_file_columns', db_column='aggregationstatisticcv', on_delete=models.CASCADE, blank=True)
 
     def __str__(self):
         return '%s %s' % (self.column_label, self.column_description)
@@ -874,7 +878,7 @@ class DataLoggerFileColumn(models.Model):
 @python_2_unicode_compatible
 class EquipmentModel(models.Model):
     equipment_model_id = models.AutoField(db_column='equipmentmodelid', primary_key=True)
-    model_manufacturer = models.ForeignKey('Organization', db_column='modelmanufacturerid')
+    model_manufacturer = models.ForeignKey('Organization', db_column='modelmanufacturerid', on_delete=models.CASCADE)
     model_part_number = models.CharField(db_column='modelpartnumber', blank=True, max_length=50)
     model_name = models.CharField(db_column='modelname', max_length=255)
     model_description = models.CharField(db_column='modeldescription', blank=True, max_length=500)
@@ -904,12 +908,12 @@ class EquipmentModel(models.Model):
 @python_2_unicode_compatible
 class InstrumentOutputVariable(models.Model):
     instrument_output_variable_id = models.AutoField(db_column='instrumentoutputvariableid', primary_key=True)
-    model = models.ForeignKey('EquipmentModel', related_name='instrument_output_variables', db_column='modelid')
-    variable = models.ForeignKey('Variable', related_name='instrument_output_variables', db_column='variableid')
-    instrument_method = models.ForeignKey('Method', related_name='instrument_output_variables', db_column='instrumentmethodid')
+    model = models.ForeignKey('EquipmentModel', related_name='instrument_output_variables', db_column='modelid', on_delete=models.CASCADE)
+    variable = models.ForeignKey('Variable', related_name='instrument_output_variables', db_column='variableid', on_delete=models.CASCADE)
+    instrument_method = models.ForeignKey('Method', related_name='instrument_output_variables', db_column='instrumentmethodid', on_delete=models.CASCADE)
     instrument_resolution = models.CharField(db_column='instrumentresolution', blank=True, max_length=255)
     instrument_accuracy = models.CharField(db_column='instrumentaccuracy', blank=True, max_length=255)
-    instrument_raw_output_unit = models.ForeignKey('Unit', related_name='instrument_output_variables', db_column='instrumentrawoutputunitsid')
+    instrument_raw_output_unit = models.ForeignKey('Unit', related_name='instrument_output_variables', db_column='instrumentrawoutputunitsid', on_delete=models.CASCADE)
 
     objects = InstrumentOutputVariableManager()
 
@@ -936,11 +940,11 @@ class Equipment(models.Model):
     equipment_id = models.AutoField(db_column='equipmentid', primary_key=True)
     equipment_code = models.CharField(db_column='equipmentcode', max_length=50)
     equipment_name = models.CharField(db_column='equipmentname', max_length=255)
-    equipment_type = models.ForeignKey('EquipmentType', db_column='equipmenttypecv')
-    equipment_model = models.ForeignKey('EquipmentModel', related_name='equipment', db_column='equipmentmodelid')
+    equipment_type = models.ForeignKey('EquipmentType', db_column='equipmenttypecv', on_delete=models.CASCADE)
+    equipment_model = models.ForeignKey('EquipmentModel', related_name='equipment', db_column='equipmentmodelid', on_delete=models.CASCADE)
     equipment_serial_number = models.CharField(db_column='equipmentserialnumber', max_length=50)
-    equipment_owner = models.ForeignKey('People', related_name='owned_equipment', db_column='equipmentownerid')
-    equipment_vendor = models.ForeignKey('Organization', related_name='equipment', db_column='equipmentvendorid')
+    equipment_owner = models.ForeignKey('People', related_name='owned_equipment', db_column='equipmentownerid', on_delete=models.CASCADE)
+    equipment_vendor = models.ForeignKey('Organization', related_name='equipment', db_column='equipmentvendorid', on_delete=models.CASCADE)
     equipment_purchase_date = models.DateTimeField(db_column='equipmentpurchasedate')
     equipment_purchase_order_number = models.CharField(db_column='equipmentpurchaseordernumber', blank=True, max_length=50)
     equipment_description = models.CharField(db_column='equipmentdescription', blank=True, max_length=500)
@@ -970,8 +974,8 @@ class Equipment(models.Model):
 @python_2_unicode_compatible
 class CalibrationReferenceEquipment(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    action = models.ForeignKey('CalibrationAction', related_name='+', db_column='actionid')
-    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid')
+    action = models.ForeignKey('CalibrationAction', related_name='+', db_column='actionid', on_delete=models.CASCADE)
+    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid', on_delete=models.CASCADE)
 
     objects = CalibrationReferenceEquipmentManager()
 
@@ -990,8 +994,8 @@ class CalibrationReferenceEquipment(models.Model):
 @python_2_unicode_compatible
 class EquipmentUsed(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    action = models.ForeignKey('Action', related_name='+', db_column='actionid')
-    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid')
+    action = models.ForeignKey('Action', related_name='+', db_column='actionid', on_delete=models.CASCADE)
+    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid', on_delete=models.CASCADE)
 
     objects = EquipmentUsedManager()
 
@@ -1009,7 +1013,7 @@ class EquipmentUsed(models.Model):
 
 @python_2_unicode_compatible
 class MaintenanceAction(models.Model):
-    action = models.OneToOneField(Action, related_name='maintenance', db_column='actionid', primary_key=True)
+    action = models.OneToOneField(Action, related_name='maintenance', db_column='actionid', on_delete=models.CASCADE, primary_key=True)
     is_factory_service = models.BooleanField(db_column='isfactoryservice', default=None)
     maintenance_code = models.CharField(db_column='maintenancecode', blank=True, max_length=50)
     maintenance_reason = models.CharField(db_column='maintenancereason', blank=True, max_length=500)
@@ -1029,8 +1033,8 @@ class MaintenanceAction(models.Model):
 
 
 class RelatedEquipment(ObjectRelation):
-    equipment = models.ForeignKey('Equipment', related_name='related_equipment', db_column='equipmentid')
-    related_equipment = models.ForeignKey('Equipment', related_name='reverse_related_equipment', db_column='relatedequipmentid')
+    equipment = models.ForeignKey('Equipment', related_name='related_equipment', db_column='equipmentid', on_delete=models.CASCADE)
+    related_equipment = models.ForeignKey('Equipment', related_name='reverse_related_equipment', db_column='relatedequipmentid', on_delete=models.CASCADE)
     relationship_start_datetime = models.DateTimeField(db_column='relationshipstartdatetime')
     relationship_start_datetime_utc_offset = models.IntegerField(db_column='relationshipstartdatetimeutcoffset')
     relationship_end_datetime = models.DateTimeField(db_column='relationshipenddatetime', blank=True, null=True)
@@ -1053,9 +1057,9 @@ class RelatedEquipment(ObjectRelation):
 
 @python_2_unicode_compatible
 class CalibrationAction(models.Model):
-    action = models.OneToOneField(Action, related_name='calibration', db_column='actionid', primary_key=True)
+    action = models.OneToOneField(Action, related_name='calibration', db_column='actionid', on_delete=models.CASCADE, primary_key=True)
     calibration_check_value = models.FloatField(db_column='calibrationcheckvalue', blank=True, null=True)
-    instrument_output_variable = models.ForeignKey('InstrumentOutputVariable', db_column='instrumentoutputvariableid')
+    instrument_output_variable = models.ForeignKey('InstrumentOutputVariable', db_column='instrumentoutputvariableid', on_delete=models.CASCADE)
     calibration_equation = models.CharField(db_column='calibrationequation', blank=True, max_length=255)
 
     calibration_standards = models.ManyToManyField('ReferenceMaterial', related_name='calibration_actions', through='CalibrationStandard')
@@ -1081,7 +1085,7 @@ class CalibrationAction(models.Model):
 
 class Directive(models.Model):
     directive_id = models.AutoField(db_column='directiveid', primary_key=True)
-    directive_type = models.ForeignKey('DirectiveType', db_column='directivetypecv')
+    directive_type = models.ForeignKey('DirectiveType', db_column='directivetypecv', on_delete=models.CASCADE)
     directive_description = models.CharField(db_column='directivedescription', max_length=500)
 
     def __repr__(self):
@@ -1095,8 +1099,8 @@ class Directive(models.Model):
 
 class ActionDirective(models.Model):
     bridge_id = models.IntegerField(db_column='bridgeid', primary_key=True)
-    action = models.ForeignKey('Action', related_name='+', db_column='actionid')
-    directive = models.ForeignKey('Directive', related_name='+', db_column='directiveid')
+    action = models.ForeignKey('Action', related_name='+', db_column='actionid', on_delete=models.CASCADE)
+    directive = models.ForeignKey('Directive', related_name='+', db_column='directiveid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ActionDirective('%s', Action['%s', '%s'], Directive['%s', '%s'])>" % (
@@ -1108,7 +1112,7 @@ class ActionDirective(models.Model):
 
 
 class SpecimenBatchPosition(models.Model):
-    feature_action = models.OneToOneField('FeatureAction', db_column='featureactionid', primary_key=True)
+    feature_action = models.OneToOneField('FeatureAction', db_column='featureactionid', on_delete=models.CASCADE, primary_key=True)
     batch_position_number = models.IntegerField(db_column='batchpositionnumber')
     batch_position_label = models.CharField(db_column='batchpositionlabel', blank=True, max_length=255)
 
@@ -1145,9 +1149,9 @@ class SpatialReference(models.Model):
 
 
 class Specimen(models.Model):
-    sampling_feature = models.OneToOneField('SamplingFeature', db_column='samplingfeatureid', primary_key=True)
-    specimen_type = models.ForeignKey('SpecimenType', db_column='specimentypecv')
-    specimen_medium = models.ForeignKey('Medium', db_column='specimenmediumcv')
+    sampling_feature = models.OneToOneField('SamplingFeature', db_column='samplingfeatureid', on_delete=models.CASCADE, primary_key=True)
+    specimen_type = models.ForeignKey('SpecimenType', db_column='specimentypecv', on_delete=models.CASCADE)
+    specimen_medium = models.ForeignKey('Medium', db_column='specimenmediumcv', on_delete=models.CASCADE)
     is_field_specimen = models.BooleanField(db_column='isfieldspecimen', default=None)
 
     def __repr__(self):
@@ -1162,13 +1166,13 @@ class Specimen(models.Model):
 
 class SpatialOffset(models.Model):
     spatial_offset_id = models.AutoField(db_column='spatialoffsetid', primary_key=True)
-    spatial_offset_type = models.ForeignKey('SpatialOffsetType', db_column='spatialoffsettypecv')
+    spatial_offset_type = models.ForeignKey('SpatialOffsetType', db_column='spatialoffsettypecv', on_delete=models.CASCADE)
     offset_1_value = models.FloatField(db_column='offset1value')
-    offset_1_unit = models.ForeignKey('Unit', related_name='+', db_column='offset1unitid')
+    offset_1_unit = models.ForeignKey('Unit', related_name='+', db_column='offset1unitid', on_delete=models.CASCADE)
     offset_2_value = models.FloatField(db_column='offset2value', blank=True, null=True)
-    offset_2_unit = models.ForeignKey('Unit', related_name='+', db_column='offset2unitid', blank=True, null=True)
+    offset_2_unit = models.ForeignKey('Unit', related_name='+', db_column='offset2unitid', on_delete=models.CASCADE, blank=True, null=True)
     offset_3_value = models.FloatField(db_column='offset3value', blank=True, null=True)
-    offset_3_unit = models.ForeignKey('Unit', related_name='+', db_column='offset3unitid', blank=True, null=True)
+    offset_3_unit = models.ForeignKey('Unit', related_name='+', db_column='offset3unitid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<SpatialOffset('%s', '%s', '%s')>" % (
@@ -1180,11 +1184,11 @@ class SpatialOffset(models.Model):
 
 
 class Site(models.Model):
-    sampling_feature = models.OneToOneField('SamplingFeature', related_name='site', db_column='samplingfeatureid', primary_key=True)
-    site_type = models.ForeignKey('SiteType', db_column='sitetypecv')
+    sampling_feature = models.OneToOneField('SamplingFeature', related_name='site', db_column='samplingfeatureid', on_delete=models.CASCADE, primary_key=True)
+    site_type = models.ForeignKey('SiteType', db_column='sitetypecv', on_delete=models.CASCADE)
     latitude = models.FloatField(db_column='latitude')
     longitude = models.FloatField(db_column='longitude')
-    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid')
+    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<Site('%s', '%s', '%s', '%s')>" % (
@@ -1196,9 +1200,9 @@ class Site(models.Model):
 
 
 class RelatedFeature(ObjectRelation):
-    sampling_feature = models.ForeignKey('SamplingFeature', related_name='related_features_sampling_feature', db_column='samplingfeatureid')
-    related_feature = models.ForeignKey('SamplingFeature', related_name='related_features_related_feature', db_column='relatedfeatureid')
-    spatial_offset = models.ForeignKey('SpatialOffset', db_column='spatialoffsetid', blank=True, null=True)
+    sampling_feature = models.ForeignKey('SamplingFeature', related_name='related_features_sampling_feature', db_column='samplingfeatureid', on_delete=models.CASCADE)
+    related_feature = models.ForeignKey('SamplingFeature', related_name='related_features_related_feature', db_column='relatedfeatureid', on_delete=models.CASCADE)
+    spatial_offset = models.ForeignKey('SpatialOffset', db_column='spatialoffsetid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<RelatedFeature('%s', SamplingFeature['%s', '%s'], '%s', SamplingFeature['%s', '%s'])>" % (
@@ -1212,9 +1216,9 @@ class RelatedFeature(ObjectRelation):
 
 class SpecimenTaxonomicClassifier(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    sampling_feature = models.ForeignKey('Specimen', related_name='taxonomic_classifiers', db_column='samplingfeatureid')
-    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', related_name='specimens', db_column='taxonomicclassifierid')
-    citation = models.ForeignKey('Citation', related_name='specimen_taxonomic_classifiers', db_column='citationid', blank=True, null=True)
+    sampling_feature = models.ForeignKey('Specimen', related_name='taxonomic_classifiers', db_column='samplingfeatureid', on_delete=models.CASCADE)
+    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', related_name='specimens', db_column='taxonomicclassifierid', on_delete=models.CASCADE)
+    citation = models.ForeignKey('Citation', related_name='specimen_taxonomic_classifiers', db_column='citationid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<SpecimenTaxonomicClassifier('%s', SamplingFeature['%s', '%s'], TaxonomicClassifier['%s', '%s'])>" % (
@@ -1248,8 +1252,8 @@ class Model(models.Model):
 
 
 class RelatedModel(ObjectRelation):
-    model = models.ForeignKey('Model', related_name='related_model_model', db_column='modelid')
-    related_model = models.ForeignKey('Model', related_name='related_model_related_model', db_column='relatedmodelid')
+    model = models.ForeignKey('Model', related_name='related_model_model', db_column='modelid', on_delete=models.CASCADE)
+    related_model = models.ForeignKey('Model', related_name='related_model_related_model', db_column='relatedmodelid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<RelatedModel('%s', Model['%s', '%s'], Model['%s', '%s'])>" % (
@@ -1262,7 +1266,7 @@ class RelatedModel(ObjectRelation):
 
 class Simulation(models.Model):
     simulation_id = models.AutoField(db_column='simulationid', primary_key=True)
-    action = models.ForeignKey('Action', related_name='simulations', db_column='actionid')
+    action = models.ForeignKey('Action', related_name='simulations', db_column='actionid', on_delete=models.CASCADE)
     simulation_name = models.CharField(db_column='simulationname', max_length=255)
     simulation_description = models.CharField(db_column='simulationdescription', max_length=500, blank=True)
     simulation_start_datetime = models.DateTimeField(db_column='simulationstartdatetime')
@@ -1270,9 +1274,9 @@ class Simulation(models.Model):
     simulation_end_datetime = models.DateTimeField(db_column='simulationenddatetime')
     simulation_end_datetime_utc_offset = models.IntegerField(db_column='simulationenddatetimeutcoffset')
     time_step_value = models.FloatField(db_column='timestepvalue')
-    time_step_unit = models.ForeignKey('Unit', related_name='simulations', db_column='timestepunitsid')
-    input_data_set = models.ForeignKey('DataSet', related_name='simulations', db_column='inputdatasetid', blank=True, null=True)
-    model = models.ForeignKey('Model', related_name='simulations', db_column='modelid')
+    time_step_unit = models.ForeignKey('Unit', related_name='simulations', db_column='timestepunitsid', on_delete=models.CASCADE)
+    input_data_set = models.ForeignKey('DataSet', related_name='simulations', db_column='inputdatasetid', on_delete=models.CASCADE, blank=True, null=True)
+    model = models.ForeignKey('Model', related_name='simulations', db_column='modelid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<Simulation('%s', '%s', '%s', '%s')>" % (
@@ -1310,14 +1314,14 @@ class Citation(models.Model):
 
 class Annotation(models.Model):
     annotation_id = models.AutoField(db_column='annotationid', primary_key=True)
-    annotation_type = models.ForeignKey('AnnotationType', db_column='annotationtypecv')
+    annotation_type = models.ForeignKey('AnnotationType', db_column='annotationtypecv', on_delete=models.CASCADE)
     annotation_code = models.CharField(db_column='annotationcode', blank=True, max_length=50)
     annotation_text = models.CharField(db_column='annotationtext', max_length=500)
     annotation_datetime = models.DateTimeField(db_column='annotationdatetime', blank=True, null=True)
     annotation_utc_offset = models.IntegerField(db_column='annotationutcoffset', blank=True, null=True)
     annotation_link = models.CharField(db_column='annotationlink', blank=True, max_length=255)
-    annotator = models.ForeignKey('People', db_column='annotatorid', blank=True, null=True)
-    citation = models.ForeignKey('Citation', db_column='citationid', blank=True, null=True)
+    annotator = models.ForeignKey('People', db_column='annotatorid', on_delete=models.CASCADE, blank=True, null=True)
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<Annotation('%s', '%s', '%s', '%s', '%s')>" % (
@@ -1330,7 +1334,7 @@ class Annotation(models.Model):
 
 
 class ActionAnnotation(AnnotationBridge):
-    action = models.ForeignKey('Action', related_name='+', db_column='actionid')
+    action = models.ForeignKey('Action', related_name='+', db_column='actionid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ActionAnnotation('%s', Annotation['%s', '%s'], Action['%s', '%s'])>" % (
@@ -1342,7 +1346,7 @@ class ActionAnnotation(AnnotationBridge):
 
 
 class EquipmentAnnotation(AnnotationBridge):
-    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid')
+    equipment = models.ForeignKey('Equipment', related_name='+', db_column='equipmentid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<EquipmentAnnotation('%s', Annotation['%s', '%s'], Equipment['%s', '%s'])>" % (
@@ -1354,7 +1358,7 @@ class EquipmentAnnotation(AnnotationBridge):
 
 
 class MethodAnnotation(AnnotationBridge):
-    method = models.ForeignKey('Method', related_name='+', db_column='methodid')
+    method = models.ForeignKey('Method', related_name='+', db_column='methodid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<MethodAnnotation('%s', Annotation['%s', '%s'], Method['%s', '%s'])>" % (
@@ -1366,7 +1370,7 @@ class MethodAnnotation(AnnotationBridge):
 
 
 class ResultAnnotation(AnnotationBridge):
-    result = models.ForeignKey('Result', related_name='dated_annotations', db_column='resultid')
+    result = models.ForeignKey('Result', related_name='dated_annotations', db_column='resultid', on_delete=models.CASCADE)
     begin_datetime = models.DateTimeField(db_column='begindatetime')
     end_datetime = models.DateTimeField(db_column='enddatetime')
 
@@ -1380,7 +1384,7 @@ class ResultAnnotation(AnnotationBridge):
 
 
 class SamplingFeatureAnnotation(AnnotationBridge):
-    sampling_feature = models.ForeignKey('SamplingFeature', related_name='+', db_column='samplingfeatureid')
+    sampling_feature = models.ForeignKey('SamplingFeature', related_name='+', db_column='samplingfeatureid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<SamplingFeatureAnnotation('%s', Annotation['%s', '%s'], SamplingFeature['%s', '%s'])>" % (
@@ -1397,8 +1401,8 @@ class SamplingFeatureAnnotation(AnnotationBridge):
 
 class DataSetResult(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    data_set = models.ForeignKey('DataSet', related_name='+', db_column='datasetid')
-    result = models.ForeignKey('Result', related_name='+', db_column='resultid')
+    data_set = models.ForeignKey('DataSet', related_name='+', db_column='datasetid', on_delete=models.CASCADE)
+    result = models.ForeignKey('Result', related_name='+', db_column='resultid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<DataSetResult('%s', Result['%s', '%s'], DataSet['%s', '%s'])>" % (
@@ -1411,10 +1415,10 @@ class DataSetResult(models.Model):
 
 class DataQuality(models.Model):
     data_quality_id = models.AutoField(db_column='dataqualityid', primary_key=True)
-    data_quality_type = models.ForeignKey('DataQualityType', db_column='dataqualitytypecv')
+    data_quality_type = models.ForeignKey('DataQualityType', db_column='dataqualitytypecv', on_delete=models.CASCADE)
     data_quality_code = models.CharField(db_column='dataqualitycode', max_length=255)
     data_quality_value = models.FloatField(db_column='dataqualityvalue', blank=True, null=True)
-    data_quality_value_unit = models.ForeignKey('Unit', db_column='dataqualityvalueunitsid', blank=True, null=True)
+    data_quality_value_unit = models.ForeignKey('Unit', db_column='dataqualityvalueunitsid', on_delete=models.CASCADE, blank=True, null=True)
     data_quality_description = models.CharField(db_column='dataqualitydescription', blank=True, max_length=500)
     data_quality_link = models.CharField(db_column='dataqualitylink', blank=True, max_length=255)
 
@@ -1429,14 +1433,14 @@ class DataQuality(models.Model):
 
 class ReferenceMaterial(models.Model):
     reference_material_id = models.AutoField(db_column='referencematerialid', primary_key=True)
-    reference_material_medium = models.ForeignKey('Medium', db_column='referencematerialmediumcv')
-    reference_material_organization = models.ForeignKey('Organization', db_column='referencematerialorganizationid')
+    reference_material_medium = models.ForeignKey('Medium', db_column='referencematerialmediumcv', on_delete=models.CASCADE)
+    reference_material_organization = models.ForeignKey('Organization', db_column='referencematerialorganizationid', on_delete=models.CASCADE)
     reference_material_code = models.CharField(db_column='referencematerialcode', max_length=50)
     reference_material_lot_code = models.CharField(db_column='referencemateriallotcode', blank=True, max_length=255)
     reference_material_purchase_date = models.DateTimeField(db_column='referencematerialpurchasedate', blank=True, null=True)
     reference_material_expiration_date = models.DateTimeField(db_column='referencematerialexpirationdate', blank=True, null=True)
     reference_material_certificate_link = models.FileField(db_column='referencematerialcertificatelink', blank=True)  # TODO: is it a link or a file link?  BOTH
-    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid', blank=True, null=True)
+    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid', on_delete=models.CASCADE, blank=True, null=True)
 
     external_identifiers = models.ManyToManyField('ExternalIdentifierSystem', related_name='reference_materials',
                                                   through='ReferenceMaterialExternalIdentifier')
@@ -1453,8 +1457,8 @@ class ReferenceMaterial(models.Model):
 
 class CalibrationStandard(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    action = models.ForeignKey('CalibrationAction', related_name='+', db_column='actionid')
-    reference_material = models.ForeignKey('ReferenceMaterial', related_name='+', db_column='calibration_standards')
+    action = models.ForeignKey('CalibrationAction', related_name='+', db_column='actionid', on_delete=models.CASCADE)
+    reference_material = models.ForeignKey('ReferenceMaterial', related_name='+', db_column='calibration_standards', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<CalibrationStandard('%s', CalibrationAction['%s', '%s'], ReferenceMaterial['%s', '%s'])>" % (
@@ -1467,12 +1471,12 @@ class CalibrationStandard(models.Model):
 
 class ReferenceMaterialValue(models.Model):
     reference_material_value_id = models.AutoField(db_column='referencematerialvalueid', primary_key=True)
-    reference_material = models.ForeignKey('ReferenceMaterial', related_name='referencematerialvalue', db_column='referencematerialid')
+    reference_material = models.ForeignKey('ReferenceMaterial', related_name='referencematerialvalue', db_column='referencematerialid', on_delete=models.CASCADE)
     reference_material_value = models.FloatField(db_column='referencematerialvalue')
     reference_material_accuracy = models.FloatField(db_column='referencematerialaccuracy', blank=True, null=True)
-    variable = models.ForeignKey('Variable', db_column='variableid')
-    unit = models.ForeignKey('Unit', db_column='unitsid')
-    citation = models.ForeignKey('Citation', db_column='citationid', blank=True, null=True)
+    variable = models.ForeignKey('Variable', db_column='variableid', on_delete=models.CASCADE)
+    unit = models.ForeignKey('Unit', db_column='unitsid', on_delete=models.CASCADE)
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<ReferenceMaterialValue('%s', ReferenceMaterial['%s', '%s'], '%s')>" % (
@@ -1484,8 +1488,8 @@ class ReferenceMaterialValue(models.Model):
 
 
 class ResultNormalizationValue(models.Model):
-    result = models.OneToOneField('Result', db_column='resultid', primary_key=True)
-    normalized_by_reference_material_value = models.ForeignKey('ReferenceMaterialValue', db_column='normalizedbyreferencematerialvalueid')
+    result = models.OneToOneField('Result', db_column='resultid', on_delete=models.CASCADE, primary_key=True)
+    normalized_by_reference_material_value = models.ForeignKey('ReferenceMaterialValue', db_column='normalizedbyreferencematerialvalueid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ResultNormalizationValue('%s', '%s', ReferenceMaterialValue['%s', '%s'])>" % (
@@ -1499,8 +1503,8 @@ class ResultNormalizationValue(models.Model):
 
 class ResultDataQuality(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    result = models.ForeignKey('Result', related_name='+', db_column='resultid')
-    data_quality = models.ForeignKey('DataQuality', related_name='+', db_column='dataqualityid')
+    result = models.ForeignKey('Result', related_name='+', db_column='resultid', on_delete=models.CASCADE)
+    data_quality = models.ForeignKey('DataQuality', related_name='+', db_column='dataqualityid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ResultDataQuality('%s', Result['%s', '%s'], DataQuality['%s', '%s'])>" % (
@@ -1519,8 +1523,8 @@ class ExtensionProperty(models.Model):
     property_id = models.AutoField(db_column='propertyid', primary_key=True)
     property_name = models.CharField(db_column='propertyname', max_length=255)
     property_description = models.CharField(db_column='propertydescription', blank=True, max_length=500)
-    property_data_type = models.ForeignKey('PropertyDataType', db_column='propertydatatypecv')
-    property_units = models.ForeignKey('Unit', db_column='propertyunitsid', blank=True, null=True)
+    property_data_type = models.ForeignKey('PropertyDataType', db_column='propertydatatypecv', on_delete=models.CASCADE)
+    property_units = models.ForeignKey('Unit', db_column='propertyunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __repr__(self):
         return "<ExtensionProperty('%s', '%s', '%s')>" % (
@@ -1532,7 +1536,7 @@ class ExtensionProperty(models.Model):
 
 
 class ActionExtensionPropertyValue(ExtensionPropertyBridge):
-    action = models.ForeignKey('Action', db_column='actionid')
+    action = models.ForeignKey('Action', db_column='actionid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ActionExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], Action['%s', '%s'])>" % (
@@ -1544,7 +1548,7 @@ class ActionExtensionPropertyValue(ExtensionPropertyBridge):
 
 
 class CitationExtensionPropertyValue(ExtensionPropertyBridge):
-    citation = models.ForeignKey('Citation', db_column='citationid')
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<CitationExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], Citation['%s', '%s'])>" % (
@@ -1557,7 +1561,7 @@ class CitationExtensionPropertyValue(ExtensionPropertyBridge):
 
 
 class MethodExtensionPropertyValue(ExtensionPropertyBridge):
-    method = models.ForeignKey('Method', db_column='methodid')
+    method = models.ForeignKey('Method', db_column='methodid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<MethodExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], Method['%s', '%s'])>" % (
@@ -1570,7 +1574,7 @@ class MethodExtensionPropertyValue(ExtensionPropertyBridge):
 
 
 class ResultExtensionPropertyValue(ExtensionPropertyBridge):
-    result = models.ForeignKey('Result', db_column='resultid')
+    result = models.ForeignKey('Result', db_column='resultid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ResultExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], Result['%s', '%s'])>" % (
@@ -1583,7 +1587,7 @@ class ResultExtensionPropertyValue(ExtensionPropertyBridge):
 
 
 class SamplingFeatureExtensionPropertyValue(ExtensionPropertyBridge):
-    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid')
+    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<SamplingFeatureExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], SamplingFeature['%s', '%s'])>" % (
@@ -1596,7 +1600,7 @@ class SamplingFeatureExtensionPropertyValue(ExtensionPropertyBridge):
 
 
 class VariableExtensionPropertyValue(ExtensionPropertyBridge):
-    variable = models.ForeignKey('Variable', db_column='variableid')
+    variable = models.ForeignKey('Variable', db_column='variableid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<VariableExtensionPropertyValue('%s', '%s', ExtensionProperty['%s', '%s'], Variable['%s', '%s'])>" % (
@@ -1615,7 +1619,7 @@ class VariableExtensionPropertyValue(ExtensionPropertyBridge):
 class ExternalIdentifierSystem(models.Model):
     external_identifier_system_id = models.AutoField(db_column='externalidentifiersystemid', primary_key=True)
     external_identifier_system_name = models.CharField(db_column='externalidentifiersystemname', max_length=255)
-    identifier_system_organization = models.ForeignKey('Organization', db_column='identifiersystemorganizationid')
+    identifier_system_organization = models.ForeignKey('Organization', db_column='identifiersystemorganizationid', on_delete=models.CASCADE)
     external_identifier_system_description = models.CharField(db_column='externalidentifiersystemdescription', blank=True, max_length=500)
     external_identifier_system_url = models.CharField(db_column='externalidentifiersystemurl', blank=True, max_length=255)
 
@@ -1630,7 +1634,7 @@ class ExternalIdentifierSystem(models.Model):
 
 
 class CitationExternalIdentifier(ExternalIdentifierBridge):
-    citation = models.ForeignKey('Citation', db_column='citationid')
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE)
     citation_external_identifier = models.CharField(db_column='citationexternalidentifier', max_length=255)
     citation_external_identifier_uri = models.CharField(db_column='citationexternalidentifieruri', blank=True, max_length=255)
 
@@ -1644,7 +1648,7 @@ class CitationExternalIdentifier(ExternalIdentifierBridge):
 
 
 class MethodExternalIdentifier(ExternalIdentifierBridge):
-    method = models.ForeignKey('Method', db_column='methodid')
+    method = models.ForeignKey('Method', db_column='methodid', on_delete=models.CASCADE)
     method_external_identifier = models.CharField(db_column='methodexternalidentifier', max_length=255)
     method_external_identifier_uri = models.CharField(db_column='methodexternalidentifieruri', blank=True, max_length=255)
 
@@ -1658,7 +1662,7 @@ class MethodExternalIdentifier(ExternalIdentifierBridge):
 
 
 class PersonExternalIdentifier(ExternalIdentifierBridge):
-    person = models.ForeignKey('People', db_column='personid')
+    person = models.ForeignKey('People', db_column='personid', on_delete=models.CASCADE)
     person_external_identifier = models.CharField(db_column='personexternalidentifier', max_length=255)
     person_external_identifier_uri = models.CharField(db_column='personexternalidentifieruri', blank=True, max_length=255)
 
@@ -1673,7 +1677,7 @@ class PersonExternalIdentifier(ExternalIdentifierBridge):
 
 
 class ReferenceMaterialExternalIdentifier(ExternalIdentifierBridge):
-    reference_material = models.ForeignKey('ReferenceMaterial', db_column='referencematerialid')
+    reference_material = models.ForeignKey('ReferenceMaterial', db_column='referencematerialid', on_delete=models.CASCADE)
     reference_material_external_identifier = models.CharField(db_column='referencematerialexternalidentifier', max_length=255)
     reference_material_external_identifier_uri = models.CharField(db_column='referencematerialexternalidentifieruri', blank=True, max_length=255)
 
@@ -1688,7 +1692,7 @@ class ReferenceMaterialExternalIdentifier(ExternalIdentifierBridge):
 
 
 class SamplingFeatureExternalIdentifier(ExternalIdentifierBridge):
-    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid')
+    sampling_feature = models.ForeignKey('SamplingFeature', db_column='samplingfeatureid', on_delete=models.CASCADE)
     sampling_feature_external_identifier = models.CharField(db_column='samplingfeatureexternalidentifier', max_length=255)
     sampling_feature_external_identifier_uri = models.CharField(db_column='samplingfeatureexternalidentifieruri', blank=True, max_length=255)
 
@@ -1703,7 +1707,7 @@ class SamplingFeatureExternalIdentifier(ExternalIdentifierBridge):
 
 
 class SpatialReferenceExternalIdentifier(ExternalIdentifierBridge):
-    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid')
+    spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid', on_delete=models.CASCADE)
     spatial_reference_external_identifier = models.CharField(db_column='spatialreferenceexternalidentifier', max_length=255)
     spatial_reference_external_identifier_uri = models.CharField(db_column='spatialreferenceexternalidentifieruri', blank=True, max_length=255)
 
@@ -1718,7 +1722,7 @@ class SpatialReferenceExternalIdentifier(ExternalIdentifierBridge):
 
 
 class TaxonomicClassifierExternalIdentifier(ExternalIdentifierBridge):
-    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', db_column='taxonomicclassifierid')
+    taxonomic_classifier = models.ForeignKey('TaxonomicClassifier', db_column='taxonomicclassifierid', on_delete=models.CASCADE)
     taxonomic_classifier_external_identifier = models.CharField(db_column='taxonomicclassifierexternalidentifier', max_length=255)
     taxonomic_classifier_external_identifier_uri = models.CharField(db_column='taxonomicclassifierexternalidentifieruri', blank=True, max_length=255)
 
@@ -1733,7 +1737,7 @@ class TaxonomicClassifierExternalIdentifier(ExternalIdentifierBridge):
 
 
 class VariableExternalIdentifier(ExternalIdentifierBridge):
-    variable = models.ForeignKey('Variable', db_column='variableid')
+    variable = models.ForeignKey('Variable', db_column='variableid', on_delete=models.CASCADE)
     variable_external_identifier = models.CharField(db_column='variableexternalidentifer', max_length=255)
     variable_external_identifier_uri = models.CharField(db_column='variableexternalidentifieruri', blank=True, max_length=255)
 
@@ -1752,8 +1756,8 @@ class VariableExternalIdentifier(ExternalIdentifierBridge):
 
 class AuthorList(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    citation = models.ForeignKey('Citation', db_column='citationid')
-    person = models.ForeignKey('People', db_column='personid')
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE)
+    person = models.ForeignKey('People', db_column='personid', on_delete=models.CASCADE)
     author_order = models.IntegerField(db_column='authororder')
 
     def __repr__(self):
@@ -1767,9 +1771,9 @@ class AuthorList(models.Model):
 
 class DataSetCitation(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    data_set = models.ForeignKey('DataSet', db_column='datasetid')
-    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv')
-    citation = models.ForeignKey('Citation', db_column='citationid')
+    data_set = models.ForeignKey('DataSet', db_column='datasetid', on_delete=models.CASCADE)
+    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv', on_delete=models.CASCADE)
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<DataSetCitation('%s', DataSet['%s', '%s'], '%s', Citation['%s', '%s'])>" % (
@@ -1794,8 +1798,8 @@ class DerivationEquation(models.Model):
 
 
 class ResultDerivationEquation(models.Model):
-    result = models.OneToOneField('Result', db_column='resultid', primary_key=True)
-    derivation_equation = models.ForeignKey('DerivationEquation', db_column='derivationequationid')
+    result = models.OneToOneField('Result', db_column='resultid', on_delete=models.CASCADE, primary_key=True)
+    derivation_equation = models.ForeignKey('DerivationEquation', db_column='derivationequationid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<ResultDerivationEquation('%s', '%s', DerivationEquation['%s', '%s'])>" % (
@@ -1808,9 +1812,9 @@ class ResultDerivationEquation(models.Model):
 
 class MethodCitation(models.Model):
     bridge_id = models.AutoField(db_column='bridgeid', primary_key=True)
-    method = models.ForeignKey('Method', db_column='methodid')
-    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv')
-    citation = models.ForeignKey('Citation', db_column='citationid')
+    method = models.ForeignKey('Method', db_column='methodid', on_delete=models.CASCADE)
+    relationship_type = models.ForeignKey('RelationshipType', db_column='relationshiptypecv', on_delete=models.CASCADE)
+    citation = models.ForeignKey('Citation', db_column='citationid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<MethodCitation('%s', Method['%s', '%s'], '%s', Citation['%s', '%s'])>" % (
@@ -1822,8 +1826,8 @@ class MethodCitation(models.Model):
 
 
 class RelatedAnnotation(ObjectRelation):
-    annotation = models.ForeignKey('Annotation', related_name='related_annonation_annotation', db_column='annotationid')
-    related_annotation = models.ForeignKey('Annotation', related_name='related_annotation_related_annontation', db_column='relatedannotationid')
+    annotation = models.ForeignKey('Annotation', related_name='related_annonation_annotation', db_column='annotationid', on_delete=models.CASCADE)
+    related_annotation = models.ForeignKey('Annotation', related_name='related_annotation_related_annontation', db_column='relatedannotationid', on_delete=models.CASCADE)
 
     def __repr__(self):
         return "<RelatedAnnotation('%s', Annotation['%s', '%s'], '%s', Annotation['%s', '%s'])>" % (
@@ -1836,8 +1840,8 @@ class RelatedAnnotation(ObjectRelation):
 
 
 class RelatedDataSet(ObjectRelation):
-    data_set = models.ForeignKey('DataSet', related_name='related_dataset_dataset', db_column='datasetid')
-    related_data_set = models.ForeignKey('DataSet', related_name='related_dataset_related_dataset', db_column='relateddatasetid')
+    data_set = models.ForeignKey('DataSet', related_name='related_dataset_dataset', db_column='datasetid', on_delete=models.CASCADE)
+    related_data_set = models.ForeignKey('DataSet', related_name='related_dataset_related_dataset', db_column='relateddatasetid', on_delete=models.CASCADE)
     version_code = models.CharField(db_column='versioncode', blank=True, max_length=50)
 
     def __repr__(self):
@@ -1851,8 +1855,8 @@ class RelatedDataSet(ObjectRelation):
 
 
 class RelatedResult(ObjectRelation):
-    result = models.ForeignKey('Result', db_column='resultid')
-    related_result = models.ForeignKey('Result', related_name='related_result_related_result', db_column='relatedresultid')
+    result = models.ForeignKey('Result', db_column='resultid', on_delete=models.CASCADE)
+    related_result = models.ForeignKey('Result', related_name='related_result_related_result', db_column='relatedresultid', on_delete=models.CASCADE)
     version_code = models.CharField(db_column='versioncode', blank=True, max_length=50)
     related_result_sequence_number = models.IntegerField(db_column='relatedresultsequencenumber', blank=True, null=True)
 
@@ -1881,7 +1885,7 @@ class ProfileResult(ExtendedResult, AggregatedComponent, XOffsetComponent, YOffs
 
 
 class CategoricalResult(ExtendedResult, XOffsetComponent, YOffsetComponent, ZOffsetComponent):
-    quality_code = models.ForeignKey('QualityCode', db_column='qualitycodecv')
+    quality_code = models.ForeignKey('QualityCode', db_column='qualitycodecv', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'categoricalresults'
@@ -1889,7 +1893,7 @@ class CategoricalResult(ExtendedResult, XOffsetComponent, YOffsetComponent, ZOff
 
 class TransectResult(ExtendedResult, AggregatedComponent, ZOffsetComponent, TimeIntendedComponent):
     intended_transect_spacing = models.FloatField(db_column='intendedtransectspacing')
-    intended_transect_spacing_unit = models.ForeignKey('Unit', db_column='intendedtransectspacingunitsid', blank=True, null=True)
+    intended_transect_spacing_unit = models.ForeignKey('Unit', db_column='intendedtransectspacingunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         db_table = 'transectresults'
@@ -1897,7 +1901,7 @@ class TransectResult(ExtendedResult, AggregatedComponent, ZOffsetComponent, Time
 
 class SpectraResult(ExtendedResult, AggregatedComponent, XOffsetComponent, YOffsetComponent, ZOffsetComponent):
     intended_wavelength_spacing = models.FloatField(db_column='intendedwavelengthspacing')
-    intended_wavelength_spacing_unit = models.ForeignKey('Unit', db_column='intendedwavelengthspacingunitsid', blank=True, null=True)
+    intended_wavelength_spacing_unit = models.ForeignKey('Unit', db_column='intendedwavelengthspacingunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         db_table = 'spectraresults'
@@ -1915,7 +1919,7 @@ class SectionResult(ExtendedResult, AggregatedComponent, YOffsetComponent, XInte
 
 class TrajectoryResult(ExtendedResult, AggregatedComponent, TimeIntendedComponent):
     intended_trajectory_spacing = models.FloatField(db_column='intendedtrajectoryspacing')
-    intended_trajectory_spacing_unit = models.ForeignKey('Unit', db_column='intendedtrajectoryspacingunitsid', blank=True, null=True)
+    intended_trajectory_spacing_unit = models.ForeignKey('Unit', db_column='intendedtrajectoryspacingunitsid', on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
         db_table = 'trajectoryresults'
@@ -1927,7 +1931,7 @@ class MeasurementResult(ExtendedResult, AggregatedComponent, XOffsetComponent, Y
 
 
 class CategoricalResultValue(ResultValue):
-    result = models.ForeignKey('CategoricalResult', db_column='resultid')
+    result = models.ForeignKey('CategoricalResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.CharField(db_column='datavalue', max_length=255)
     annotations = models.ManyToManyField('Annotation', related_name='annotated_categorical_values',
                                          through='CategoricalResultValueAnnotation')
@@ -1937,7 +1941,7 @@ class CategoricalResultValue(ResultValue):
 
 
 class MeasurementResultValue(ResultValue):
-    result = models.ForeignKey('MeasurementResult', db_column='resultid')
+    result = models.ForeignKey('MeasurementResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     annotations = models.ManyToManyField('Annotation', related_name='annotated_measurement_values',
                                          through='MeasurementResultValueAnnotation')
@@ -1947,7 +1951,7 @@ class MeasurementResultValue(ResultValue):
 
 
 class PointCoverageResultValue(ResultValue, XOffsetComponent, YOffsetComponent, QualityControlComponent):
-    result = models.ForeignKey('PointCoverageResult', db_column='resultid')
+    result = models.ForeignKey('PointCoverageResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.BigIntegerField(db_column='datavalue')
     annotations = models.ManyToManyField('Annotation', related_name='annotated_point_coverage_values',
                                          through='PointCoverageResultValueAnnotation')
@@ -1957,7 +1961,7 @@ class PointCoverageResultValue(ResultValue, XOffsetComponent, YOffsetComponent, 
 
 
 class ProfileResultValue(ResultValue, ZOffsetComponent, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('ProfileResult', db_column='resultid')
+    result = models.ForeignKey('ProfileResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     z_aggregation_interval = models.FloatField(db_column='zaggregationinterval')
     annotations = models.ManyToManyField('Annotation', related_name='annotated_profile_values',
@@ -1968,7 +1972,7 @@ class ProfileResultValue(ResultValue, ZOffsetComponent, QualityControlComponent,
 
 
 class SectionResultValue(ResultValue, AggregatedComponent, XOffsetComponent, ZOffsetComponent, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('SectionResult', db_column='resultid')
+    result = models.ForeignKey('SectionResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     x_aggregation_interval = models.FloatField(db_column='xaggregationinterval')
     z_aggregation_interval = models.FloatField(db_column='zaggregationinterval')
@@ -1980,11 +1984,11 @@ class SectionResultValue(ResultValue, AggregatedComponent, XOffsetComponent, ZOf
 
 
 class SpectraResultValue(ResultValue, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('SpectraResult', db_column='resultid')
+    result = models.ForeignKey('SpectraResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     excitation_wavelength = models.FloatField(db_column='excitationwavelength')
     emission_wavelength = models.FloatField(db_column='emissionwavelength')
-    wavelength_unit = models.ForeignKey('Unit', db_column='wavelengthunitsid')
+    wavelength_unit = models.ForeignKey('Unit', db_column='wavelengthunitsid', on_delete=models.CASCADE)
     annotations = models.ManyToManyField('Annotation', related_name='annotated_spectra_values',
                                          through='SpectraResultValueAnnotation')
 
@@ -1993,7 +1997,7 @@ class SpectraResultValue(ResultValue, QualityControlComponent, TimeAggregationCo
 
 
 class TimeSeriesResultValue(ResultValue, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('TimeSeriesResult', related_name='values', db_column='resultid')
+    result = models.ForeignKey('TimeSeriesResult', related_name='values', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     annotations = models.ManyToManyField('Annotation', related_name='annotated_time_series_values',
                                          through='TimeSeriesResultValueAnnotation')
@@ -2006,11 +2010,11 @@ class TimeSeriesResultValue(ResultValue, QualityControlComponent, TimeAggregatio
 
 
 class TrajectoryResultValue(ResultValue, XOffsetComponent, YOffsetComponent, ZOffsetComponent, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('TrajectoryResult', db_column='resultid')
+    result = models.ForeignKey('TrajectoryResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     trajectory_distance = models.FloatField(db_column='trajectorydistance')
     trajectory_distance_aggregation_interval = models.FloatField(db_column='trajectorydistanceaggregationinterval')
-    trajectory_distance_unit = models.ForeignKey('Unit', db_column='trajectorydistanceunitsid')
+    trajectory_distance_unit = models.ForeignKey('Unit', db_column='trajectorydistanceunitsid', on_delete=models.CASCADE)
     annotations = models.ManyToManyField('Annotation', related_name='annotated_Trajectory_values',
                                          through='TrajectoryResultValueAnnotation')
 
@@ -2019,11 +2023,11 @@ class TrajectoryResultValue(ResultValue, XOffsetComponent, YOffsetComponent, ZOf
 
 
 class TransectResultValue(ResultValue, AggregatedComponent, XOffsetComponent, YOffsetComponent, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('TransectResult', db_column='resultid')
+    result = models.ForeignKey('TransectResult', db_column='resultid', on_delete=models.CASCADE)
     data_value = models.FloatField(db_column='datavalue')
     transect_distance = models.FloatField(db_column='transectdistance')
     transect_distance_aggregation_interval = models.FloatField(db_column='transectdistanceaggregationinterval')
-    transect_distance_unit = models.ForeignKey('Unit', db_column='transectdistanceunitsid')
+    transect_distance_unit = models.ForeignKey('Unit', db_column='transectdistanceunitsid', on_delete=models.CASCADE)
     annotations = models.ManyToManyField('Annotation', related_name='annotated_transect_values',
                                          through='TransectResultValueAnnotation')
 
@@ -2032,63 +2036,63 @@ class TransectResultValue(ResultValue, AggregatedComponent, XOffsetComponent, YO
 
 
 class MeasurementResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('MeasurementResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('MeasurementResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'measurementresultvalueannotations'
 
 
 class CategoricalResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('CategoricalResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('CategoricalResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'categoricalresultvalueannotations'
 
 
 class PointCoverageResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('PointCoverageResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('PointCoverageResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'pointcoverageresultvalueannotations'
 
 
 class ProfileResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('ProfileResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('ProfileResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'profileresultvalueannotations'
 
 
 class SectionResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('SectionResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('SectionResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'sectionresultvalueannotations'
 
 
 class SpectraResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('SpectraResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('SpectraResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'spectraresultvalueannotations'
 
 
 class TimeSeriesResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('TimeSeriesResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('TimeSeriesResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'timeseriesresultvalueannotations'
 
 
 class TrajectoryResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('TrajectoryResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('TrajectoryResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'trajectoryresultvalueannotations'
 
 
 class TransectResultValueAnnotation(ResultValueAnnotation):
-    value = models.ForeignKey('TransectResultValue', related_name='+', db_column='valueid')
+    value = models.ForeignKey('TransectResultValue', related_name='+', db_column='valueid', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'transectresultvalueannotations'

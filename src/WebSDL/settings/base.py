@@ -61,7 +61,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'widget_tweaks',
     'requests',
-    'reset_migrations'
+    'reset_migrations',
+    'timeseries_visualization'
 ]
 
 MIDDLEWARE = [
@@ -70,7 +71,6 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hydroshare_util.middleware.AuthMiddleware',
@@ -104,7 +104,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'WebSDL.wsgi.application'
+#WSGI_APPLICATION = 'WebSDL.wsgi.application'
 
 
 # Database
@@ -122,8 +122,6 @@ for database in data['databases']:
         'OPTIONS': database['options'] if 'options' in database else {},
         'TEST': database['test'] if 'test' in database else {},
     }
-
-INFLUX_CONNECTION = data['influx_connection']
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -148,13 +146,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
 LANGUAGE_CODE = 'en-us'
-
 USE_I18N = True
-
 USE_L10N = True
-
 LOGIN_URL = '/login/'
-
 DATABASE_ROUTERS = ['WebSDL.db_routers.WebSDLRouter']
 
 
@@ -165,31 +159,19 @@ DATABASE_ROUTERS = ['WebSDL.db_routers.WebSDLRouter']
 # SECURE_SSL_REDIRECT = True
 
 RECAPTCHA_KEY = data["recaptcha_secret_key"] if "recaptcha_secret_key" in data else ""
-
 RECAPTCHA_USER_KEY = data["recaptcha_user_key"] if "recaptcha_user_key" in data else ""
-
 RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 
 EMAIL_SENDER = data['password_email_sender'] if 'password_email_sender' in data else '',
-
 NOTIFY_EMAIL = data['notify_email_sender'] if 'notify_email_sender' in data else ''
-
 DEFAULT_FROM_EMAIL = EMAIL_SENDER[0] if isinstance(EMAIL_SENDER, tuple) else EMAIL_SENDER
-
 NOTIFY_EMAIL_SENDER = NOTIFY_EMAIL[0] if isinstance(NOTIFY_EMAIL, tuple) else NOTIFY_EMAIL
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
 EMAIL_SERVER = data['email_host'] if 'email_host' in data else '',
-
 EMAIL_HOST = EMAIL_SERVER[0] if isinstance(EMAIL_SERVER, tuple) else EMAIL_SERVER
-
 EMAIL_HOST_USER = data['email_user'] if 'email_user' in data else ''
-
 EMAIL_HOST_PASSWORD = data['email_password'] if 'email_password' in data else ''
-
 EMAIL_USE_TLS = True
-
 
 DATETIME_FORMAT = "N j, Y g:i a"
 
@@ -199,22 +181,12 @@ HYDROSHARE_UTIL_CONFIG = {
     'REDIRECT_URI': data['hydroshare_oauth']['redirect_uri']
 }
 
-INFLUX_URL_QUERY = data['influx_query']
-
-INFLUX_UPDATE_URL = data['influx_updater_query']['url']
-
-INFLUX_UPDATE_BODY = data['influx_updater_query']['body']
-
 # This data period is measured in days
 SENSOR_DATA_PERIOD = data['sensor_data_period'] if 'sensor_data_period' in data else '2'
 
-TSA_URL = data['tsa_url'] if 'tsa_url' in data else ''
-
 # crontab job settings
 CRONTAB_USER = data.get('crontab_user', getpass.getuser())
-
 CRONTAB_LOGFILE_PATH = data.get('crontab_log_file', '/var/log/odm2websdl-cron.log')
-
 CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 
 GOOGLE_API_CONF = data.get('google_api_conf', None)
