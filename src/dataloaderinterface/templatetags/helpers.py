@@ -54,7 +54,7 @@ def is_stale(value, default):
 def divide(value, arg):
     try:
         return int(value) / int(arg) if int(arg) != 0 else 0
-    except (ValueError, ZeroDivisionError):
+    except (TypeError, ValueError, ZeroDivisionError):
         return None
 
 
