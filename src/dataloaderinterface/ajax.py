@@ -13,7 +13,7 @@ from django.conf import settings
 
 _dbsettings = settings.DATABASES['odm2']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
-_db_engine = sqlalchemy.create_engine(_connection_str)
+_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=30)
 
 def get_result_timeseries_recent(request_data:Dict[str,Any]) -> str:
 	result_id = int(request_data['resultid'])

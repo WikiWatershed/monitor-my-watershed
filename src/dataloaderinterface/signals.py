@@ -7,7 +7,9 @@ from django.dispatch.dispatcher import receiver
 from dataloader.models import SamplingFeature, Site, Annotation, SamplingFeatureAnnotation, SpatialReference, Action, \
     Method, Result, ProcessingLevel, TimeSeriesResult, Unit
 from dataloaderinterface.models import SiteRegistration, SiteSensor
-from tsa.helpers import TimeSeriesAnalystHelper
+
+#PRT - deprecated
+#from tsa.helpers import TimeSeriesAnalystHelper
 
 
 @receiver(pre_save, sender=SiteRegistration)
@@ -78,12 +80,13 @@ def handle_site_registration_post_save(sender, instance, created, update_fields=
         sampling_feature.annotations.filter(annotation_code='closest_town').update(annotation_text=instance.closest_town or '')
 
 
-@receiver(post_save, sender=SiteRegistration)
-def handle_site_registration_tsa_post_save(sender, instance, created, update_fields=None, **kwargs):
-    if created:
-        return
-    helper = TimeSeriesAnalystHelper()
-    helper.update_series_from_site(instance)
+#PRT - deprecated
+#@receiver(post_save, sender=SiteRegistration)
+#def handle_site_registration_tsa_post_save(sender, instance, created, update_fields=None, **kwargs):
+#    if created:
+#        return
+#    helper = TimeSeriesAnalystHelper()
+#    helper.update_series_from_site(instance)
 
 
 @receiver(post_delete, sender=SiteRegistration)
@@ -144,13 +147,14 @@ def handle_sensor_post_save(sender, instance, created, update_fields=None, **kwa
         TimeSeriesResult.objects.filter(result_id=instance.result_id).update(z_location=instance.height)
 
 
-@receiver(post_save, sender=SiteSensor)
-def handle_sensor_tsa_post_save(sender, instance, created, update_fields=None, **kwargs):
-    helper = TimeSeriesAnalystHelper()
-    if created:
-        helper.create_series_from_sensor(instance)
-    else:
-        helper.update_series_from_sensor(instance)
+#PRT - deprecated
+#@receiver(post_save, sender=SiteSensor)
+#def handle_sensor_tsa_post_save(sender, instance, created, update_fields=None, **kwargs):
+#    helper = TimeSeriesAnalystHelper()
+#    if created:
+#        helper.create_series_from_sensor(instance)
+#    else:
+#        helper.update_series_from_sensor(instance)
 
 
 @receiver(post_delete, sender=SiteSensor)
@@ -159,7 +163,8 @@ def handle_sensor_post_delete(sender, instance, **kwargs):
     result and result.feature_action.action.delete()
 
 
-@receiver(post_delete, sender=SiteSensor)
-def handle_sensor_tsa_post_delete(sender, instance, **kwargs):
-    helper = TimeSeriesAnalystHelper()
-    helper.delete_series_for_sensor(instance)
+#PRT - deprecated
+#@receiver(post_delete, sender=SiteSensor)
+#def handle_sensor_tsa_post_delete(sender, instance, **kwargs):
+#    helper = TimeSeriesAnalystHelper()
+#    helper.delete_series_for_sensor(instance)
