@@ -41,6 +41,7 @@ import pandas as pd
 #PRT - temporary work around after replacing InfluxDB but not replacement models
 import sqlalchemy
 from sqlalchemy.sql import text
+import psycopg2
 from django.conf import settings
 _dbsettings = settings.DATABASES['odm2']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
@@ -609,6 +610,14 @@ class TimeSeriesValuesApi(APIView):
 
             try:
                 query_result = InsertTimeseriesResultValues(result_value)
+            except sqlalchemy.exc.IntegrityError as e:
+                if hasattr(e, 'orig'): 
+                    if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+                        pass #data is already in database
+                    else:
+                        errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
+                else:
+                    errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
             except Exception as e:
                 errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
                 
