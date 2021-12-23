@@ -2,6 +2,7 @@ import csv
 import os
 from collections import OrderedDict
 from datetime import time, timedelta, datetime
+from typing import Union
 
 from io import StringIO
 from django.utils import encoding
@@ -17,7 +18,7 @@ from django.db.models import QuerySet
 from django.shortcuts import reverse
 from rest_framework.generics import GenericAPIView
 
-from dataloader.models import SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
+from dataloader.models import ProfileResultValue, SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
 from django.db.models.expressions import F
 from django.utils.dateparse import parse_datetime
 from rest_framework import exceptions
@@ -45,10 +46,12 @@ import psycopg2
 from django.conf import settings
 _dbsettings = settings.DATABASES['odm2']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
-_db_engine = sqlalchemy.create_engine(_connection_str)
+_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=5)
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class ModelVariablesApi(APIView):
     authentication_classes = (SessionAuthentication, )
@@ -592,81 +595,34 @@ class TimeSeriesValuesApi(APIView):
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
         feature_actions = sampling_feature.feature_actions.prefetch_related('results__variable', 'action').all()
-        errors = []
-        for feature_action in feature_actions:
-            result = feature_action.results.all().first()
-            if str(result.result_uuid) not in request.data:
-                continue
-
-            result_value = TimeseriesResultValueTechDebt(
-                result_id=result.result_id,
-                data_value=request.data[str(result.result_uuid)],
-                value_datetime=measurement_datetime,
-                utc_offset=utc_offset,
-                censor_code='Not censored',
-                quality_code='None',
-                time_aggregation_interval=1,
-                time_aggregation_interval_unit=(Unit.objects.get(unit_name='hour minute')).unit_id)
-
-            try:
-                query_result = InsertTimeseriesResultValues(result_value)
-            except sqlalchemy.exc.IntegrityError as e:
-                if hasattr(e, 'orig'): 
-                    if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                        pass #data is already in database
-                    else:
-                        errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
+        
+        futures = {}
+        unit_id = Unit.objects.get(unit_name='hour minute').unit_id
+        with ThreadPoolExecutor() as executor:
+            for feature_action in feature_actions:
+                result = feature_action.results.all().first()
+                if str(result.result_uuid) not in request.data:
+                    continue
                 else:
-                    errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
-            except Exception as e:
-                errors.append(f"Failed to INSERT data for uuid('{result.result_uuid}')")
-                
-            # PRT - long term we would like to remove dataloader database but for now 
-            # this block of code keeps dataloaderinterface_sensormeasurement table in sync
-            result.value_count = F('value_count') + 1
-            result.result_datetime = measurement_datetime
-            result.result_datetime_utc_offset = utc_offset
-            site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
-            last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
-            if not last_measurement:
-                SensorMeasurement.objects.create(
-                    sensor=site_sensor,
-                    value_datetime=result_value.value_datetime,
-                    value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
-                    data_value=result_value.data_value
-                )
-            elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
-                last_measurement and last_measurement.delete()
-                SensorMeasurement.objects.create(
-                    sensor=site_sensor,
-                    value_datetime=result_value.value_datetime,
-                    value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
-                    data_value=result_value.data_value
-                )
-
-            if result.value_count == 0:
-                result.valid_datetime = measurement_datetime
-                result.valid_datetime_utc_offset = utc_offset
-
-                if not site_sensor.registration.deployment_date:
-                    site_sensor.registration.deployment_date = measurement_datetime
-                    #site_sensor.registration.deployment_date_utc_offset = utc_offset
-                    site_sensor.registration.save(update_fields=['deployment_date'])
-
-            try:
-                result.save(update_fields=[
-                    'result_datetime', 'value_count', 'result_datetime_utc_offset',
-                    'valid_datetime', 'valid_datetime_utc_offset'
-                ])
-            except Exception as e:
-                #PRT - An exception here means the dataloaderinterface data tables will not in sync 
-                # for this sensor, but that is better than a fail state where data is lost so pass 
-                # expection for now. Long term plan is to remove this whole block of code.
-                pass
-            # End dataloaderinterface_sensormeasurement sync block
+                    result_value = TimeseriesResultValueTechDebt(
+                        result_id=result.result_id,
+                        data_value=request.data[str(result.result_uuid)],
+                        value_datetime=measurement_datetime,
+                        utc_offset=utc_offset,
+                        censor_code='Not censored',
+                        quality_code='None',
+                        time_aggregation_interval=1,
+                        time_aggregation_interval_unit=unit_id)
+                    futures[executor.submit(ProcessResultValue, result_value, result)] = None   
+                    
+        errors = []
+        for future in as_completed(futures):
+            if future.result() is not None: errors.append(future.result())
+           
         if errors: return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         return Response({}, status.HTTP_201_CREATED)
+
+
 
 class TimeseriesResultValueTechDebt():
     def __init__(self, 
@@ -686,6 +642,64 @@ class TimeseriesResultValueTechDebt():
         self.quality_code = quality_code
         self.time_aggregation_interval = time_aggregation_interval
         self.time_aggregation_interval_unit = time_aggregation_interval_unit
+
+def ProcessResultValue(result_value:TimeseriesResultValueTechDebt, result:Result) -> Union[str,None]:
+    try:
+        query_result = InsertTimeseriesResultValues(result_value)
+    except sqlalchemy.exc.IntegrityError as e:
+        if hasattr(e, 'orig'): 
+            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+                pass #data is already in database
+            else:
+                return (f"Failed to INSERT data for uuid('{result.result_uuid}')")
+        else:
+            return (f"Failed to INSERT data for uuid('{result.result_uuid}')")
+    except Exception as e:
+        return (f"Failed to INSERT data for uuid('{result.result_uuid}')")
+            
+    # PRT - long term we would like to remove dataloader database but for now 
+    # this block of code keeps dataloaderinterface_sensormeasurement table in sync
+    result.value_count = F('value_count') + 1
+    result.result_datetime = result_value.value_datetime
+    result.result_datetime_utc_offset = result_value.utc_offset
+    site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
+    last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
+    if not last_measurement:
+        SensorMeasurement.objects.create(
+            sensor=site_sensor,
+            value_datetime=result_value.value_datetime,
+            value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
+            data_value=result_value.data_value
+        )
+    elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
+        last_measurement and last_measurement.delete()
+        SensorMeasurement.objects.create(
+            sensor=site_sensor,
+            value_datetime=result_value.value_datetime,
+            value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
+            data_value=result_value.data_value
+        )
+
+    if result.value_count == 0:
+        result.valid_datetime = result_value.value_datetime
+        result.valid_datetime_utc_offset = result_value.utc_offset
+
+        if not site_sensor.registration.deployment_date:
+            site_sensor.registration.deployment_date = result_value.value_datetime
+            #site_sensor.registration.deployment_date_utc_offset = utc_offset
+            site_sensor.registration.save(update_fields=['deployment_date'])
+
+    try:
+        result.save(update_fields=[
+            'result_datetime', 'value_count', 'result_datetime_utc_offset',
+            'valid_datetime', 'valid_datetime_utc_offset'
+        ])
+    except Exception as e:
+        #PRT - An exception here means the dataloaderinterface data tables will not in sync 
+        # for this sensor, but that is better than a fail state where data is lost so pass 
+        # expection for now. Long term plan is to remove this whole block of code.
+        pass
+    return None
 
 def InsertTimeseriesResultValues(result_value : TimeseriesResultValueTechDebt) -> None: 
     with _db_engine.connect() as connection:
