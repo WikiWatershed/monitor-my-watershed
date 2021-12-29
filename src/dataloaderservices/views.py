@@ -598,7 +598,7 @@ class TimeSeriesValuesApi(APIView):
         
         futures = {}
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=8) as executor:
             for feature_action in feature_actions:
                 result = feature_action.results.all().first()
                 if str(result.result_uuid) not in request.data:
@@ -614,7 +614,49 @@ class TimeSeriesValuesApi(APIView):
                         time_aggregation_interval=1,
                         time_aggregation_interval_unit=unit_id)
                     futures[executor.submit(ProcessResultValue, result_value, result)] = None   
-                    
+
+                # PRT - long term we would like to remove dataloader database but for now 
+                # this block of code keeps dataloaderinterface_sensormeasurement table in sync
+                result.value_count = F('value_count') + 1
+                result.result_datetime = measurement_datetime
+                result.result_datetime_utc_offset = utc_offset
+                site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
+                last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
+                if not last_measurement:
+                    SensorMeasurement.objects.create(
+                        sensor=site_sensor,
+                        value_datetime=measurement_datetime,
+                        value_datetime_utc_offset=timedelta(hours=utc_offset),
+                        data_value=result_value.data_value
+                    )
+                elif last_measurement and measurement_datetime > last_measurement.value_datetime:
+                    last_measurement and last_measurement.delete()
+                    SensorMeasurement.objects.create(
+                        sensor=site_sensor,
+                        value_datetime=measurement_datetime,
+                        value_datetime_utc_offset=timedelta(hours=utc_offset),
+                        data_value=result_value.data_value
+                    )
+
+                if result.value_count == 0:
+                    result.valid_datetime = measurement_datetime
+                    result.valid_datetime_utc_offset = utc_offset
+
+                    if not site_sensor.registration.deployment_date:
+                        site_sensor.registration.deployment_date = measurement_datetime
+                        #site_sensor.registration.deployment_date_utc_offset = utc_offset
+                        site_sensor.registration.save(update_fields=['deployment_date'])
+
+                try:
+                    result.save(update_fields=[
+                        'result_datetime', 'value_count', 'result_datetime_utc_offset',
+                        'valid_datetime', 'valid_datetime_utc_offset'
+                    ])
+                except Exception as e:
+                    #PRT - An exception here means the dataloaderinterface data tables will not in sync 
+                    # for this sensor, but that is better than a fail state where data is lost so pass 
+                    # expection for now. Long term plan is to remove this whole block of code.
+                    pass
         errors = []
         for future in as_completed(futures):
             if future.result() is not None: errors.append(future.result())
@@ -646,6 +688,7 @@ class TimeseriesResultValueTechDebt():
 def ProcessResultValue(result_value:TimeseriesResultValueTechDebt, result:Result) -> Union[str,None]:
     try:
         query_result = InsertTimeseriesResultValues(result_value)
+        pass
     except sqlalchemy.exc.IntegrityError as e:
         if hasattr(e, 'orig'): 
             if isinstance(e.orig, psycopg2.errors.UniqueViolation):
@@ -656,49 +699,6 @@ def ProcessResultValue(result_value:TimeseriesResultValueTechDebt, result:Result
             return (f"Failed to INSERT data for uuid('{result.result_uuid}')")
     except Exception as e:
         return (f"Failed to INSERT data for uuid('{result.result_uuid}')")
-            
-    # PRT - long term we would like to remove dataloader database but for now 
-    # this block of code keeps dataloaderinterface_sensormeasurement table in sync
-    result.value_count = F('value_count') + 1
-    result.result_datetime = result_value.value_datetime
-    result.result_datetime_utc_offset = result_value.utc_offset
-    site_sensor = SiteSensor.objects.filter(result_id=result.result_id).first()
-    last_measurement = SensorMeasurement.objects.filter(sensor=site_sensor).first()
-    if not last_measurement:
-        SensorMeasurement.objects.create(
-            sensor=site_sensor,
-            value_datetime=result_value.value_datetime,
-            value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
-            data_value=result_value.data_value
-        )
-    elif last_measurement and result_value.value_datetime > last_measurement.value_datetime:
-        last_measurement and last_measurement.delete()
-        SensorMeasurement.objects.create(
-            sensor=site_sensor,
-            value_datetime=result_value.value_datetime,
-            value_datetime_utc_offset=timedelta(hours=result_value.utc_offset),
-            data_value=result_value.data_value
-        )
-
-    if result.value_count == 0:
-        result.valid_datetime = result_value.value_datetime
-        result.valid_datetime_utc_offset = result_value.utc_offset
-
-        if not site_sensor.registration.deployment_date:
-            site_sensor.registration.deployment_date = result_value.value_datetime
-            #site_sensor.registration.deployment_date_utc_offset = utc_offset
-            site_sensor.registration.save(update_fields=['deployment_date'])
-
-    try:
-        result.save(update_fields=[
-            'result_datetime', 'value_count', 'result_datetime_utc_offset',
-            'valid_datetime', 'valid_datetime_utc_offset'
-        ])
-    except Exception as e:
-        #PRT - An exception here means the dataloaderinterface data tables will not in sync 
-        # for this sensor, but that is better than a fail state where data is lost so pass 
-        # expection for now. Long term plan is to remove this whole block of code.
-        pass
     return None
 
 def InsertTimeseriesResultValues(result_value : TimeseriesResultValueTechDebt) -> None: 
