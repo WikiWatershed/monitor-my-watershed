@@ -75,7 +75,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hydroshare_util.middleware.AuthMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_cprofile_middleware.middleware.ProfilerMiddleware',
 ]
+
+DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
 
 REST_FRAMEWORK = {
    'DEFAULT_RENDERER_CLASSES': (
