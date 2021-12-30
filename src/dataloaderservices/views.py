@@ -48,10 +48,11 @@ from django.conf import settings
 _dbsettings = settings.DATABASES['odm2']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 _db_engine = sqlalchemy.create_engine(_connection_str, pool_size=5)
+_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
 
 _dbsettings_loader = settings.DATABASES['default']
 _connection_str_loader = f"postgresql://{_dbsettings_loader['USER']}:{_dbsettings_loader['PASSWORD']}@{_dbsettings_loader['HOST']}:{_dbsettings_loader['PORT']}/{_dbsettings_loader['NAME']}"
-_db_engine_loader = sqlalchemy.create_engine(_connection_str_loader, pool_size=5)
+_db_engine_loader = sqlalchemy.create_engine(_connection_str_loader, pool_size=10)
 
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
@@ -586,7 +587,6 @@ class TimeSeriesValuesApi(APIView):
     def post(self, request, format=None):
         if not all(key in request.data for key in ('timestamp', 'sampling_feature')):
             raise exceptions.ParseError("Required data not found in request.")
-
         try:
             measurement_datetime = parse_datetime(request.data['timestamp'])
         except ValueError:
@@ -609,7 +609,7 @@ class TimeSeriesValuesApi(APIView):
         futures = {}
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
         
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=8) as executor:
             for key in request.data:
                 try:
                     result_id = result_uuids[key]
@@ -628,9 +628,9 @@ class TimeSeriesValuesApi(APIView):
                     time_aggregation_interval_unit=unit_id)
                 futures[executor.submit(process_result_value, result_value)] = None   
               
-        errors = []
-        for future in as_completed(futures):
-            if future.result() is not None: errors.append(future.result())
+            errors = []
+            for future in as_completed(futures):
+                if future.result() is not None: errors.append(future.result())
            
         if errors: return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({}, status.HTTP_201_CREATED)
@@ -679,12 +679,11 @@ class TimeseriesResultValueTechDebt():
 def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[str,None]:
     try:
         query_result = insert_timeseries_result_values(result_value)
-        sync_dataloader_tables(result_value)
-        sync_result_table(result_value)
     except sqlalchemy.exc.IntegrityError as e:
         if hasattr(e, 'orig'): 
             if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                pass #data is already in database
+                #data is already in database
+                return None
             else:
                 return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
         else:
@@ -692,17 +691,18 @@ def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[st
     except Exception as e:
         return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
     
-
     # PRT - long term we would like to remove dataloader database but for now 
     # this block of code keeps dataloaderinterface_sensormeasurement table in sync
-
-
-    #if not site_sensor.registration.deployment_date:
-    #site_sensor.registration.deployment_date = measurement_datetime
-    #    #site_sensor.registration.deployment_date_utc_offset = utc_offset
-    #    site_sensor.registration.save(update_fields=['deployment_date'])
-
-    return None
+    try:
+        query_result = sync_dataloader_tables(result_value)
+        query_result = sync_result_table(result_value)
+        return None
+        #if not site_sensor.registration.deployment_date:
+        #site_sensor.registration.deployment_date = measurement_datetime
+        #    #site_sensor.registration.deployment_date_utc_offset = utc_offset
+        #    site_sensor.registration.save(update_fields=['deployment_date'])
+    except Exception as e:
+        return None
 
 #dataloader utility function
 def get_site_sensor(resultid:str) -> Union[Dict[str, Any],None]:
@@ -716,46 +716,45 @@ def get_site_sensor(resultid:str) -> Union[Dict[str, Any],None]:
 #dataloader utility function
 def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt) -> None:
     with _db_engine_loader.connect() as connection:
-        query = text("DO $condition_insert$ BEGIN " \
-            'IF (SELECT COUNT(sensor_id > 0) FROM ' \
-            '   dataloaderinterface_sensormeasurement WHERE ' \
-            '   sensor_id = :sensor_id) THEN ' \
-            '   UPDATE dataloaderinterface_sensormeasurement ' \
-            "   SET value_datetime=:datetime, " \
-            "   value_datetime_utc_offset = ':utc_offset', " \
-            '   data_value = data_value ' \
-            '   WHERE sensor_id=:sensor_id; ' \
-            'ELSE ' \
-            '   INSERT INTO dataloaderinterface_sensormeasurement ' \
-            "   VALUES (:sensor_id,:datetime,':utc_offset',:data_value); " \
-            'END IF;' \
-            'END $condition_insert$')
-        connection.execute(query, 
+        query = text('UPDATE dataloaderinterface_sensormeasurement ' \
+            "SET value_datetime=:datetime, " \
+            "value_datetime_utc_offset = :utc_offset, " \
+            'data_value = :data_value ' \
+            'WHERE sensor_id=:sensor_id; ')
+        result = connection.execute(query, 
             sensor_id=sensor_id,
             datetime=result_value.value_datetime, 
-            utc_offset=result_value.utc_offset,
+            utc_offset=timedelta(hours=result_value.utc_offset),
             data_value=result_value.data_value
-            )
-    return None
+            ) 
+        if result.rowcount < 1:
+            query = text('INSERT INTO dataloaderinterface_sensormeasurement ' \
+                "VALUES (:sensor_id,:datetime,':utc_offset',:data_value); ")
+            result = connection.execute(query, 
+                sensor_id=sensor_id,
+                datetime=result_value.value_datetime, 
+                utc_offset=timedelta(hours=result_value.utc_offset),
+                data_value=result_value.data_value
+            ) 
+    return result
 
 #dataloader utility function
 def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt) -> None:
     site_sensor = get_site_sensor(result_value.result_id)
     if not site_sensor: return None
-    update_sensormeasurement(site_sensor['id'], result_value)
+    result = update_sensormeasurement(site_sensor['id'], result_value)
     return None
 
 def sync_result_table(result_value: TimeseriesResultValueTechDebt) -> None:
     with _db_engine.connect() as connection:
-        query = text("DO $sync_function$ BEGIN "\
-	        "UPDATE odm2.results SET valuecount = valuecount + 1 WHERE resultid=:result_id; "\
-	        "IF (SELECT (resultdatetime < :result_datetime) FROM odm2.results WHERE resultid=:result_id) THEN" \
-		    "   UPDATE odm2.results SET resultdatetime = :result_datetime WHERE resultid=:result_id; "\
-	        "END IF; END $sync_function$ ")
-        return connection.execute(query, 
+        query = text("UPDATE odm2.results SET valuecount = valuecount + 1, " \
+            "resultdatetime = GREATEST(:result_datetime, resultdatetime)" \
+            "WHERE resultid=:result_id; ")
+        result = connection.execute(query, 
             result_id=result_value.result_id,
             result_datetime=result_value.value_datetime,
         )
+        return result
 
 def insert_timeseries_result_values(result_value : TimeseriesResultValueTechDebt) -> None: 
     with _db_engine.connect() as connection:
@@ -782,6 +781,4 @@ def insert_timeseries_result_values(result_value : TimeseriesResultValueTechDebt
             time_aggregation_interval=result_value.time_aggregation_interval,
             time_aggregation_interval_unit=result_value.time_aggregation_interval_unit,
             )
-        if result:
-            return sync_result_table(result_value)
-        return None
+        return result
