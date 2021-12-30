@@ -605,6 +605,9 @@ class TimeSeriesValuesApi(APIView):
         if not result_uuids:
             raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{request.data['sampling_feature']}'")
 
+        #dataloader table related
+        set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetime)
+
         futures = {}
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
         
@@ -696,10 +699,6 @@ def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[st
         query_result = sync_dataloader_tables(result_value)
         query_result = sync_result_table(result_value)
         return None
-        #if not site_sensor.registration.deployment_date:
-        #site_sensor.registration.deployment_date = measurement_datetime
-        #    #site_sensor.registration.deployment_date_utc_offset = utc_offset
-        #    site_sensor.registration.save(update_fields=['deployment_date'])
     except Exception as e:
         return None
 
@@ -743,6 +742,20 @@ def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt) -> None:
     if not site_sensor: return None
     result = update_sensormeasurement(site_sensor['id'], result_value)
     return None
+
+#dataloader utility function
+def set_deployment_date(sample_feature_id:int, date_time:datetime) -> None:
+    with _db_engine_loader.connect() as connection:
+        query = text('UPDATE dataloaderinterface_siteregistration '\
+            'SET "DeploymentDate"=:date_time '\
+            'WHERE "DeploymentDate" IS NULL AND ' \
+            '"SamplingFeatureID"=:sample_feature_id'                )
+        result = connection.execute(query, 
+            sample_feature_id=sample_feature_id,
+            date_time=date_time
+            )
+        return None
+
 
 def sync_result_table(result_value: TimeseriesResultValueTechDebt) -> None:
     with _db_engine.connect() as connection:
