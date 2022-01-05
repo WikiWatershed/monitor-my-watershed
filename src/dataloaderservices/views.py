@@ -606,7 +606,10 @@ class TimeSeriesValuesApi(APIView):
             raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{request.data['sampling_feature']}'")
 
         #dataloader table related
-        set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetime)
+        try:
+            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetime)
+        except Exception as e:
+            pass
 
         futures = {}
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
