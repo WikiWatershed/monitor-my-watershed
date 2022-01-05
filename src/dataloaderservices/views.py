@@ -682,20 +682,9 @@ class TimeseriesResultValueTechDebt():
         self.time_aggregation_interval_unit = time_aggregation_interval_unit
 
 def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[str,None]:
-    try:
-        query_result = insert_timeseries_result_values(result_value)
-    except sqlalchemy.exc.IntegrityError as e:
-        if hasattr(e, 'orig'): 
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                #data is already in database
-                return None
-            else:
-                return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
-        else:
-            return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
-    except Exception as e:
-        return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
-    
+    result = insert_timeseries_result_values(result_value)
+    if result is not None:
+        return result
     # PRT - long term we would like to remove dataloader database but for now 
     # this block of code keeps dataloaderinterface_sensormeasurement table in sync
     try:
@@ -772,28 +761,40 @@ def sync_result_table(result_value: TimeseriesResultValueTechDebt) -> None:
         return result
 
 def insert_timeseries_result_values(result_value : TimeseriesResultValueTechDebt) -> None: 
-    with _db_engine.connect() as connection:
-        query = text("INSERT INTO odm2.timeseriesresultvalues " \
-            "(valueid, resultid, datavalue, valuedatetime, valuedatetimeutcoffset, " \
-            "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) " \
-            "VALUES ( " \
-                "(SELECT nextval('odm2.\"timeseriesresultvalues_valueid_seq\"'))," \
-                ":result_id, " \
-                ":data_value, " \
-                ":value_datetime, " \
-                ":utc_offset, " \
-                ":censor_code, " \
-                ":quality_code, " \
-                ":time_aggregation_interval, " \
-                ":time_aggregation_interval_unit);")
-        result = connection.execute(query, 
-            result_id=result_value.result_id,
-            data_value=result_value.data_value,
-            value_datetime=result_value.value_datetime,
-            utc_offset=result_value.utc_offset,
-            censor_code=result_value.censor_code,
-            quality_code=result_value.quality_code,
-            time_aggregation_interval=result_value.time_aggregation_interval,
-            time_aggregation_interval_unit=result_value.time_aggregation_interval_unit,
+    try:
+        with _db_engine.connect() as connection:
+            query = text("INSERT INTO odm2.timeseriesresultvalues " \
+                "(valueid, resultid, datavalue, valuedatetime, valuedatetimeutcoffset, " \
+                "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) " \
+                "VALUES ( " \
+                    "(SELECT nextval('odm2.\"timeseriesresultvalues_valueid_seq\"'))," \
+                    ":result_id, " \
+                    ":data_value, " \
+                    ":value_datetime, " \
+                    ":utc_offset, " \
+                    ":censor_code, " \
+                    ":quality_code, " \
+                    ":time_aggregation_interval, " \
+                    ":time_aggregation_interval_unit);")
+            result = connection.execute(query, 
+                result_id=result_value.result_id,
+                data_value=result_value.data_value,
+                value_datetime=result_value.value_datetime,
+                utc_offset=result_value.utc_offset,
+                censor_code=result_value.censor_code,
+                quality_code=result_value.quality_code,
+                time_aggregation_interval=result_value.time_aggregation_interval,
+                time_aggregation_interval_unit=result_value.time_aggregation_interval_unit,
             )
-        return result
+            return None
+    except sqlalchemy.exc.IntegrityError as e:
+        if hasattr(e, 'orig'): 
+            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
+                #data is already in database
+                return None
+            else:
+                return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
+        else:
+            return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
+    except Exception as e:
+        return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
