@@ -75,7 +75,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'hydroshare_util.middleware.AuthMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_cprofile_middleware.middleware.ProfilerMiddleware',
 ]
+
+DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
 
 REST_FRAMEWORK = {
    'DEFAULT_RENDERER_CLASSES': (
@@ -120,6 +123,7 @@ for database in data['databases']:
         'HOST': database['host'] if 'host' in database else '',
         'PORT': database['port'] if 'port' in database else '',
         'OPTIONS': database['options'] if 'options' in database else {},
+        'CONN_MAX_AGE': 0,
         'TEST': database['test'] if 'test' in database else {},
     }
 
