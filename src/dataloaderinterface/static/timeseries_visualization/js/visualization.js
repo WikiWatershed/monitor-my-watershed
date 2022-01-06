@@ -108,7 +108,7 @@ function updatePlotDateRange(min, max) {
 	}
 	if (max != null) {
 		$('#dpd2').val(dateToString(max));
-		max = max.getTime();
+		max = max.getTime() + 86399; //select end of day as end point
 	}	
 	_chart.xAxis[0].update({'min':min, 'max':max}); 
 	_chart.xAxis[0].setExtremes();

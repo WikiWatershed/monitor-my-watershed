@@ -13,7 +13,6 @@ from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesRe
     Unit, Medium, Organization
 from dataloaderinterface.querysets import SiteRegistrationQuerySet, SensorOutputQuerySet
 
-
 class SiteRegistration(models.Model):
     registration_id = models.AutoField(primary_key=True, db_column='RegistrationID')
     registration_token = models.CharField(max_length=64, editable=False, db_column='RegistrationToken', unique=True, default=uuid4)
@@ -60,7 +59,8 @@ class SiteRegistration(models.Model):
             return
         try:
             last_updated_sensor = [sensor for sensor in self.sensors.all() if sensor.last_measurement.pk == self.latest_measurement_id].pop()
-        except IndexError:
+        #except IndexError:
+        except:
             return None
 
         return last_updated_sensor.last_measurement
