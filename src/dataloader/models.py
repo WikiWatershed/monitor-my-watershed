@@ -2105,7 +2105,7 @@ sql_schema_fix = 'odm2].['   # for SQL databases
 psql_schema_fix = 'odm2"."'  # for postgres databases
 clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 classes = [model for name, model in clsmembers if issubclass(model, models.Model)]
-database_manager = settings.DATABASES['odm2']['ENGINE']
+database_manager = settings.DATABASES['default']['ENGINE']
 
 for model in classes:
     if database_manager == u'sql_server.pyodbc':

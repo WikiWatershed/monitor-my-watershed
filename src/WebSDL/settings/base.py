@@ -153,8 +153,6 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 LOGIN_URL = '/login/'
-DATABASE_ROUTERS = ['WebSDL.db_routers.WebSDLRouter']
-
 
 # Security and SSL
 #

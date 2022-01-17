@@ -21,24 +21,6 @@
       "password": "{{database password}}",
       "host": "{{database server address}}",
       "port": "5432"
-    },
-    {
-      "name": "odm2",
-      "schema": "odm2",
-      "engine": "django.db.backends.postgresql_psycopg2",
-      "user": "{{database user}}",
-      "password": "{{database password}}",
-      "host": "{{database server address}}",
-      "port": "5432"
-    },
-    {
-      "name": "tsa_catalog",
-      "schema": "tsa_catalog",
-      "engine": "django.db.backends.postgresql_psycopg2",
-      "user": "{{database user}}",
-      "password": "{{database password}}",
-      "host": "{{database server address}}",
-      "port": "5432"
     }
   ],
   "hydroshare_oauth": {

@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from django.conf import settings
 
-_dbsettings = settings.DATABASES['odm2']
+_dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 _db_engine = sqlalchemy.create_engine(_connection_str, pool_size=30)
 
