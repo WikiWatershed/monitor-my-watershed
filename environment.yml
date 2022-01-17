@@ -7,8 +7,6 @@ channels:
 dependencies:
     # For ODM2DataSharingPortal migration to AWS
     - python =3.8.10  # May 3, 2021: final regular Py 3.8 release. https://www.python.org/downloads/release/python-3810/
-    # - django =2.2.*  # Installs 2.2.14 but lastest is 2.2.24. Use pip to install.
-                       # https://docs.djangoproject.com/en/3.2/releases
 
     # # Other Requirements
     # - beautifulsoup4 =4.9.3  # with python 3.8
@@ -35,7 +33,7 @@ dependencies:
     # Dependency versions not available on conda-forge
     - pip:
         # - codegen >=1.0  # necessary? Last updated in 2012. https://pypi.org/project/codegen/
-        - django ==2.2.24
+        - django ==3.2.*
         - django-admin-select2 #  >=1.0.1
         - django-debug-toolbar # >=1.11.1
         - django-discover-runner # >=1.0
@@ -43,6 +41,7 @@ dependencies:
         - django-webtest # >=1.8.0
         - django-widget-tweaks # >=1.4.1
         - djangorestframework
+        - django-utils-six #used for unicode_compatiblity
         # - patterns >=0.3  # necessary? Last updated in 2014. https://pypi.org/project/patterns/
         # - sqlparse  # with django=2.2
         # - waitress  # with django extensions
