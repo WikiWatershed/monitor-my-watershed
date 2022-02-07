@@ -17,7 +17,7 @@ class CategoricalResultValueAnnotations(_model_base):
 class EquipmentAnnotations(_model_base):
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Annotations_EquipmentAnnotations.html"""
 
-class methodannotations(_model_base):
+class MethodAnnotations(_model_base):
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Annotations_MethodAnnotations.html"""
 
 class PointCoverageResultValueAnnotations(_model_base):
