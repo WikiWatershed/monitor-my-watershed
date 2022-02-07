@@ -9,7 +9,7 @@ from django.conf import settings
 _dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
-sessionmaker = sqlalchemy.orm.sessionmaker(engine)
+Session = sqlalchemy.orm.sessionmaker(engine)
 
 cache_path = settings.DATAMODELCACHE
 

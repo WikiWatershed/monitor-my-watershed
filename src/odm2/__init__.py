@@ -3,7 +3,7 @@ import pickle as _pickle
 import odm2.models as models 
 
 engine = _base.engine
-sessionmaker = _base.sessionmaker
+Session = _base.Session
 
 if not _base.cached:
 	_base._model_base.prepare(engine)
