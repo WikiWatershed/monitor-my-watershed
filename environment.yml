@@ -22,7 +22,7 @@ dependencies:
     - python-crontab  >=2.5.1
     # - requests  # with python 3.8
     # - six  # with python 3.8
-
+    - sqlalchemy >=1.4.0 
 
     # Dev tools
     - python-language-server
@@ -43,6 +43,7 @@ dependencies:
         - django-webtest # >=1.8.0
         - django-widget-tweaks # >=1.4.1
         - djangorestframework
+        - django-cprofile-middleware
         # - patterns >=0.3  # necessary? Last updated in 2014. https://pypi.org/project/patterns/
         # - sqlparse  # with django=2.2
         # - waitress  # with django extensions
