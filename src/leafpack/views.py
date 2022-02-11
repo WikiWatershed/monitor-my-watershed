@@ -45,7 +45,7 @@ class LeafPackFormMixin(object):
     def get_bug_count_forms(self, leafpack=None):
         re_bug_name = re.compile(r'^(?P<bug_name>.*)-bug_count')
         form_data = list()
-        for key, value in self.request.POST.iteritems():
+        for key, value in self.request.POST.items():
             if 'bug_count' in key:
                 form_data.append((re_bug_name.findall(key)[0], value))
 
