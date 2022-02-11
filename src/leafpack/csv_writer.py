@@ -52,7 +52,7 @@ class LeafPackCSVWriter(object):
 
         # write leafpack data
         self.make_header(['Leaf Pack Details'])
-        for key, value in data.iteritems():
+        for key, value in data.items():
             self.writer.writerow([key.title(), value])
         self.writerow(['URL', '{0}/sites/{1}/{2}'.format(self.HYPERLINK_BASE_URL,
                                                          site_registration.sampling_feature_code,
