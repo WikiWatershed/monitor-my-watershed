@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 
-from accounts.views import UserRegistrationView, UserUpdateView
+from accounts.views import UserRegistrationView, UserUpdateView, logout_view
 
 
 #BASE_URL = settings.SITE_URL[1:]
@@ -48,7 +48,7 @@ urlpatterns = [
     url(r'^' + BASE_URL + 'password-reset/completed/$', auth_views.PasswordResetCompleteView, name='password_reset_complete'),
     url(r'^' + BASE_URL + 'admin/', admin.site.urls),
     url(r'^' + BASE_URL + 'login/$', auth_views.LoginView.as_view(), login_configuration, name='login'),
-    url(r'^' + BASE_URL + 'logout/$', auth_views.LogoutView.as_view(), logout_configuration, name='logout'),
+    url(r'^' + BASE_URL + 'logout/$', logout_view, name='logout'),
     url(r'^' + BASE_URL + 'register/$', UserRegistrationView.as_view(), name='user_registration'),
     url(r'^' + BASE_URL + 'account/$', UserUpdateView.as_view(), name='user_account'),
     url(r'^' + BASE_URL + 'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
