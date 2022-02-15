@@ -18,6 +18,7 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
+from django.conf.urls.static import static
 
 from accounts.views import UserRegistrationView, UserUpdateView, logout_view
 
@@ -56,7 +57,7 @@ urlpatterns = [
     url(BASE_URL, include('dataloaderinterface.urls')),
     url(BASE_URL, include('dataloaderservices.urls')),
     url(BASE_URL, include('timeseries_visualization.urls'))
-]
+] + static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 # if settings.DEBUG:
 #     import debug_toolbar

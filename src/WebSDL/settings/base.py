@@ -195,4 +195,7 @@ GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
 
+#Static cache busting
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+
 DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False
