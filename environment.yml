@@ -6,7 +6,7 @@ channels:
 
 dependencies:
     # For ODM2DataSharingPortal migration to AWS
-    - python =3.8.10  # May 3, 2021: final regular Py 3.8 release. https://www.python.org/downloads/release/python-3810/
+    - python >=3.9
 
     # # Other Requirements
     # - beautifulsoup4 =4.9.3  # with python 3.8
