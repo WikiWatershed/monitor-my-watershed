@@ -5,7 +5,7 @@ function initChart(target_element) {
 
 
 function createChart(renderTo) {
-     chart = new Highcharts.chart(renderTo, {
+    let chart = new Highcharts.chart(renderTo, {
         chart: {
             plotBorderColor: '#CCC',
             plotBorderWidth: 2,
@@ -29,19 +29,13 @@ function createChart(renderTo) {
             //tickInterval: 30,
             //tickWidth: 1,
             dateTimeLabelFormats: {
-                day: "%m/%d/%y",
-                month: "%b-%y"
+                day: "%m/%d/%Y",
+                month: "%m/%d/%Y"
             },
             labels: {
                 style: {
                     fontSize: '14px'
-                }
-                /*
-                formatter: function () {
-                    var dateparts = this.value.split('T')
-                    return (dateparts[0])
-                }
-                */
+                },
             },
             title: {
                 text: 'Monitoring Date (local time of sensor)',
@@ -168,18 +162,18 @@ function createChart(renderTo) {
 }
 
 function addYAxis(align="left") {
-    axis_count = _chart.yAxis.length;
-    axis_buffer = .5 * axis_count % 2;
+    let axis_count = _chart.yAxis.length;
+    let axis_buffer = .5 * axis_count % 2;
     
-    opposite = false;
-    left = -axis_buffer;
-    right = 0;
+    let opposite = false;
+    let left = -axis_buffer;
+    let right = 0;
     if (align === "right") {
         opposite = true;
         left = -axis_buffer;
         right = 0;
     }
-    axis = _chart.addAxis({
+    let axis = _chart.addAxis({
         type: 'linear',
         title: {
             text: '',
@@ -200,9 +194,9 @@ function addYAxis(align="left") {
 }
 
 function addSeries(yAxis, axis_title, series_name, x, y) {
-    data = x.map((e,i) => [e,y[i]]);
+    let data = x.map((e,i) => [e,y[i]]);
 
-    series = _chart.addSeries({
+    let series = _chart.addSeries({
         type:'line',
         data:data,
         yAxis: yAxis,
@@ -210,18 +204,18 @@ function addSeries(yAxis, axis_title, series_name, x, y) {
         name: series_name,
         gapSize: 1000,
     });
-    series_color = series.color;
+    let series_color = series.color;
 
-    axis = _chart.yAxis[yAxis]
+    let axis = _chart.yAxis[yAxis]
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.update({'ColorString':series_color});
-    extremes = axis.getExtremes();
+    let extremes = axis.getExtremes();
     axis.setExtremes(extremes.dataMin,extremes.dataMax);
 }
 
 function removeSeries(yAxis) {
-    axis = _chart.yAxis[yAxis];
+    let axis = _chart.yAxis[yAxis];
     axis.series[0].remove();
     axis.setTitle({text:''})
     axis.setExtremes();
