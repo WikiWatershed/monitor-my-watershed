@@ -61,8 +61,20 @@ $(function () {
 		updatePlotDateRange(min_date, max_date);
 	});
 
+	$('#sites-filter').on('change', function() {
+		let filter_text = $('#sites-filter').val().toLowerCase();
+		$('#site-select option').each(function(index, element) {
+			if (element.innerText.toLowerCase().includes(filter_text)) {
+				$(element).show();
+			}
+			else {
+				$(element).hide();
+			}
+		});
+	});
+
 	$('#series-filter').on('change', function() {
-		let filter_text = $('#series-filter').val().toLowerCase();
+		let filter_text = $('#sites-filter').val().toLowerCase();
 		let $series = $('#plottableSeries')
 		$series.find('.series-panel').each(function(index, element) {
 			if (element.innerText.toLowerCase().includes(filter_text)) {
