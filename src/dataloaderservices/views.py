@@ -47,7 +47,7 @@ from django.conf import settings
 
 _dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
-_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
+_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10, pool_recycle=1800)
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.

@@ -34,14 +34,14 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 					TimeSeriesResultValues.valuedatetime,
 					TimeSeriesResultValues.valuedatetimeutcoffset).\
 				filter(*filter_args).\
-				order_by(TimeSeriesResultValues.valuetimedatetime.desc())
+				order_by(TimeSeriesResultValues.valuedatetime.desc())
 
 		df = pd.read_sql(query.statement, session.bind)
 		#df = df.replace(-9999,pd.NA)
 		#df = df.dropna()
 		df['valuedatetime'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
 		
-		return df.to_json(orient='records', default_handler=str)
+		return df.to_json(orient='columns', default_handler=str)
 
 def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 	sampling_feature_code = str(request_data['sampling_feature_code'])
@@ -64,7 +64,7 @@ def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 
 def get_sampling_features(request_data:Dict[str,Any]) -> str:
 	with Session() as session:
-		query = session.query(SamplingFeatures.uuid, 
+		query = session.query(SamplingFeatures.samplingfeatureuuid, 
 			SamplingFeatures.samplingfeaturecode,
 			SamplingFeatures.samplingfeaturename).\
 			order_by(SamplingFeatures.samplingfeaturecode)

@@ -208,12 +208,12 @@ function unPlotSeries(resultid) {
 	}
 }
 
-function getTimeseriesDataCallback(response_data) {
-	response_json = JSON.parse(response_data);
-	resultid = response_json.result_id;	
+function getTimeseriesDataCallback(response_data, request_data) {
+	let response_json = JSON.parse(response_data);
+	let resultid = request_data.resultid;	
 	_resultsTimeSeries[resultid] = {
-		'x':Object.values(response_json.data.valuedatetime), 
-		'y':Object.values(response_json.data.datavalue)
+		'x':Object.values(response_json.valuedatetime), 
+		'y':Object.values(response_json.datavalue)
 	};
 	plotSeries(_resultsTimeSeries[resultid],resultid);
 }
@@ -245,7 +245,7 @@ function ajax(request_data, callback_success, callback_fail, url='/dataloader/aj
         method: 'POST',
 		success: function(response) {
 			if (typeof (callback_success) !== 'undefined') {
-                callback_success(response);
+                callback_success(response, request_data);
             }
             else if (typeof (response) !== 'undefined') {
                 return response	;
@@ -253,7 +253,7 @@ function ajax(request_data, callback_success, callback_fail, url='/dataloader/aj
 		},
 		fail: function(response) {
 			if (typeof (callback_fail) !== 'undefined') {
-                callback_fail(response);
+                callback_fail(response, request_data);
             }
             else if (typeof (response) !== 'undefined') {
                 return response	;

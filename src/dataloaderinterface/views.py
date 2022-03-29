@@ -346,5 +346,5 @@ def ajax_router(request: WSGIRequest) -> Union[JsonResponse,HttpResponse]:
         method = getattr(ajax, request_data['method'])
         response = method(request_data)
         return JsonResponse(response, safe=False)
-    except AttributeError: #Invalid method specified
+    except AttributeError as e: #Invalid method specified
         return HttpResponse(status=405)
