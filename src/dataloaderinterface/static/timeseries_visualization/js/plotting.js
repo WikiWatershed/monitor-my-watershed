@@ -1,3 +1,6 @@
+var _chart
+var _axes
+
 function initChart(target_element) {
     _chart = createChart(target_element);
     _axes = [-999, -999, -999, -999, -999, -999];
@@ -5,7 +8,7 @@ function initChart(target_element) {
 
 
 function createChart(renderTo) {
-    let chart = new Highcharts.chart(renderTo, {
+    return new Highcharts.chart(renderTo, {
         chart: {
             plotBorderColor: '#CCC',
             plotBorderWidth: 2,
@@ -26,11 +29,14 @@ function createChart(renderTo) {
         },
         xAxis: {
             type: 'datetime',
-            //tickInterval: 30,
-            //tickWidth: 1,
             dateTimeLabelFormats: {
+                year: '%Y',
+                month: "%m/%d/%Y",
+                week: "%m/%d/%Y",
                 day: "%m/%d/%Y",
-                month: "%m/%d/%Y"
+                hour: "%m/%d/%Y %k",
+                minute: "%m/%d/%Y %k:%M",
+                second: "%m/%d/%Y %k:%M:%s"
             },
             labels: {
                 style: {
@@ -158,45 +164,12 @@ function createChart(renderTo) {
         },
         series: []
     });
-    return chart;
 }
 
-function addYAxis(align="left") {
-    let axis_count = _chart.yAxis.length;
-    let axis_buffer = .5 * axis_count % 2;
-    
-    let opposite = false;
-    let left = -axis_buffer;
-    let right = 0;
-    if (align === "right") {
-        opposite = true;
-        left = -axis_buffer;
-        right = 0;
-    }
-    let axis = _chart.addAxis({
-        type: 'linear',
-        title: {
-            text: '',
-            style: {
-                fontSize: '15px'
-            }
-        },
-        labels: {
-            align: align,
-            style: {
-                fontSize: '13px'
-            }
-        },
-        min: -1,
-        opposite: opposite,
-    });
-    _chart.redraw();
-}
-
-function addSeries(yAxis, axis_title, series_name, x, y) {
+function addSeries(chart, yAxis, axis_title, series_name, x, y) {
     let data = x.map((e,i) => [e,y[i]]);
 
-    let series = _chart.addSeries({
+    let series = chart.addSeries({
         type:'line',
         data:data,
         yAxis: yAxis,
@@ -206,16 +179,14 @@ function addSeries(yAxis, axis_title, series_name, x, y) {
     });
     let series_color = series.color;
 
-    let axis = _chart.yAxis[yAxis]
+    let axis = chart.yAxis[yAxis]
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.update({'ColorString':series_color});
-    let extremes = axis.getExtremes();
-    axis.setExtremes(extremes.dataMin,extremes.dataMax);
 }
 
-function removeSeries(yAxis) {
-    let axis = _chart.yAxis[yAxis];
+function removeSeries(chart, yAxis) {
+    let axis = chart.yAxis[yAxis];
     axis.series[0].remove();
     axis.setTitle({text:''})
     axis.setExtremes();

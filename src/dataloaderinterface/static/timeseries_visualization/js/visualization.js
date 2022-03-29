@@ -1,6 +1,3 @@
-var _chart;
-
-var _axes = [];
 var _resultMetadata = {};
 var _resultsTimeSeries = {};
 
@@ -202,7 +199,7 @@ function getEmptyAxis() {
 function unPlotSeries(resultid) {
 	for(let i=0; i<_axes.length; i++) {
 		if (_axes[i] == resultid) {
-			removeSeries(i);
+			removeSeries(_chart, i);
 			_axes[i] = -999;
 		};
 	}
@@ -234,7 +231,7 @@ function plotSeries(timeseriesData, resultid) {
 		let axis_title =  `[${metadata.samplingfeaturecode} ${metadata.sampledmediumcv} ${zlocation_text}] ` +
 			`${metadata.variablecode} (${metadata.unitsabbreviation})`;
 		
-		addSeries(axis, axis_title, axis_title, x, y);
+		addSeries(_chart, axis, axis_title, axis_title, x, y);
 	}
 }
 

@@ -34,7 +34,7 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 					TimeSeriesResultValues.valuedatetime,
 					TimeSeriesResultValues.valuedatetimeutcoffset).\
 				filter(*filter_args).\
-				order_by(TimeSeriesResultValues.valuedatetime.desc())
+				order_by(TimeSeriesResultValues.valuedatetime.asc())
 
 		df = pd.read_sql(query.statement, session.bind)
 		#df = df.replace(-9999,pd.NA)
