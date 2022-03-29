@@ -3,6 +3,11 @@
 
 {% block content %}
 
+{# Page level CSS override #}
+<style>
+	#wrapper { height:100vh; }
+</style>
+
 <div class="message-box">
 	<span id="title"></span>
 	<span id="msg"></span>
@@ -12,10 +17,8 @@
 
 <div id="graphArea">
 	<div id="graphContainer">
-		<div id="charts-container" style="margin-left: 0px;">
-			<div id="cht_ts" class="cht_xy">
-			</div>
-		</div>
+		<div id="cht_ts" class="cht_xy panel-content">
+	</div>
 	</div>
 	<div id="panel-right">
 		{% comment %}
@@ -85,14 +88,14 @@
 					<div id='plottableSeries'> </div>
 				</div>
 			</div>
-
+			
 		</div>
 	</div>
 </div>
 
 <link rel="stylesheet" href="{% static 'timeseries_visualization/css/style.css' %}">
 <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"
-	crossorigin="anonymous"
+crossorigin="anonymous"
 	integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT">
 </script>
 <script src="https://code.highcharts.com/highcharts.js"></script>

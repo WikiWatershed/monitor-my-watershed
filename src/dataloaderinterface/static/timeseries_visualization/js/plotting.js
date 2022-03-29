@@ -14,7 +14,6 @@ function createChart(renderTo) {
             plotBorderWidth: 2,
             type: 'line',
             zoomType: 'x',
-            height:700,
             spacingLeft:20,
             spacingRight:20,
         },
