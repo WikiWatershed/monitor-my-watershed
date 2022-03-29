@@ -155,7 +155,16 @@ function createChart(renderTo) {
             borderWidth: 1,
         },
         tooltip: {
-            pointFormat: '{series.name}: <b>' + '{point.y:.1f}' + '</b>'
+            pointFormat: '{series.name}: <b>' + '{point.y:.1f}' + '</b>',
+            dateTimeLabelFormats: {
+                year: '%Y',
+                month: "%m/%d/%Y",
+                week: "%m/%d/%Y",
+                day: "%m/%d/%Y",
+                hour: "%m/%d/%Y %k",
+                minute: "%m/%d/%Y %k:%M",
+                second: "%m/%d/%Y %k:%M:%s"
+            },
         },
         plotOptions: {
         },
