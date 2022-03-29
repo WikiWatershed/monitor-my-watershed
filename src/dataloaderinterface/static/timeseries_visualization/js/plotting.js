@@ -13,9 +13,14 @@ function createChart(renderTo) {
             plotBorderColor: '#CCC',
             plotBorderWidth: 2,
             type: 'line',
-            zoomType: 'x',
+            zoomType: 'xy',
             spacingLeft:20,
             spacingRight:20,
+            panning: {
+                enabled: true,
+                type: 'xy'
+            },
+            panKey: 'shift',
         },
         credits: {
             enabled: false
@@ -24,7 +29,7 @@ function createChart(renderTo) {
             text: ''
         },
         subtitle: {
-            text: 'Click and drag in the plot area to zoom in'
+            text: 'Click and drag in the plot area to zoom in, hold "shift" to pan'
         },
         xAxis: {
             type: 'datetime',
@@ -64,6 +69,7 @@ function createChart(renderTo) {
                     }
                 },
                 min: -1,
+                showEmpty: false,
             },
             {
                 type: 'linear',
@@ -79,6 +85,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             },
             {
@@ -94,6 +101,7 @@ function createChart(renderTo) {
                         fontSize: '13px'
                     }
                 },
+                showEmpty: false,
                 min: -1,
             },
             {
@@ -110,6 +118,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             },
             {
@@ -125,6 +134,7 @@ function createChart(renderTo) {
                         fontSize: '13px'
                     }
                 },
+                showEmpty: false,
                 min: -1,
             },
             {
@@ -141,6 +151,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             }
         ],
