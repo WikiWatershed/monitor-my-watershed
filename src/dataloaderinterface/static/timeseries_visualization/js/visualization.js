@@ -127,8 +127,8 @@ function changeTimeSeries(result_id, checked) {
 	let $plotted = $('#plottedSeries');
 	let $notplotted = $('#plottableSeries');
 	let $panel = $(`#series-panel_${result_id}`)
+	let $input = $panel.find('input')
 	if ($plotted.children().length == 6 && checked) {
-		let $input = $panel.find('input')
 		$($input).prop("checked",false);
 		displayMessage("Warning: Too Many Time Series Selected", 
 			"A maximum of six(6) time series can be plotted at a single time. Please " +
@@ -138,20 +138,24 @@ function changeTimeSeries(result_id, checked) {
 		return;
 	}
 
+	$input.prop('disabled', true);
 	if (checked) {
 		$panel.remove();
 		$plotted.append($panel);
 		if (result_id in _resultsTimeSeries) {
 			plotSeries(_resultsTimeSeries[result_id], result_id)
+			$input.prop('disabled', false);
 		}
 		else {
 			getTimeseriesData(result_id);
+			$input.prop('disabled', false);
 		} 
 	}
 	if (!checked) { 
 		unPlotSeries(result_id);
 		$panel.remove();
 		$notplotted.append($panel);
+		$input.prop('disabled', false);
 	}
 }
 
