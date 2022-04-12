@@ -19,12 +19,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR =  os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Loads settings configuration data from settings.json file
 data = {}
 try:
-    with open(os.path.join(BASE_DIR, 'settings', 'settings.json')) as data_file:
+    with open(os.path.join(BASE_DIR, 'WebSDL','settings', 'settings.json')) as data_file:
         data = json.load(data_file)
 except IOError:
     print("You need to setup the settings data file (see instructions in base.py file.)")
@@ -45,7 +45,6 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
-    'tsa.apps.TsaConfig',
     'accounts.apps.AccountsConfig',
     'dataloader.apps.DataloaderConfig',
     'dataloaderservices.apps.DataloaderservicesConfig',
@@ -126,6 +125,7 @@ for database in data['databases']:
         'CONN_MAX_AGE': 0,
         'TEST': database['test'] if 'test' in database else {},
     }
+DATAMODELCACHE = os.path.join(BASE_DIR, 'odm2', 'modelcache.pkl')
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -153,8 +153,6 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 LOGIN_URL = '/login/'
-DATABASE_ROUTERS = ['WebSDL.db_routers.WebSDLRouter']
-
 
 # Security and SSL
 #
@@ -196,5 +194,8 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
+
+#Static cache busting
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False

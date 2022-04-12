@@ -36,15 +36,6 @@
     font-size: 16px;
 }
 
-/*.card > h4 {*/
-    /*background-image: url('../images/card-decor.png') ;*/
-    /*padding-bottom: 70px;*/
-    /*background-position-y: bottom;*/
-    /*background-repeat: no-repeat;*/
-    /*background-size: 100%;*/
-    /*height: 100%;*/
-/*}*/
-
 .step-number {
     display: inline-block;
     border-radius: 50%;

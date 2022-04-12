@@ -18,8 +18,9 @@ from django.conf.urls import url, include
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
+from django.conf.urls.static import static
 
-from accounts.views import UserRegistrationView, UserUpdateView
+from accounts.views import UserRegistrationView, UserUpdateView, logout_view
 
 
 #BASE_URL = settings.SITE_URL[1:]
@@ -42,13 +43,13 @@ password_done_configuration = {
 }
 
 urlpatterns = [
-    url(r'^' + BASE_URL + 'password-reset/$', auth_views.PasswordChangeView, password_reset_configuration, name='password_reset'),
-    url(r'^' + BASE_URL + 'password-reset/done/$', auth_views.PasswordChangeView, name='password_reset_done'),
-    url(r'^' + BASE_URL + 'password-reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.PasswordResetConfirmView, password_done_configuration, name='password_reset_confirm'),
-    url(r'^' + BASE_URL + 'password-reset/completed/$', auth_views.PasswordResetCompleteView, name='password_reset_complete'),
+    url(r'^' + BASE_URL + 'password-reset/$', auth_views.PasswordResetView.as_view(), password_reset_configuration, name='password_reset'),
+    url(r'^' + BASE_URL + 'password-reset/done/$', auth_views.PasswordChangeView.as_view(), name='password_reset_done'),
+    url(r'^' + BASE_URL + 'password-reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.PasswordResetConfirmView.as_view(), password_done_configuration, name='password_reset_confirm'),
+    url(r'^' + BASE_URL + 'password-reset/completed/$', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     url(r'^' + BASE_URL + 'admin/', admin.site.urls),
     url(r'^' + BASE_URL + 'login/$', auth_views.LoginView.as_view(), login_configuration, name='login'),
-    url(r'^' + BASE_URL + 'logout/$', auth_views.LogoutView.as_view(), logout_configuration, name='logout'),
+    url(r'^' + BASE_URL + 'logout/$', logout_view, name='logout'),
     url(r'^' + BASE_URL + 'register/$', UserRegistrationView.as_view(), name='user_registration'),
     url(r'^' + BASE_URL + 'account/$', UserUpdateView.as_view(), name='user_account'),
     url(r'^' + BASE_URL + 'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
@@ -56,7 +57,7 @@ urlpatterns = [
     url(BASE_URL, include('dataloaderinterface.urls')),
     url(BASE_URL, include('dataloaderservices.urls')),
     url(BASE_URL, include('timeseries_visualization.urls'))
-]
+] + static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 # if settings.DEBUG:
 #     import debug_toolbar

@@ -1,3 +1,6 @@
+var _chart
+var _axes
+
 function initChart(target_element) {
     _chart = createChart(target_element);
     _axes = [-999, -999, -999, -999, -999, -999];
@@ -5,15 +8,19 @@ function initChart(target_element) {
 
 
 function createChart(renderTo) {
-     chart = new Highcharts.chart(renderTo, {
+    return new Highcharts.chart(renderTo, {
         chart: {
             plotBorderColor: '#CCC',
             plotBorderWidth: 2,
             type: 'line',
-            zoomType: 'x',
-            height:700,
+            zoomType: 'xy',
             spacingLeft:20,
             spacingRight:20,
+            panning: {
+                enabled: true,
+                type: 'xy'
+            },
+            panKey: 'shift',
         },
         credits: {
             enabled: false
@@ -22,26 +29,23 @@ function createChart(renderTo) {
             text: ''
         },
         subtitle: {
-            text: 'Click and drag in the plot area to zoom in'
+            text: 'Click and drag in the plot area to zoom in, hold "shift" to pan'
         },
         xAxis: {
             type: 'datetime',
-            //tickInterval: 30,
-            //tickWidth: 1,
             dateTimeLabelFormats: {
-                day: "%m/%d/%y",
-                month: "%b-%y"
+                year: '%Y',
+                month: "%m/%d/%Y",
+                week: "%m/%d/%Y",
+                day: "%m/%d/%Y",
+                hour: "%m/%d/%Y %k",
+                minute: "%m/%d/%Y %k:%M",
+                second: "%m/%d/%Y %k:%M:%s"
             },
             labels: {
                 style: {
                     fontSize: '14px'
-                }
-                /*
-                formatter: function () {
-                    var dateparts = this.value.split('T')
-                    return (dateparts[0])
-                }
-                */
+                },
             },
             title: {
                 text: 'Monitoring Date (local time of sensor)',
@@ -65,6 +69,7 @@ function createChart(renderTo) {
                     }
                 },
                 min: -1,
+                showEmpty: false,
             },
             {
                 type: 'linear',
@@ -80,6 +85,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             },
             {
@@ -95,6 +101,7 @@ function createChart(renderTo) {
                         fontSize: '13px'
                     }
                 },
+                showEmpty: false,
                 min: -1,
             },
             {
@@ -111,6 +118,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             },
             {
@@ -126,6 +134,7 @@ function createChart(renderTo) {
                         fontSize: '13px'
                     }
                 },
+                showEmpty: false,
                 min: -1,
             },
             {
@@ -142,6 +151,7 @@ function createChart(renderTo) {
                     },
                 },
                 min: -1,
+                showEmpty: false,
                 opposite: true,
             }
         ],
@@ -155,7 +165,16 @@ function createChart(renderTo) {
             borderWidth: 1,
         },
         tooltip: {
-            pointFormat: '{series.name}: <b>' + '{point.y:.1f}' + '</b>'
+            pointFormat: '{series.name}: <b>' + '{point.y:.1f}' + '</b>',
+            dateTimeLabelFormats: {
+                year: '%Y',
+                month: "%m/%d/%Y",
+                week: "%m/%d/%Y",
+                day: "%m/%d/%Y",
+                hour: "%m/%d/%Y %k",
+                minute: "%m/%d/%Y %k:%M",
+                second: "%m/%d/%Y %k:%M:%s"
+            },
         },
         plotOptions: {
         },
@@ -164,45 +183,12 @@ function createChart(renderTo) {
         },
         series: []
     });
-    return chart;
 }
 
-function addYAxis(align="left") {
-    axis_count = _chart.yAxis.length;
-    axis_buffer = .5 * axis_count % 2;
-    
-    opposite = false;
-    left = -axis_buffer;
-    right = 0;
-    if (align === "right") {
-        opposite = true;
-        left = -axis_buffer;
-        right = 0;
-    }
-    axis = _chart.addAxis({
-        type: 'linear',
-        title: {
-            text: '',
-            style: {
-                fontSize: '15px'
-            }
-        },
-        labels: {
-            align: align,
-            style: {
-                fontSize: '13px'
-            }
-        },
-        min: -1,
-        opposite: opposite,
-    });
-    _chart.redraw();
-}
+function addSeries(chart, yAxis, axis_title, series_name, x, y) {
+    let data = x.map((e,i) => [e,y[i]]);
 
-function addSeries(yAxis, axis_title, series_name, x, y) {
-    data = x.map((e,i) => [e,y[i]]);
-
-    series = _chart.addSeries({
+    let series = chart.addSeries({
         type:'line',
         data:data,
         yAxis: yAxis,
@@ -210,18 +196,16 @@ function addSeries(yAxis, axis_title, series_name, x, y) {
         name: series_name,
         gapSize: 1000,
     });
-    series_color = series.color;
+    let series_color = series.color;
 
-    axis = _chart.yAxis[yAxis]
+    let axis = chart.yAxis[yAxis]
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.setTitle({'text':axis_title, 'style':{'color':series_color}});
     axis.update({'ColorString':series_color});
-    extremes = axis.getExtremes();
-    axis.setExtremes(extremes.dataMin,extremes.dataMax);
 }
 
-function removeSeries(yAxis) {
-    axis = _chart.yAxis[yAxis];
+function removeSeries(chart, yAxis) {
+    let axis = chart.yAxis[yAxis];
     axis.series[0].remove();
     axis.setTitle({text:''})
     axis.setExtremes();

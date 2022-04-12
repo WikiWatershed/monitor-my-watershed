@@ -219,8 +219,9 @@ line.tick {
 
 #graphArea {
     display: inline-block;
-    height: 100%;
+    height: calc(100vh - 83px);
     width: 100%;
+    overflow-y: scroll;
 }
 
 #graphContainer {
@@ -229,6 +230,7 @@ line.tick {
     width: calc(100% - 307px);
     float: left;
     padding-top: 5px;
+    height: 100%;
 }
 
 #graphContainer .label {
@@ -238,6 +240,7 @@ line.tick {
 
 #panel-right ul li {
     padding: 3px 15px;
+    height:100%
 }
 
 #panel-right {
@@ -246,11 +249,13 @@ line.tick {
     width: 307px;
     float: right;
     border-left: 1px solid #aaa;
+    height:100%;
 }
 
 #panel-right-container {
     overflow-x: hidden;
     padding-bottom: 0;
+    height: 100%;
 }
 
 #panel-right .panel {
@@ -275,6 +280,7 @@ line.tick {
 .panel-content {
     padding: 10px;
     height: 100%;
+    width: 100%;
     display: inline-block;
 }
 

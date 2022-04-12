@@ -45,14 +45,9 @@ from sqlalchemy.sql import text
 import psycopg2
 from django.conf import settings
 
-_dbsettings = settings.DATABASES['odm2']
+_dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
-_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
-
-_dbsettings_loader = settings.DATABASES['default']
-_connection_str_loader = f"postgresql://{_dbsettings_loader['USER']}:{_dbsettings_loader['PASSWORD']}@{_dbsettings_loader['HOST']}:{_dbsettings_loader['PORT']}/{_dbsettings_loader['NAME']}"
-_db_engine_loader = sqlalchemy.create_engine(_connection_str_loader, pool_size=10)
-
+_db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10, pool_recycle=1800)
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
@@ -696,8 +691,8 @@ def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[st
 
 #dataloader utility function
 def get_site_sensor(resultid:str) -> Union[Dict[str, Any],None]:
-    with _db_engine_loader.connect() as connection:
-        query = text('SELECT * FROM dataloaderinterface_sitesensor ' \
+    with _db_engine.connect() as connection:
+        query = text('SELECT * FROM public.dataloaderinterface_sitesensor ' \
             'WHERE "ResultID"=:resultid;'
             )
         df = pd.read_sql(query, connection, params={'resultid':resultid})
@@ -705,8 +700,8 @@ def get_site_sensor(resultid:str) -> Union[Dict[str, Any],None]:
 
 #dataloader utility function
 def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt) -> None:
-    with _db_engine_loader.connect() as connection:
-        query = text('UPDATE dataloaderinterface_sensormeasurement ' \
+    with _db_engine.connect() as connection:
+        query = text('UPDATE public.dataloaderinterface_sensormeasurement ' \
             "SET value_datetime=:datetime, " \
             "value_datetime_utc_offset = :utc_offset, " \
             'data_value = :data_value ' \
@@ -737,8 +732,8 @@ def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt) -> None:
 
 #dataloader utility function
 def set_deployment_date(sample_feature_id:int, date_time:datetime) -> None:
-    with _db_engine_loader.connect() as connection:
-        query = text('UPDATE dataloaderinterface_siteregistration '\
+    with _db_engine.connect() as connection:
+        query = text('UPDATE public.dataloaderinterface_siteregistration '\
             'SET "DeploymentDate"=:date_time '\
             'WHERE "DeploymentDate" IS NULL AND ' \
             '"SamplingFeatureID"=:sample_feature_id'                )

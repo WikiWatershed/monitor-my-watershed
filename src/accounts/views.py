@@ -85,3 +85,12 @@ class UserRegistrationView(CreateView):
             login(request, form.instance)
 
         return response
+
+def logout_view(request):
+     # use django to log user out, and render a custom logout page to fix issue #558
+     from django.contrib.auth import logout
+     logout(request)
+     return render (
+        request,
+        'registration/logout.html'
+    )
