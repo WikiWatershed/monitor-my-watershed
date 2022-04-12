@@ -123,7 +123,7 @@ function updatePlotDateRange(min, max) {
 	_chart.xAxis[0].setExtremes();
 }
 
-function changeTimeSeries(result_id, checked) {
+async function changeTimeSeries(result_id, checked) {
 	let $plotted = $('#plottedSeries');
 	let $notplotted = $('#plottableSeries');
 	let $panel = $(`#series-panel_${result_id}`)
@@ -147,8 +147,9 @@ function changeTimeSeries(result_id, checked) {
 			$input.prop('disabled', false);
 		}
 		else {
-			getTimeseriesData(result_id);
 			$input.prop('disabled', false);
+			let timeseries = await TimeSeries.build(result_id, min_date, max_date);
+			_resultsTimeSeries[result_id] = timeseries;	
 		} 
 	}
 	if (!checked) { 
