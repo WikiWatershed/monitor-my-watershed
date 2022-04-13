@@ -11,7 +11,7 @@ $(function () {
 	//default to last year for xaxis
 	maxDate = new Date(Date.now());
 	minDate = new Date(Date.now());
-	minDate.setFullYear(minDate.getFullYear() - 1);
+	minDate.setUTCMonth(minDate.getUTCMonth() - 1);
 	updatePlotDateRange(minDate, maxDate);
 
 	if (_samplingfeaturecode !== undefined) {

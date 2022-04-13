@@ -67,6 +67,7 @@ class TimeSeries {
 
     async loadData(startDate) {
         if (this.startDate < startDate) {return; }
+        if (startDate == null) {startDate = new Date('1900-01-01');};
         let requiredStart = startDate;
         let requiredEnd = this.startDate;
         await this.#getData(requiredStart, requiredEnd);
