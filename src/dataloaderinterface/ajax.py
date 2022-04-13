@@ -22,7 +22,8 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 	interval = int(request_data['interval']) if 'interval' in request_data.keys() else None
 	start_date = datetime.datetime.fromisoformat(request_data['start_date'].rstrip('Z')) if 'start_date' in request_data.keys() else None
 	end_date = datetime.datetime.fromisoformat(request_data['end_date'].rstrip('Z')) if 'end_date' in request_data.keys() else None
-	
+	orient = request_data['orient'] if 'orient' in request_data.keys() else 'columns'
+
 	with Session() as session:
 		filter_args = [TimeSeriesResultValues.resultid == resultid]
 		query = session.query(TimeSeriesResultValues.valueid, 
@@ -45,7 +46,7 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 		df = pd.read_sql(query.statement, session.bind)
 		df['valuedatetime'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
 		
-		return df.to_json(orient='columns', default_handler=str)
+		return df.to_json(orient=orient, default_handler=str)
 
 def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 	sampling_feature_code = str(request_data['sampling_feature_code'])
