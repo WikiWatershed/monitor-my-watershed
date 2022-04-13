@@ -36,7 +36,7 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 					- datetime.timedelta(days=interval)).\
 				filter(TimeSeriesResultValues.resultid == resultid).scalar_subquery()
 			filter_args.append(TimeSeriesResultValues.valuedatetime >= subquery)
-			query.filter(*filter_args).\
+			query = query.filter(*filter_args).\
 				order_by(TimeSeriesResultValues.valuedatetime.asc())
 		elif start_date is not None and end_date is not None:
 			query = query.filter(TimeSeriesResultValues.valuedatetime >= start_date) \
