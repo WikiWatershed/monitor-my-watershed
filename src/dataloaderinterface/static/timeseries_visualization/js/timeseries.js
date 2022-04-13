@@ -1,17 +1,34 @@
 class TimeSeries {
 
-	constructor(resultId, startDate, endDate) {
+	constructor(resultId, startDate, endDate, metadata) {
 		this.resultId = resultId;
 		this.startDate = startDate;
 		this.endDate = endDate;
+        this.metadata = metadata;
         this.dates = [];
         this.values = [];
 	}
 
-    static async build(resultId, startDate, endDate) {
-        let instance = new TimeSeries(resultId, startDate, endDate);
+    static async build(resultId, startDate, endDate, metadata) {
+        let instance = new TimeSeries(resultId, startDate, endDate, metadata);
         await instance.#getData(startDate, endDate);
         return instance;
+    }
+
+    zlocationText() {
+        let zlocation_text = ''
+	    if (this.metadata.zlocation !== undefined && this.metadata.zlocation !== null) {
+		    zlocation_text = `: ${this.metadata.zlocation} ${this.metadata.zlocationunits}`
+        }
+        return zlocation_text;
+    }
+
+    axisLabel() {
+        let zlocationText = this.zlocationText();
+        let axisTitle = `[${this.metadata.samplingfeaturecode} ` +
+            `${this.metadata.sampledmediumcv} ${zlocationText}] ` +
+			`${this.metadata.variablecode} (${this.metadata.unitsabbreviation})`;
+        return axisTitle
     }
 
 	async #getData(startDate, endDate) {
@@ -48,13 +65,11 @@ class TimeSeries {
         return;
     }
 
-
-
-    getAdditionData(startDate) {
-        if (startDate <= this.startDate) {return;}
+    async loadData(startDate) {
+        if (this.startDate < startDate) {return; }
         let requiredStart = startDate;
         let requiredEnd = this.startDate;
-        this.#getData(requiredStart, requiredEnd);
+        await this.#getData(requiredStart, requiredEnd);
     }
 
 }
