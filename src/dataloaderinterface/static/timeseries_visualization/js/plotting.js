@@ -185,7 +185,7 @@ function createChart(renderTo) {
     });
 }
 
-function addSeries(chart, yAxis, axis_title, series_name, x, y) {
+function addSeries(chart, yAxis, axis_title, x, y) {
     let data = x.map((e,i) => [e,y[i]]);
 
     let series = chart.addSeries({
@@ -193,7 +193,7 @@ function addSeries(chart, yAxis, axis_title, series_name, x, y) {
         data:data,
         yAxis: yAxis,
         connectNulls:false,
-        name: series_name,
+        name: axis_title,
         gapSize: 1000,
     });
     let series_color = series.color;
@@ -209,4 +209,11 @@ function removeSeries(chart, yAxis) {
     axis.series[0].remove();
     axis.setTitle({text:''})
     axis.setExtremes();
+}
+
+function updateSeries(chart, yAxis, x, y) {
+    let axis = chart.yAxis[yAxis];
+    let series = axis.series[0];
+    let data = x.map((e,i) => [e,y[i]]);
+    series.setData(data);
 }

@@ -1,18 +1,18 @@
 var _resultMetadata = {};
 var _resultsTimeSeries = {};
 
-var min_date;
-var max_date;
+var minDate;
+var maxDate;
 
 var _init = true;
 
 $(function () {
 	initChart('cht_ts');
 	//default to last year for xaxis
-	max_date = new Date(Date.now());
-	min_date = new Date(Date.now());
-	min_date.setFullYear(min_date.getFullYear() - 1);
-	updatePlotDateRange(min_date, max_date);
+	maxDate = new Date(Date.now());
+	minDate = new Date(Date.now());
+	minDate.setUTCMonth(minDate.getUTCMonth() - 1);
+	updatePlotDateRange(minDate, maxDate);
 
 	if (_samplingfeaturecode !== undefined) {
 		getSamplingFeatureMetadata(_samplingfeaturecode);
@@ -33,38 +33,38 @@ $(function () {
 
 	$('#btnSetPlotOptions').on('click', function() {
 		let min = $('#dpd1').val();
-		min_date = null;
-		if (min !== '') {min_date = new Date(min);}
+		minDate = null;
+		if (min !== '') {minDate = new Date(min);}
 		let max = $('#dpd2').val();
-		max_date = null;
-		if (max !== '') {max_date = new Date(max);}
-		updatePlotDateRange(min_date, max_date);
+		maxDate = null;
+		if (max !== '') {maxDate = new Date(max);}
+		updatePlotDateRange(minDate, maxDate);
 	});
 
 	$('#btnLastYear').on('click', function() {
-		max_date = new Date(Date.now());
-		min_date = new Date(Date.now());
-		min_date.setFullYear(min_date.getFullYear() - 1);
-		updatePlotDateRange(min_date, max_date);
+		maxDate = new Date(Date.now());
+		minDate = new Date(Date.now());
+		minDate.setFullYear(minDate.getFullYear() - 1);
+		updatePlotDateRange(minDate, maxDate);
 	});
 
 	$('#btnLastMonth').on('click', function() {
-		max_date = new Date(Date.now());
-		min_date = new Date(Date.now());
-		min_date.setMonth(min_date.getMonth() - 1);
-		updatePlotDateRange(min_date, max_date);
+		maxDate = new Date(Date.now());
+		minDate = new Date(Date.now());
+		minDate.setMonth(minDate.getMonth() - 1);
+		updatePlotDateRange(minDate, maxDate);
 	})
 
 	$('#btnAll').on('click', function() {
-		min_date = null;
-		max_date = null;
-		updatePlotDateRange(min_date, max_date);
+		minDate = null;
+		maxDate = null;
+		updatePlotDateRange(minDate, maxDate);
 	});
 
 	$('#sites-filter').on('change', function() {
-		let filter_text = $('#sites-filter').val().toLowerCase();
+		let filterText = $('#sites-filter').val().toLowerCase();
 		$('#site-select option').each(function(index, element) {
-			if (element.innerText.toLowerCase().includes(filter_text)) {
+			if (element.innerText.toLowerCase().includes(filterText)) {
 				$(element).show();
 			}
 			else {
@@ -74,10 +74,10 @@ $(function () {
 	});
 
 	$('#series-filter').on('change', function() {
-		let filter_text = $('#sites-filter').val().toLowerCase();
+		let filterText = $('#sites-filter').val().toLowerCase();
 		let $series = $('#plottableSeries')
 		$series.find('.series-panel').each(function(index, element) {
-			if (element.innerText.toLowerCase().includes(filter_text)) {
+			if (element.innerText.toLowerCase().includes(filterText)) {
 				$(element).show();
 			}
 			else {
@@ -119,14 +119,29 @@ function updatePlotDateRange(min, max) {
 		$('#dpd2').val(dateToString(max));
 		max = max.getTime() + 86399; //select end of day as end point
 	}	
+	getAdditionalPlotData(new Date(min));
 	_chart.xAxis[0].update({'min':min, 'max':max}); 
 	_chart.xAxis[0].setExtremes();
 }
 
-function changeTimeSeries(result_id, checked) {
+function getAdditionalPlotData(startDate) {
+	for(let i=0; i<_axes.length; i++) {
+		let resultId = _axes[i]
+		if (resultId == -999) {continue;}
+		let timeseries = _resultsTimeSeries[resultId];
+		loadDataAndUpdateSeries(i, startDate, timeseries)
+	}
+}
+
+async function loadDataAndUpdateSeries(index, startDate, timeseries) {
+	await timeseries.loadData(startDate);
+	updateSeries(_chart, index, timeseries.dates, timeseries.values);
+}
+
+async function changeTimeSeries(resultId, checked) {
 	let $plotted = $('#plottedSeries');
 	let $notplotted = $('#plottableSeries');
-	let $panel = $(`#series-panel_${result_id}`)
+	let $panel = $(`#series-panel_${resultId}`)
 	let $input = $panel.find('input')
 	if ($plotted.children().length == 6 && checked) {
 		$($input).prop("checked",false);
@@ -142,17 +157,22 @@ function changeTimeSeries(result_id, checked) {
 	if (checked) {
 		$panel.remove();
 		$plotted.append($panel);
-		if (result_id in _resultsTimeSeries) {
-			plotSeries(_resultsTimeSeries[result_id], result_id)
+		if (resultId in _resultsTimeSeries) {
+			let timeseries = _resultsTimeSeries[resultId];
+			timeseries.loadData(minDate)
+			plotSeries(timeseries.resultId, timeseries.axisLabel(), timeseries.dates, timeseries.values)
 			$input.prop('disabled', false);
 		}
 		else {
-			getTimeseriesData(result_id);
+			let metadata = _resultMetadata[resultId]
+			let timeseries = await TimeSeries.build(resultId, minDate, maxDate, metadata);
+			_resultsTimeSeries[resultId] = timeseries;	
+			plotSeries(timeseries.resultId, timeseries.axisLabel(), timeseries.dates, timeseries.values)
 			$input.prop('disabled', false);
 		} 
 	}
 	if (!checked) { 
-		unPlotSeries(result_id);
+		unPlotSeries(resultId);
 		$panel.remove();
 		$notplotted.append($panel);
 		$input.prop('disabled', false);
@@ -221,33 +241,11 @@ function unPlotSeries(resultid) {
 	}
 }
 
-function getTimeseriesDataCallback(response_data, request_data) {
-	let response_json = JSON.parse(response_data);
-	let resultid = request_data.resultid;	
-	_resultsTimeSeries[resultid] = {
-		'x':Object.values(response_json.valuedatetime), 
-		'y':Object.values(response_json.datavalue)
-	};
-	plotSeries(_resultsTimeSeries[resultid],resultid);
-}
-
-function plotSeries(timeseriesData, resultid) {
-	let x = timeseriesData['x'];
-	let y = timeseriesData['y'];
-	let metadata = _resultMetadata[resultid]
+function plotSeries(resultId, axisTitle, x, y) {
 	let axis = getEmptyAxis()
 	if (axis >= 0) {
-		_axes[axis] = resultid;
-
-		let zlocation_text = ''
-		if (metadata.zlocation !== undefined && metadata.zlocation !== null) {
-			zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
-		}
-
-		let axis_title =  `[${metadata.samplingfeaturecode} ${metadata.sampledmediumcv} ${zlocation_text}] ` +
-			`${metadata.variablecode} (${metadata.unitsabbreviation})`;
-		
-		addSeries(_chart, axis, axis_title, axis_title, x, y);
+		_axes[axis] = resultId;
+		addSeries(_chart, axis, axisTitle, x, y);
 	}
 }
 
@@ -281,16 +279,6 @@ function getSamplingFeatureMetadata(sampling_feature_code) {
 		sampling_feature_code: sampling_feature_code
 	}
 	ajax(request_data, initAddSeries);
-}
-
-function getTimeseriesData(resultid, startdate, enddate) {
-	let request_data = {
-		method: 'get_result_timeseries',
-		resultid: resultid,
-		startdate: startdate,
-		enddate: enddate
-	}
-	ajax(request_data, getTimeseriesDataCallback);
 }
 
 function populateSamplingFeatureSelect(response) {
