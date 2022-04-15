@@ -33,6 +33,7 @@ function createChart(renderTo) {
         },
         xAxis: {
             type: 'datetime',
+            /*
             dateTimeLabelFormats: {
                 year: '%Y',
                 month: "%m/%d/%Y",
@@ -42,6 +43,7 @@ function createChart(renderTo) {
                 minute: "%m/%d/%Y %k:%M",
                 second: "%m/%d/%Y %k:%M:%s"
             },
+            */
             labels: {
                 style: {
                     fontSize: '14px'
