@@ -30,6 +30,10 @@ class SiteTypeSelect(forms.Select):
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super(SiteTypeSelect, self).create_option(name, value, label, selected, index, subindex, attrs)
+        #ModelChoiceIteratorValue not hashable work around
+        #TECHDEPT - PRT flagging for likely place code will break in future updates of django 
+        if isinstance(value, forms.models.ModelChoiceIteratorValue):
+            value = value.value
         option['attrs']['title'] = self.site_types[value] if value in self.site_types else ''
         return option
 
