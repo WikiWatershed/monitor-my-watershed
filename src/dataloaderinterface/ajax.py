@@ -20,9 +20,12 @@ import datetime
 def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 	resultid = int(request_data['resultid'])
 	interval = int(request_data['interval']) if 'interval' in request_data.keys() else None
-	start_date = datetime.datetime.fromisoformat(request_data['start_date'].rstrip('Z')) if 'start_date' in request_data.keys() else None
-	end_date = datetime.datetime.fromisoformat(request_data['end_date'].rstrip('Z')) if 'end_date' in request_data.keys() else None
 	orient = request_data['orient'] if 'orient' in request_data.keys() else 'columns'
+	start_date = request_data['start_date'] if 'start_date' in request_data.keys() else None
+	if start_date: start_date = datetime.datetime.fromisoformat(start_date.rstrip('Z')) 
+	end_date = request_data['end_date'] if 'end_date' in request_data.keys() else None
+	if end_date: end_date = datetime.datetime.fromisoformat(end_date.rstrip('Z')) 
+
 
 	with Session() as session:
 		filter_args = [TimeSeriesResultValues.resultid == resultid]
