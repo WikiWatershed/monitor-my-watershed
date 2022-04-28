@@ -174,7 +174,7 @@ function drawSparklinePlot(seriesInfo, seriesData) {
 }
 
 function getTimeSeriesData(sensorInfo) {
-    request_data = {method:'get_result_timeseries_recent', 'resultid': sensorInfo['resultId']}
+    request_data = {method:'get_result_timeseries', 'resultid': sensorInfo['resultId'], 'interval':3, 'orient':'records'}
     $.ajax({
         url: '../../dataloader/ajax/',
         data: {request_data: JSON.stringify(request_data)},

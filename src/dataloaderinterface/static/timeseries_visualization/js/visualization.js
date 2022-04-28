@@ -1,21 +1,18 @@
-var _chart;
-
-var _axes = [];
 var _resultMetadata = {};
 var _resultsTimeSeries = {};
 
-var min_date;
-var max_date;
+var minDate;
+var maxDate;
 
 var _init = true;
 
 $(function () {
 	initChart('cht_ts');
 	//default to last year for xaxis
-	max_date = new Date(Date.now());
-	min_date = new Date(Date.now());
-	min_date.setFullYear(min_date.getFullYear() - 1);
-	updatePlotDateRange(min_date, max_date);
+	maxDate = new Date(Date.now());
+	minDate = new Date(Date.now());
+	minDate.setUTCMonth(minDate.getUTCMonth() - 1);
+	updatePlotDateRange(minDate, maxDate);
 
 	if (_samplingfeaturecode !== undefined) {
 		getSamplingFeatureMetadata(_samplingfeaturecode);
@@ -24,51 +21,63 @@ $(function () {
 	ajax({method:'get_sampling_features'}, populateSamplingFeatureSelect);
 
 	$(document).on('click', '.plottable-series', function() {
-		resultid = $(this).attr('id').split("_")[1];
-		checked = $(this).prop('checked');
+		let resultid = $(this).attr('id').split("_")[1];
+		let checked = $(this).prop('checked');
 		changeTimeSeries(resultid, checked);
 	});
 
 	$('#load-site').on('click', function() {
-		samplingfeaturecode = $('#site-select').find(':selected').prop('id');
+		let samplingfeaturecode = $('#site-select').find(':selected').prop('id');
 		getSamplingFeatureMetadata(samplingfeaturecode);
 	});
 
 	$('#btnSetPlotOptions').on('click', function() {
-		min = $('#dpd1').val();
-		min_date = null;
-		if (min !== '') {min_date = new Date(min);}
-		max = $('#dpd2').val();
-		max_date = null;
-		if (max !== '') {max_date = new Date(max);}
-		updatePlotDateRange(min_date, max_date);
+		let min = $('#dpd1').val();
+		minDate = null;
+		if (min !== '') {minDate = new Date(min);}
+		let max = $('#dpd2').val();
+		maxDate = null;
+		if (max !== '') {maxDate = new Date(max);}
+		updatePlotDateRange(minDate, maxDate);
 	});
 
 	$('#btnLastYear').on('click', function() {
-		max_date = new Date(Date.now());
-		min_date = new Date(Date.now());
-		min_date.setFullYear(min_date.getFullYear() - 1);
-		updatePlotDateRange(min_date, max_date);
+		maxDate = new Date(Date.now());
+		minDate = new Date(Date.now());
+		minDate.setFullYear(minDate.getFullYear() - 1);
+		updatePlotDateRange(minDate, maxDate);
 	});
 
 	$('#btnLastMonth').on('click', function() {
-		max_date = new Date(Date.now());
-		min_date = new Date(Date.now());
-		min_date.setMonth(min_date.getMonth() - 1);
-		updatePlotDateRange(min_date, max_date);
+		maxDate = new Date(Date.now());
+		minDate = new Date(Date.now());
+		minDate.setMonth(minDate.getMonth() - 1);
+		updatePlotDateRange(minDate, maxDate);
 	})
 
 	$('#btnAll').on('click', function() {
-		min_date = null;
-		max_date = null;
-		updatePlotDateRange(min_date, max_date);
+		minDate = null;
+		maxDate = null;
+		updatePlotDateRange(minDate, maxDate);
+	});
+
+	$('#sites-filter').on('change', function() {
+		let filterText = $('#sites-filter').val().toLowerCase();
+		$('#site-select option').each(function(index, element) {
+			if (element.innerText.toLowerCase().includes(filterText)) {
+				$(element).show();
+			}
+			else {
+				$(element).hide();
+			}
+		});
 	});
 
 	$('#series-filter').on('change', function() {
-		filter_text = $('#series-filter').val().toLowerCase();
-		$series = $('#plottableSeries')
+		let filterText = $('#sites-filter').val().toLowerCase();
+		let $series = $('#plottableSeries')
 		$series.find('.series-panel').each(function(index, element) {
-			if (element.innerText.toLowerCase().includes(filter_text)) {
+			if (element.innerText.toLowerCase().includes(filterText)) {
 				$(element).show();
 			}
 			else {
@@ -91,9 +100,9 @@ function displayMessage(title, msg) {
 
 function dateToString(date) {
 	if (date !== null && date !== undefined) {
-		year = date.getUTCFullYear();
-		month = date.getUTCMonth() + 1;
-		day =  date.getUTCDate();
+		let year = date.getUTCFullYear();
+		let month = ("0" + (date.getUTCMonth() + 1)).slice(-2);
+		let day = ("0" + date.getUTCDate()).slice(-2);
 		return `${year}-${month}-${day}`;
 	}	
 	return '';
@@ -110,16 +119,31 @@ function updatePlotDateRange(min, max) {
 		$('#dpd2').val(dateToString(max));
 		max = max.getTime() + 86399; //select end of day as end point
 	}	
+	getAdditionalPlotData(new Date(min));
 	_chart.xAxis[0].update({'min':min, 'max':max}); 
 	_chart.xAxis[0].setExtremes();
 }
 
-function changeTimeSeries(result_id, checked) {
-	$plotted = $('#plottedSeries');
-	$notplotted = $('#plottableSeries');
-	$panel = $(`#series-panel_${result_id}`)
+function getAdditionalPlotData(startDate) {
+	for(let i=0; i<_axes.length; i++) {
+		let resultId = _axes[i]
+		if (resultId == -999) {continue;}
+		let timeseries = _resultsTimeSeries[resultId];
+		loadDataAndUpdateSeries(i, startDate, timeseries)
+	}
+}
+
+async function loadDataAndUpdateSeries(index, startDate, timeseries) {
+	await timeseries.loadData(startDate);
+	updateSeries(_chart, index, timeseries.dates, timeseries.values);
+}
+
+async function changeTimeSeries(resultId, checked) {
+	let $plotted = $('#plottedSeries');
+	let $notplotted = $('#plottableSeries');
+	let $panel = $(`#series-panel_${resultId}`)
+	let $input = $panel.find('input')
 	if ($plotted.children().length == 6 && checked) {
-		$input = $panel.find('input')
 		$($input).prop("checked",false);
 		displayMessage("Warning: Too Many Time Series Selected", 
 			"A maximum of six(6) time series can be plotted at a single time. Please " +
@@ -129,26 +153,35 @@ function changeTimeSeries(result_id, checked) {
 		return;
 	}
 
+	$input.prop('disabled', true);
 	if (checked) {
 		$panel.remove();
 		$plotted.append($panel);
-		if (result_id in _resultsTimeSeries) {
-			plotSeries(_resultsTimeSeries[result_id], result_id)
+		if (resultId in _resultsTimeSeries) {
+			let timeseries = _resultsTimeSeries[resultId];
+			timeseries.loadData(minDate)
+			plotSeries(timeseries.resultId, timeseries.axisLabel(), timeseries.dates, timeseries.values)
+			$input.prop('disabled', false);
 		}
 		else {
-			getTimeseriesData(result_id);
+			let metadata = _resultMetadata[resultId]
+			let timeseries = await TimeSeries.build(resultId, minDate, maxDate, metadata);
+			_resultsTimeSeries[resultId] = timeseries;	
+			plotSeries(timeseries.resultId, timeseries.axisLabel(), timeseries.dates, timeseries.values)
+			$input.prop('disabled', false);
 		} 
 	}
 	if (!checked) { 
-		unPlotSeries(result_id);
+		unPlotSeries(resultId);
 		$panel.remove();
 		$notplotted.append($panel);
+		$input.prop('disabled', false);
 	}
 }
 
 function initAddSeries(response) {
-	response_obj = JSON.parse(response);
-	for ([index, metadata] of Object.entries(response_obj)) {
+	let response_obj = JSON.parse(response);
+	for (let [index, metadata] of Object.entries(response_obj)) {
 		_resultMetadata[metadata.resultid] = metadata
 	}	
 	populateSeriesBlock();
@@ -162,21 +195,21 @@ function initAddSeries(response) {
 }
 
 function populateSeriesBlock(){
-	$block = $('#plottableSeries')
+	let $block = $('#plottableSeries')
 	$block.empty();
-	for ([key, metadata] of Object.entries(_resultMetadata)) {
-		$panel = makeSeriesPanel(metadata);
+	for (let [key, metadata] of Object.entries(_resultMetadata)) {
+		let $panel = makeSeriesPanel(metadata);
 		$block.append($panel);
 	}	
 }
 
 function makeSeriesPanel(metadata) {
-	zlocation_text = ''
+	let zlocation_text = ''
 	if (metadata.zlocation !== undefined && metadata.zlocation !== null) {
 		zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
 	}
 
-	$panel = $(`<div class="series-panel" id="series-panel_${metadata.resultid}">`)
+	let $panel = $(`<div class="series-panel" id="series-panel_${metadata.resultid}">`)
 	$panel.append(`<input id="plot-series-check_${metadata.resultid}"` + 
 		`class="plottable-series" type="checkbox" </input>`);
 	$panel.append(`<span>` +
@@ -191,7 +224,7 @@ function makeSeriesPanel(metadata) {
 }
 
 function getEmptyAxis() {
-	for(i=0; i<_axes.length; i++) {
+	for(let i=0; i<_axes.length; i++) {
 		if (_axes[i] == -999 ) {
 			return i;
 		};
@@ -200,41 +233,19 @@ function getEmptyAxis() {
 }
 
 function unPlotSeries(resultid) {
-	for(i=0; i<_axes.length; i++) {
+	for(let i=0; i<_axes.length; i++) {
 		if (_axes[i] == resultid) {
-			removeSeries(i);
+			removeSeries(_chart, i);
 			_axes[i] = -999;
 		};
 	}
 }
 
-function getTimeseriesDataCallback(response_data) {
-	response_json = JSON.parse(response_data);
-	resultid = response_json.result_id;	
-	_resultsTimeSeries[resultid] = {
-		'x':Object.values(response_json.data.valuedatetime), 
-		'y':Object.values(response_json.data.datavalue)
-	};
-	plotSeries(_resultsTimeSeries[resultid],resultid);
-}
-
-function plotSeries(timeseriesData, resultid) {
-	x = timeseriesData['x'];
-	y = timeseriesData['y'];
-	metadata = _resultMetadata[resultid]
-	axis = getEmptyAxis()
+function plotSeries(resultId, axisTitle, x, y) {
+	let axis = getEmptyAxis()
 	if (axis >= 0) {
-		_axes[axis] = resultid;
-
-		zlocation_text = ''
-		if (metadata.zlocation !== undefined && metadata.zlocation !== null) {
-			zlocation_text = `: ${metadata.zlocation} ${metadata.zlocationunits}`
-		}
-
-		axis_title =  `[${metadata.samplingfeaturecode} ${metadata.sampledmediumcv} ${zlocation_text}] ` +
-			`${metadata.variablecode} (${metadata.unitsabbreviation})`;
-		
-		addSeries(axis, axis_title, axis_title, x, y);
+		_axes[axis] = resultId;
+		addSeries(_chart, axis, axisTitle, x, y);
 	}
 }
 
@@ -245,7 +256,7 @@ function ajax(request_data, callback_success, callback_fail, url='/dataloader/aj
         method: 'POST',
 		success: function(response) {
 			if (typeof (callback_success) !== 'undefined') {
-                callback_success(response);
+                callback_success(response, request_data);
             }
             else if (typeof (response) !== 'undefined') {
                 return response	;
@@ -253,7 +264,7 @@ function ajax(request_data, callback_success, callback_fail, url='/dataloader/aj
 		},
 		fail: function(response) {
 			if (typeof (callback_fail) !== 'undefined') {
-                callback_fail(response);
+                callback_fail(response, request_data);
             }
             else if (typeof (response) !== 'undefined') {
                 return response	;
@@ -263,39 +274,28 @@ function ajax(request_data, callback_success, callback_fail, url='/dataloader/aj
 }
 
 function getSamplingFeatureMetadata(sampling_feature_code) {
-	request_data = {
+	let request_data = {
 		method: 'get_sampling_feature_metadata',
 		sampling_feature_code: sampling_feature_code
 	}
 	ajax(request_data, initAddSeries);
 }
 
-function getTimeseriesData(resultid, startdate, enddate) {
-	request_data = {
-		method: 'get_result_timeseries',
-		resultid: resultid,
-		startdate: startdate,
-		enddate: enddate
-	}
-	ajax(request_data, getTimeseriesDataCallback);
-}
-
 function populateSamplingFeatureSelect(response) {
-	$select = $('#site-select');
+	let $select = $('#site-select');
 	$select.empty();
 
-	data = JSON.parse(response);
+	let data = JSON.parse(response);
 	
-	for ([index, samplingFeature] of Object.entries(data)) {
+	for (let [index, samplingFeature] of Object.entries(data)) {
 		var selected = ''
 		if (samplingFeature.samplingfeaturecode == _samplingfeaturecode) {
 			selected = 'selected'
 		}
-		option = `<option id="${samplingFeature.samplingfeaturecode}" ` +
+		let option = `<option id="${samplingFeature.samplingfeaturecode}" ` +
 			`${selected} >` + 
 			`(${samplingFeature.samplingfeaturecode}) ` +
 			`${samplingFeature.samplingfeaturename}</option>`;
 		$select.append(option);
 	}	
 }
-

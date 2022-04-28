@@ -15,7 +15,7 @@ from dataloader.querysets import AffiliationQuerySet, RelatedActionManager, Resu
     FeatureActionQuerySet, TimeSeriesValuesQuerySet, EquipmentModelQuerySet, OrganizationQuerySet
 from django.conf import settings
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
+from six import python_2_unicode_compatible
 
 
 # TODO: function to handle the file upload folder for file fields.
@@ -2105,7 +2105,7 @@ sql_schema_fix = 'odm2].['   # for SQL databases
 psql_schema_fix = 'odm2"."'  # for postgres databases
 clsmembers = inspect.getmembers(sys.modules[__name__], inspect.isclass)
 classes = [model for name, model in clsmembers if issubclass(model, models.Model)]
-database_manager = settings.DATABASES['odm2']['ENGINE']
+database_manager = settings.DATABASES['default']['ENGINE']
 
 for model in classes:
     if database_manager == u'sql_server.pyodbc':

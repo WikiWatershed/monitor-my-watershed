@@ -19,12 +19,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR =  os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Loads settings configuration data from settings.json file
 data = {}
 try:
-    with open(os.path.join(BASE_DIR, 'settings', 'settings.json')) as data_file:
+    with open(os.path.join(BASE_DIR, 'WebSDL','settings', 'settings.json')) as data_file:
         data = json.load(data_file)
 except IOError:
     print("You need to setup the settings data file (see instructions in base.py file.)")
@@ -45,14 +45,12 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
-    'tsa.apps.TsaConfig',
     'accounts.apps.AccountsConfig',
     'dataloader.apps.DataloaderConfig',
     'dataloaderservices.apps.DataloaderservicesConfig',
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
     'hydroshare',
     'leafpack',
-    'django_admin_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -126,6 +124,7 @@ for database in data['databases']:
         'CONN_MAX_AGE': 0,
         'TEST': database['test'] if 'test' in database else {},
     }
+DATAMODELCACHE = os.path.join(BASE_DIR, 'odm2', 'modelcache.pkl')
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -153,8 +152,6 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_L10N = True
 LOGIN_URL = '/login/'
-DATABASE_ROUTERS = ['WebSDL.db_routers.WebSDLRouter']
-
 
 # Security and SSL
 #
@@ -166,14 +163,15 @@ RECAPTCHA_KEY = data["recaptcha_secret_key"] if "recaptcha_secret_key" in data e
 RECAPTCHA_USER_KEY = data["recaptcha_user_key"] if "recaptcha_user_key" in data else ""
 RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
 
-EMAIL_SENDER = data['password_email_sender'] if 'password_email_sender' in data else '',
+EMAIL_SENDER = data['email_from'] if 'email_from' in data else '',
 NOTIFY_EMAIL = data['notify_email_sender'] if 'notify_email_sender' in data else ''
 DEFAULT_FROM_EMAIL = EMAIL_SENDER[0] if isinstance(EMAIL_SENDER, tuple) else EMAIL_SENDER
 NOTIFY_EMAIL_SENDER = NOTIFY_EMAIL[0] if isinstance(NOTIFY_EMAIL, tuple) else NOTIFY_EMAIL
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_SERVER = data['email_host'] if 'email_host' in data else '',
 EMAIL_HOST = EMAIL_SERVER[0] if isinstance(EMAIL_SERVER, tuple) else EMAIL_SERVER
-EMAIL_HOST_USER = data['email_user'] if 'email_user' in data else ''
+EMAIL_PORT = data['email_port']
+EMAIL_HOST_USER = data['email_username'] if 'email_username' in data else ''
 EMAIL_HOST_PASSWORD = data['email_password'] if 'email_password' in data else ''
 EMAIL_USE_TLS = True
 
@@ -196,5 +194,8 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
 AUTH_USER_MODEL = 'accounts.User'
+
+#Static cache busting
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False

@@ -30,7 +30,11 @@ While deploying the web application server, I recommend following the instructio
     - `conda activate ODM2DataSharingPortal`
 3. **Create a symlink so the Web App will use the settings.json file in the config repo:** Note the instructions below use the development/staging settings. You may need to point to a different file for the production deployment.
 	- `sudo ln -s /opt/ODM2DataSharingPortalConfig/django/staging.settings.json /opt/ODM2DataSharingPortal/src/WebSDL/settings/settings.json`
-4. **Set Up Gunicorn:**
+4. **Collect static files** The application now supports cache busting using the [ManifestStaticFilesStorage](https://docs.djangoproject.com/en/3.2/ref/contrib/staticfiles/#manifeststaticfilesstorage). This meant locating the static files in a seperate location on the server. Django can automatically copy the statics files and applying the correct hashing with the `collectstatic command`
+	- `cd /opt/ODM2DataSharingPortal/src`
+	- `conda activate ODM2DataSharingPortal`
+	- `python manage.py collectstatic --noinput`
+5. **Set Up Gunicorn:**
     - Gunicorn is not in the default mini conda channel, so we'll need to get it from conda forge.
         - `conda config --add channels conda-forge`
         - `conda install -c conda-forge gunicorn`
@@ -48,7 +52,7 @@ While deploying the web application server, I recommend following the instructio
         - `chmod +755 wsgi.py`
     - Now we just need to start the GUnicorn service we created
         - `sudo systemctl start gunicorn`` 
-5. **Set up nginx**
+6. **Set up nginx**
 	- Install nginx 
 	    - `sudo apt install nginx`
     - Create symlink between config repo and nginx
@@ -58,7 +62,7 @@ While deploying the web application server, I recommend following the instructio
     - If there were no errors during the test, start nginx which should make the site accessable online.
         - `sudo systemctl start nginx`
         
-6. **Set up SSL certificate**
+7. **Set up SSL certificate**
 
   - The following commands are taken verbatim from https://certbot.eff.org/lets-encrypt/ubuntufocal-nginx.html:
 

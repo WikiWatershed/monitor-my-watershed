@@ -5,24 +5,23 @@ channels:
     - defaults
 
 dependencies:
-    # For ODM2DataSharingPortal migration to AWS
-    - python =3.8.10  # May 3, 2021: final regular Py 3.8 release. https://www.python.org/downloads/release/python-3810/
-    # - django =2.2.*  # Installs 2.2.14 but lastest is 2.2.24. Use pip to install.
-                       # https://docs.djangoproject.com/en/3.2/releases
+    - python =3.9.* 
 
-    # # Other Requirements
-    # - beautifulsoup4 =4.9.3  # with python 3.8
     - coverage >=5.5
     - google-api-python-client >=2.12.0
     - hs_restclient >=1.3.7  # https://github.com/hydroshare/hs_restclient
     - markdown >=3.3.4
-    # - oauthlib >=3.1.1  # with google api
     - pandas >=1.3
     - psycopg2 >=2.9.1
-    - python-crontab  >=2.5.1
-    # - requests  # with python 3.8
-    # - six  # with python 3.8
+    - python-crontab >=2.5.1
+    - sqlalchemy >=1.4.0 
 
+    #django
+    #additional django dependencies installed with pip
+    - django ==3.2.*
+    - djangorestframework
+    - django-debug-toolbar 
+    - django-widget-tweaks
 
     # Dev tools
     - python-language-server
@@ -32,19 +31,12 @@ dependencies:
     - conda-build
     - pip
 
-    # Dependency versions not available on conda-forge
     - pip:
-        # - codegen >=1.0  # necessary? Last updated in 2012. https://pypi.org/project/codegen/
-        - django ==2.2.24
-        - django-admin-select2 #  >=1.0.1
-        - django-debug-toolbar # >=1.11.1
-        - django-discover-runner # >=1.0
-        - django-reset-migrations # >=0.3.1
-        - django-webtest # >=1.8.0
-        - django-widget-tweaks # >=1.4.1
-        - djangorestframework
-        # - patterns >=0.3  # necessary? Last updated in 2014. https://pypi.org/project/patterns/
-        # - sqlparse  # with django=2.2
-        # - waitress  # with django extensions
-        # - WebOb  # with django extensions
-        # - WebTest  # with django extensions
+        - django-admin-select2 
+        - django-discover-runner
+        - django-reset-migrations
+        - django-webtest 
+        - django-cprofile-middleware
+        #used for unicode_compatiblity 
+        #should confirm if this is still a dependency
+        - django-utils-six
