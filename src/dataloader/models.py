@@ -104,7 +104,7 @@ class ObjectRelation(models.Model):
 
 @python_2_unicode_compatible
 class ExtendedResult(models.Model):
-    result = models.OneToOneField('Result', db_column='resultid', on_delete=models.CASCADE, primary_key=True)
+    result = models.OneToOneField('Result', db_column='resultid', on_delete=models.DO_NOTHING, primary_key=True)
     spatial_reference = models.ForeignKey('SpatialReference', db_column='spatialreferenceid', on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
@@ -1997,7 +1997,7 @@ class SpectraResultValue(ResultValue, QualityControlComponent, TimeAggregationCo
 
 
 class TimeSeriesResultValue(ResultValue, QualityControlComponent, TimeAggregationComponent):
-    result = models.ForeignKey('TimeSeriesResult', related_name='values', db_column='resultid', on_delete=models.CASCADE)
+    result = models.ForeignKey('TimeSeriesResult', related_name='values', db_column='resultid', on_delete=models.DO_NOTHING)
     data_value = models.FloatField(db_column='datavalue')
     annotations = models.ManyToManyField('Annotation', related_name='annotated_time_series_values',
                                          through='TimeSeriesResultValueAnnotation')
