@@ -1,11 +1,10 @@
-from odm2 import base as _base
-import pickle as _pickle
-import odm2.models as models 
+from odm2.base import ODM2DataModels
+from django.conf import settings
+import sqlalchemy
 
-engine = _base.engine
-Session = _base.Session
+_dbsettings = settings.DATABASES['default']
+_connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
+_engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
+_cache_path = settings.DATAMODELCACHE
 
-if not _base.cached:
-	_base._model_base.prepare(engine)
-	with open(_base.cache_path, 'wb') as file:
-		_pickle.dump(_base._model_base.metadata, file)
+odm2datamodels = ODM2DataModels(_engine, _cache_path)
