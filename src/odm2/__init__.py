@@ -7,4 +7,4 @@ _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}
 _engine = sqlalchemy.create_engine(_connection_str, pool_size=10)
 _cache_path = settings.DATAMODELCACHE
 
-odm2datamodels = ODM2DataModels(_engine, _cache_path)
+odm2datamodels = ODM2DataModels(_engine, cache_path=_cache_path)
