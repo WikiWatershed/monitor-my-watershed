@@ -186,6 +186,24 @@ class LeafPackListUpdateView(LoginRequiredMixin, DetailView):
         context = super(LeafPackListUpdateView, self).get_context_data(**kwargs)
         return context
 
+class StreamwatchListUpdateView(LoginRequiredMixin, DetailView):
+    template_name = 'dataloaderinterface/manage_streamwatch.html'
+    model = SiteRegistration
+    slug_field = 'sampling_feature_code'
+    slug_url_kwarg = 'sampling_feature_code'
+
+    def dispatch(self, request, *args, **kwargs):
+        site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
+        if request.user.is_authenticated and not request.user.can_administer_site(site):
+            raise Http404
+        return super(StreamwatchListUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return SiteRegistration.objects.with_leafpacks()
+
+    def get_context_data(self, **kwargs):
+        context = super(StreamwatchListUpdateView, self).get_context_data(**kwargs)
+        return context
 
 class SiteDeleteView(LoginRequiredMixin, DeleteView):
     model = SiteRegistration

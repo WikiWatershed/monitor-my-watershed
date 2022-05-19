@@ -17,7 +17,7 @@ from django.conf.urls import url, include
 
 from dataloaderinterface.views import SitesListView, SiteDetailView, SiteRegistrationView, SensorListUpdateView, \
     HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, \
-    TermsOfUseView, DMCAView, PrivacyView, CookiePolicyView
+    StreamwatchListUpdateView, TermsOfUseView, DMCAView, PrivacyView, CookiePolicyView
 
 import dataloaderinterface.views as views
 
@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^sites/register/$', SiteRegistrationView.as_view(), name='site_registration'),
     url(r'^sites/update/(?P<sampling_feature_code>.*?)/sensors/$', SensorListUpdateView.as_view(), name='sensors'),
     url(r'^sites/update/(?P<sampling_feature_code>.*?)/leafpacks/$', LeafPackListUpdateView.as_view(), name='leafpacks'),
+    url(r'^sites/update/(?P<sampling_feature_code>.*?)/streamwatch/$', StreamwatchListUpdateView.as_view(), name='streamwatch'),
     url(r'^sites/update/(?P<sampling_feature_code>.*)/$', SiteUpdateView.as_view(), name='site_update'),
     url(r'^sites/delete/(?P<sampling_feature_code>.*)/$', SiteDeleteView.as_view(), name='site_delete'),
     url(r'^sites/(?P<sampling_feature_code>.*)/leafpack/', include(('leafpack.urls', 'leafpack'), namespace='leafpack')),

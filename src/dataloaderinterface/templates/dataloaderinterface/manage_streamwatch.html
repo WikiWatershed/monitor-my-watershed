@@ -4,7 +4,7 @@
 {% load widget_tweaks %}
 
 {% block page_title %}
-    <title>Manage Sensor Results Metadata for {{ site_registration.sampling_feature_code }}</title>
+    <title>Manage Streamwatch Experiments at {{ siteregistration.sampling_feature_code }}</title>
 {% endblock %}
 
 {% block content %}
@@ -12,284 +12,106 @@
 
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
-            <div class="page-title">Manage Sensor Results Metadata for
-                <a href="{% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
-                    {{ site_registration.sampling_feature_code }}</a>
-            </div>
+            <div class="page-title">Manage Streamwatch Experiments at  <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
+                    {{ siteregistration.sampling_feature_code }}</a></div>
             <fieldset class="form-fieldset">
+                {% csrf_token %}
                 <div class="row">
-                    <div class="col-lg-12 results-table" id="formset"
-                         data-formset-prefix="{{ results_formset.prefix }}">
-                        <br>
+                    <div class="col-12">
+                        <a id="new-streamwatch-btn"
+                           href="{% url 'leafpack:create' siteregistration.sampling_feature_code %}"
+                           class="link-button mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored">
+                            <i class="material-icons">add</i>
+                        </a>
 
-                        <span id="new-result-button" data-toggle="modal"
-                              data-target="#result-dialog"
-                              class="mdl-button mdl-js-button mdl-button--fab mdl-button--mini-fab mdl-js-ripple-effect mdl-button--colored">
-                                            <i class="material-icons">add</i>
-                                        </span>
-
-                        <div class="mdl-tooltip" data-mdl-for="new-result-button">
-                            Add New Sensor
+                        <div class="mdl-tooltip" data-mdl-for="new-streamwatch-btn">
+                            Add New Streamwatch Experiment
                         </div>
 
                         <br><br>
 
                         <div style="overflow: auto;">
-                            <table id="sensors-table"
-                                   class="no-hover mdl-textfield--full-width mdl-data-table mdl-shadow--2dp mdl-js-data-table sensors full-width">
+                            {#                                            TODO: Populate this table#}
+                            <table class="no-hover mdl-data-table mdl-js-data-table macroinvertebrate">
                                 <thead>
                                 <tr class="full-width">
-                                    <th class="mdl-data-table__cell--non-numeric">Equipment Make-Model</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Measured Variable</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Units</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Sampled Medium</th>
-                                    <th class="mdl-data-table__cell--non-numeric">
-                                        <span id="col-label-height">Height</span>
-                                        <div class="mdl-tooltip" data-mdl-for="col-label-height">
-                                            Height above(+) or below(-) surface.
-                                        </div>
-
-                                    </th>
-                                    <th class="mdl-data-table__cell--non-numeric">Notes</th>
+                                    {#                                                    <th class="mdl-data-table__cell--non-numeric">Experiment ID#}
+                                    {#                                                    </th>#}
+                                    {#                                                    <th class="mdl-data-table__cell--non-numeric">Experiment Type</th>#}
+                                    <th class="mdl-data-table__cell--non-numeric">Begin Date</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Content</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Deployment Type</th>
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
+                                    <th></th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for sensor in object.sensors.all %}
-                                    <tr class="result-form"
-                                        data-id="{{ sensor.id }}"
-                                        data-result_id="{{ sensor.result_id }}"
-                                        data-result_uuid="{{ sensor.result_uuid }}"
-                                        data-output_variable="{{ sensor.sensor_output_id }}"
-                                        data-sensor_manufacturer="{{ sensor.sensor_output.model_manufacturer }}"
-                                        data-sensor_model="{{ sensor.sensor_output.model_id }}"
-                                        data-variable="{{ sensor.sensor_output.variable_id }}"
-                                        data-unit="{{ sensor.sensor_output.unit_id }}"
-                                        data-sampled_medium="{{ sensor.sensor_output.sampled_medium }}"
-                                        data-sensor_notes="{{ sensor.sensor_notes }}"
-                                        data-height="{{ sensor.height }}">
-
-                                        <td data-field="sensor_model" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.sensor_output.model_name }}</span>
-                                        </td>
-
-                                        <td data-field="variable" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.sensor_output.variable_code }}</span>
-                                        </td>
-
-                                        <td data-field="unit" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.sensor_output.unit_name }}</span>
-                                        </td>
-
-                                        <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.sensor_output.sampled_medium }}</span>
-                                        </td>
-                                        <td data-field="height" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{% if sensor.height != None %}{{ sensor.height }} m{% endif %}</span>
-                                        </td>
-                                        <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
-                                            <span class="field-text">{{ sensor.sensor_notes }}</span>
-                                        </td>
-                                        <td data-behaviour="edit"
-                                            class="mdl-data-table__cell--non-numeric">
-                                            <button class="mdl-button mdl-button--accent"
-                                                    type="button">
-                                                <i class="material-icons center-icon">mode_edit</i>
-                                            </button>
-                                        </td>
-                                        <td data-behaviour="delete"
-                                            class="mdl-data-table__cell--non-numeric">
-                                            <button class="mdl-button" style="color: #d9534f" type="button">
-                                                <i class="material-icons center-icon">delete_forever</i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                                <tr class="no-sensors-row {% if object.sensors.count > 0 %}hidden{% endif %}">
-                                    <td colspan="7" class="text-center">No sensors have been added.</td>
+                                {% if object.leafpack_set.count > 0 %}
+                                    {% for leafpack in object.leafpack_set.all %}
+                                        <tr class="bg-white leafpack-form" data-id="{{ leafpack.id }}">
+                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_date }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.content|default:"N/A" }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.deployment_type|default:"N/A" }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">
+                                                <a href="{% url 'leafpack:update' siteregistration.sampling_feature_code leafpack.id %}"
+                                                   class="mdl-button mdl-button--accent">
+                                                    <i class="material-icons center-icon">mode_edit</i>
+                                                </a>
+                                            </td>
+                                            <td class="mdl-data-table__cell--non-numeric">
+                                                {% csrf_token %}
+                                                <button class="mdl-button btn-delete-experiment"
+                                                        style="color: #d9534f"
+                                                        type="button">
+                                                    <i class="material-icons center-icon">delete_forever</i>
+                                                    {#                                                                    TODO: SETUP THIS DELETE FORM SIMILAR TO SENSOR DELETE FORMS #}
+                                                    {{ leafpack.DELETE }}
+                                                </button>
+                                            </td>
+                                            <td class="mdl-data-table__cell--non-numeric">
+                                                <a class="mdl-button mdl-js-button button-link mdl-button--primary"
+                                                   href="{% url 'leafpack:view' siteregistration.sampling_feature_code leafpack.id %}">
+                                                    View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% else %}
+                                <tr class="no-experiments-row bg-white">
+                                    <td colspan="6" class="text-center">
+                                        No macroinvertebrate data have been added to this site.
+                                    </td>
                                 </tr>
+                                {% endif %}
                                 </tbody>
                             </table>
                         </div>
-
-                        <script id="sensor-row" type="text/plain">
-                            <tr class="result-form"
-                                    data-id="" data-result_id="" data-result_uuid="" data-output_variable=""
-                                    data-sensor_manufacturer="" data-sensor_model="" data-variable=""
-                                    data-unit="" data-sampled_medium="" data-sensor_notes="" data-height="">
-
-                                <td data-field="sensor_model" class="mdl-data-table__cell--non-numeric">
-                                    <span class="field-text"></span>
-                                </td>
-
-                                <td data-field="variable" class="mdl-data-table__cell--non-numeric">
-                                    <span class="field-text"></span>
-                                </td>
-
-                                <td data-field="unit" class="mdl-data-table__cell--non-numeric">
-                                    <span class="field-text"></span>
-                                </td>
-
-                                <td data-field="sampled_medium" class="mdl-data-table__cell--non-numeric">
-                                    <span class="field-text"></span>
-                                </td>
-
-                                <td data-field="height" class="mdl-data-table__cell--non-numeric">
-                                    <span class="field-text"></span>
-                                </td>
-
-                                <td data-behaviour="edit"
-                                    class="mdl-data-table__cell--non-numeric">
-                                    <button class="mdl-button mdl-button--accent"
-                                            type="button">
-                                        <i class="material-icons center-icon">mode_edit</i>
-                                    </button>
-                                </td>
-                                <td data-behaviour="delete"
-                                    class="mdl-data-table__cell--non-numeric">
-                                    <button class="mdl-button" style="color: #d9534f" type="button">
-                                        <i class="material-icons center-icon">delete_forever</i>
-                                    </button>
-                                </td>
-                            </tr>
-                        </script>
-                    </div>
-
-                    <div class="col-sm-12 col-md-6">
-                        <br><br>
-                        <form id="form-file-upload"
-                              class="mdl-card mdl-card--border mdl-shadow--2dp full-width text-left"
-                              action="{% url 'data_file_upload' site_registration.registration_id %}"
-                              enctype="multipart/form-data"
-                              method="POST" style="min-height: auto;">
-                            {% csrf_token %}
-                            <input type="hidden" value="Upload">
-                            <div class="mdl-card__title mdl-card--expand">
-                                Upload a data file (.csv)
-                            </div>
-
-                            <div class="mdl-card__actions mdl-card--border">
-                                <span id="upload-placeholder"
-                                        class="mdl-button--file mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--2dp">
-                                    <i class="material-icons">attach_file</i>
-                                    <input type="file" name="data_file" id="id_data_file" accept=".csv">
-                                </span>
-
-                                <div class="file-preview grid">
-                                    <small id="file-preview-default" class="text-muted">
-                                        No file chosen.
-                                    </small>
-                                    <div class="selected-file flex"
-                                         style="display:none;">
-                                        <i style="align-self: center;" class="fa fa-file-o file-icon"
-                                           aria-hidden="true"></i>
-                                        <span style="align-self: center;">
-                                            <span class="file-name">File name.csv</span>
-                                            <span class="file-size small text-muted"></span>
-                                        </span>
-                                        <button class="mdl-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent"
-                                                id="btn-upload-file" type="button" disabled>
-                                            <i class="material-icons center-icon">cloud_upload</i> <span>Upload</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-
-                    <div class="col-12">
-                        <br><br>
-                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                           href="
-                                   {% autoescape on %}{% url 'site_detail' site_registration.sampling_feature_code %}{% endautoescape %}">
-                            Back to site details
-                        </a>
                     </div>
                 </div>
             </fieldset>
+
+            <br><br>
+            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+               href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
+                Back to site details
+            </a>
         </div>
     </div>
 
-    <div id="result-dialog" class="modal fade" role="dialog" aria-hidden="true">
+    <div class="modal fade" id="confirm-delete-experiment" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content mdl-modal-content mdl-shadow--4dp">
-                <h4 class="mdl-dialog__title">Add New Sensor</h4>
-                <span class="text-muted result-d-container">UUID: <small data-copy-target="result-dialog-uuid"
-                                                                         id="result-dialog-uuid"></small></span>
-                <div class="mdl-dialog__content">
-                    <div class="row form-group result-form">
-                        {% csrf_token %}
-                        {% for hidden in sensor_form.hidden_fields %}
-                            {{ hidden }}
-                        {% endfor %}
-                        <div class="col-12">
-                            {% for field in sensor_form.visible_fields %}
-                                <div class="form-field {% if field.field.required %} required-field{% endif %}">
-                                    <label class="control-label"
-                                           for="{{ field.id_for_label }}">{{ field.label }}</label>
-                                    {% with "placeholder:"|add:field.help_text as placeholder %}
-                                        {{ field|add_class:"form-control input-sm"|attr:placeholder|attr:"height:95px" }}
-                                    {% endwith %}
-                                </div>
-                            {% endfor %}
-                        </div>
+                <h4 class="mdl-dialog__title">Delete Experiment?</h4>
 
-                    </div>
-
-                    <div class="clearfix"></div>
-                </div>
-                <div class="mdl-dialog__actions text-right">
-                    <button id="edit-sensor-button"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
-                        Update Sensor
-                    </button>
-
-                    <button id="add-sensor-button"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
-                        Add New Sensor
-                    </button>
-
-                    <button data-dismiss="modal"
-                            class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                        Cancel
-                    </button>
-                </div>
-
-                <div class="col-12">
-                    <div class="alert alert-light mdl-card"
-                         style="width: 100%; min-height: initial;">
-                        <strong>Don't see your sensor in the list of equipment models?</strong>
-                        <small>Click <a
-                                href="mailto:help@monitormywatershed.org?Subject=Request%20for%20new%20sensor">here</a>
-                            to send an email to a system administrator with a request to add new sensors. Please
-                            provide us with the manufacturer and make/model information for the sensor, as well
-                            as a link to a website description if you can.
-                        </small>
-
-                        <div class="input-group">
-                            <input readonly id="adminEmail" type="text" class="form-control"
-                                   value="help@monitormywatershed.org"
-                                   aria-label="Administrator's email" data-copy-target="adminEmail">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="confirm-delete" role="dialog" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content mdl-modal-content mdl-shadow--4dp">
-                <h4 class="mdl-dialog__title">Delete Sensor?</h4>
                 <div class="mdl-dialog__content">
                     <div class="alert alert-danger hidden">All stored data corresponding to
-                        this sensor will be deleted.<br/></div>
-                    <p>Are you sure you want to delete this sensor?</p>
+                        this experiment will be deleted.<br/></div>
+                    <p>Are you sure you want to remove this experiment?</p>
                 </div>
                 <div class="mdl-dialog__actions text-right">
-                    <button type="button" class="mdl-button mdl-button--raised mdl-button-danger"
-                            id="btn-confirm-delete">Delete
+                    <button type="button" class="mdl-button mdl-button--raised" id="btn-confirm-delete-experiment">
+                        Delete
                     </button>
                     <button type="button" class="mdl-button mdl-button--raised" data-dismiss="modal">Cancel</button>
                 </div>
@@ -300,23 +122,15 @@
 
 {% block services_urls %}
     {{ block.super }}
-    <input id="output-variables-api" type="hidden" value="{% url 'output_variables_service' %}">
-    <input id="sensor-registration-api" type="hidden" value="{% url 'register_sensor_service' %}">
-    <input id="sensor-edit-api" type="hidden" value="{% url 'edit_sensor_service' %}">
-    <input id="sensor-delete-api" type="hidden" value="{% url 'delete_sensor_service' %}">
+    <input id="leafpack-delete-api" type="hidden" value="{% url 'delete_leafpack_service' %}">
 {% endblock %}
 
 {% block styles %}
     {{ block.super }}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
-    <script src="{% static 'dataloaderinterface/js/copyToClipboard.js' %}"></script>
-    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
 {#    <script src="{% static 'dataloaderinterface/js/bootstrap-toolkit.min.js' %}"></script>#}
-    <script src="{% static 'dataloaderinterface/js/manage-sensors.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/manage-leafpack.js' %}"></script>
 {% endblock %}
