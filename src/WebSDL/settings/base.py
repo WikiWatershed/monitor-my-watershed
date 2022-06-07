@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
     'hydroshare',
     'leafpack',
+    'streamwatch',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

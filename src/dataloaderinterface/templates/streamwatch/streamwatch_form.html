@@ -4,10 +4,10 @@
 {% load widget_tweaks %}
 
 {% block page_title %}
-    <title>{% if request.resolver_match.view_name == "leafpack:create" %}
-        Create Leaf Pack Experiment at {{ sampling_feature_code }}
+    <title>{% if request.resolver_match.view_name == "streamwatch:create" %}
+        Create StreamWatch Experiment at {{ sampling_feature_code }}
     {% else %}
-        Edit Leaf Pack Experiment at {{ leafpack.site_registration.sampling_feature_name }}
+        Edit StreamWatch Experiment at {{ streamwatch.site_registration.sampling_feature_name }}
     {% endif %}</title>
 {% endblock %}
 
@@ -19,25 +19,25 @@
             <div class="row">
                 <div class="col-12">
                     <div class="page-title">
-                        {% if request.resolver_match.view_name == "leafpack:create" %}
-                            Create Leaf Pack Experiment at {{ sampling_feature_code }}
+                        {% if request.resolver_match.view_name == "streamwatch:create" %}
+                            Create StreamWatch Experiment at {{ sampling_feature_code }}
                         {% else %}
-                            Edit Leaf Pack Experiment at {{ leafpack.site_registration.sampling_feature_name }}
+                            Edit StreamWatch Experiment at {{ streamwatch.site_registration.sampling_feature_name }}
                         {% endif %}
                     </div>
                 </div>
             </div>
-            <form class="form-leafpack" method="POST"
-                    {% if request.resolver_match.view_name == "leafpack:create" %}
-                  action="{% url 'leafpack:create' sampling_feature_code %}"
+            <form class="form-streamwatch" method="POST"
+                    {% if request.resolver_match.view_name == "streamwatch:create" %}
+                  action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
-                  action="{% url 'leafpack:update' sampling_feature_code leafpack.pk %}"
+                  action="{% url 'streamwatch:update' sampling_feature_code streamwatch.pk %}"
                     {% endif %}>
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-12">
                         <span class="step-number center-icon">1</span>
-                        <h5 class="headline d-inline-block">Enter your leaf pack placement information</h5>
+                        <h5 class="headline d-inline-block">Enter your StreamWatch placement information</h5>
                     </div>
                 </div>
 
@@ -46,7 +46,7 @@
                     <div class="col-sm-12 col-md-6">
                         <div class="mdl-card mdl-shadow--2dp full-width">
                             <div class="mdl-card__title mdl-card--border">
-                                Leaf Pack Placement Data
+                                StreamWatch Placement Data
                             </div>
                             <div class="mdl-card__supporting-text default-font">
                                 <div class="row">
@@ -59,8 +59,8 @@
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.leafpack_placement_count.id_for_label }}">{{ form.leafpack_placement_count.label }}</label>
-                                        {{ form.leafpack_placement_count|add_class:"form-control" }}
+                                        <label for="{{ form.streamwatch_placement_count.id_for_label }}">{{ form.streamwatch_placement_count.label }}</label>
+                                        {{ form.streamwatch_placement_count|add_class:"form-control" }}
                                     </div>
 
                                     <div class="form-field col-6">
@@ -88,7 +88,7 @@
                     <div class="col-sm-12 col-md-6">
                         <div class="mdl-card mdl-shadow--2dp full-width">
                             <div class="mdl-card__title mdl-card--border">
-                                Leaf Pack Type and Composition
+                                StreamWatch Type and Composition
                             </div>
 
                             <div class="mdl-card__supporting-text default-font">
@@ -108,7 +108,7 @@
                 <div class="row">
                     <div class="col-12">
                         <span class="step-number center-icon">2</span>
-                        <h5 class="headline d-inline-block">Enter your leaf pack retrieval information</h5>
+                        <h5 class="headline d-inline-block">Enter your StreamWatch retrieval information</h5>
                     </div>
                 </div>
 
@@ -116,7 +116,7 @@
                     <div class="col-sm-12 col-md-6">
                         <div class="mdl-card mdl-shadow--2dp full-width">
                             <div class="mdl-card__title mdl-card--border">
-                                Leaf Pack Retrieval Data
+                                StreamWatch Retrieval Data
                             </div>
                             <div class="mdl-card__supporting-text default-font">
                                 <div class="row">
@@ -129,9 +129,9 @@
                                     </div>
 
                                     <div class="form-field col-6">
-                                        {{ form.leafpack_retrieval_count.errors }}
-                                        <label for="{{ form.leafpack_retrieval_count.id_for_label }}">{{ form.leafpack_retrieval_count.label }}</label>
-                                        {{ form.leafpack_retrieval_count|add_class:"form-control" }}
+                                        {{ form.streamwatch_retrieval_count.errors }}
+                                        <label for="{{ form.streamwatch_retrieval_count.id_for_label }}">{{ form.streamwatch_retrieval_count.label }}</label>
+                                        {{ form.streamwatch_retrieval_count|add_class:"form-control" }}
                                     </div>
 
                                     <div class="form-field col-6">
@@ -207,7 +207,7 @@
                             <div class="mdl-card__title mdl-card--border" style="display: block;">
                                 <div>Macroinvertebrate Counts</div>
                                 <small class="text-muted mdl-card__subtitle-text">Enter the total number found within
-                                    all of your retrieved leaf packs.
+                                    all of your retrieved StreamWatches.
                                 </small>
                             </div>
                             <div class="mdl-card__supporting-text mdl-card--border default-font">
@@ -234,7 +234,7 @@
                 <div class="row">
                     <div class="col-12">
                         <span class="step-number center-icon">4</span>
-                        <h5 class="headline d-inline-block">Is there anything else you’d like to tell us about your Leaf Pack Experiment?</h5>
+                        <h5 class="headline d-inline-block">Is there anything else you’d like to tell us about your StreamWatch Experiment?</h5>
                     </div>
                 </div>
 
@@ -259,14 +259,14 @@
                 <div class="row">
                     <div class="col">
                         <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                                {% if leafpack.pk is None %}
-                                    href="{% url 'leafpacks' sampling_feature_code %}"
+                                {% if streamwatch.pk is None %}
+                                    href="{% url 'streamwatches' sampling_feature_code %}"
                                 {% else %}
-                                    href="{% url 'leafpack:view' sampling_feature_code leafpack.id %}"
+                                    href="{% url 'streamwatch:view' sampling_feature_code streamwatch.id %}"
                                 {% endif %}
                         >Cancel</a>
                         <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after">
-                            {% if leafpack.pk is None %}Submit{% else %}Save Edits{% endif %}
+                            {% if streamwatch.pk is None %}Submit{% else %}Save Edits{% endif %}
                         </button>
                     </div>
                 </div>
@@ -285,5 +285,5 @@
     {{ block.super }}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
     <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
-    <script src="{% static 'dataloaderinterface/js/leafpack-create.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/streamwatch-create.js' %}"></script>
 {% endblock %}
