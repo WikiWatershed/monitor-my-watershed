@@ -18,7 +18,7 @@ class StreamWatchCreateView(FormView):
     Create View
     """
     form_class = StreamWatchForm
-    template_name = 'streamwatch/streamwatch_registration.html'
+    template_name = 'streamwatch/streamwatch_form.html'
     slug_field = 'sampling_feature_code'
     object = None
     
