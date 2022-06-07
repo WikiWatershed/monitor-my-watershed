@@ -15,8 +15,7 @@ class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 
 class StreamWatchForm(forms.Form):
     
-    ACTIVITY_TYPE_CHOICES = (('chemical', 'Chemical'), ('biological', 'biological'), ('baterial', 'baterial'))
-    ACTIVITY_TYPE_CHOICES_LIST = ['chemical', 'biological', 'baterial']
+    ACTIVITY_TYPE_CHOICES = (('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
 
     def __init__(self, *args, **kwargs):
         super(StreamWatchForm, self).__init__(*args, **kwargs)
@@ -35,9 +34,20 @@ class StreamWatchForm(forms.Form):
         label='Time'
     )
     
-    types = forms.ModelMultipleChoiceField(
+    # types = forms.ModelMultipleChoiceField(
+    #     widget=MDLCheckboxSelectMultiple,
+    #     label='Activity type(s):',
+    #     required=True,
+    #     queryset=LeafPackType.objects.filter(created_by=None),
+    # )
+    
+    activity_types = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         label='Activity type(s):',
         required=True,
-        queryset=LeafPackType.objects.filter(created_by=None),
+        choices = ACTIVITY_TYPE_CHOICES)
+    
+    air_temp = forms.FloatField(
+        label='Air Temperature',
+        required=False,
     )
