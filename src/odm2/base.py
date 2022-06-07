@@ -24,7 +24,7 @@ from .models import results
 from .models import samplingfeatures
 from .models import simulation
 
-OUTPUT_FORMATS = ('json', 'dataframe', 'dict')
+OUTPUT_FORMATS = ('json', 'dataframe', 'dict','records')
 
 class Base():
     
@@ -94,6 +94,8 @@ class ODM2Engine:
                 return df
             elif output_format == 'dict':
                 return df.to_dict()
+            elif output_format == 'records':
+                return df.to_records(index=False)
             raise TypeError("Unknown output format")
 
     def insert_query(self, objs:List[object]) -> None:
