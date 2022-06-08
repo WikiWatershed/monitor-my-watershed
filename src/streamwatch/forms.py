@@ -47,11 +47,11 @@ class StreamWatchForm(forms.Form):
         super(StreamWatchForm, self).__init__(*args, **kwargs)
         #self.fields['types'].initial = self.ACTIVITY_TYPE_CHOICES_LIST
     
-    invesgator1 = forms.CharField(
-        label='Invesgator #1'
+    investigator1 = forms.CharField(
+        label='Investigator #1'
     )       
-    invesgator2 = forms.CharField(
-        label='Invesgator #2'
+    investigator2 = forms.CharField(
+        label='Investigator #2'
     )   
     collect_date = forms.DateField(
         label='Date'
