@@ -27,7 +27,7 @@
                     </div>
                 </div>
             </div>
-            <form class="form-streamwatch" method="POST"
+            <form class="form-leafpack" method="POST"
                     {% if request.resolver_match.view_name == "streamwatch:create" %}
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
@@ -37,7 +37,7 @@
                 <div class="row">
                     <div class="col-12">
                         <span class="step-number center-icon">1</span>
-                        <h5 class="headline d-inline-block">Enter your StreamWatch placement information</h5>
+                        <h5 class="headline d-inline-block">Enter information to setup the form. The activity type(s) selected will determine the form questions on subsequent pages.</h5>
                     </div>
                 </div>
 
@@ -59,8 +59,8 @@
                                     </div>
 
                                     <div class="form-field col-6">
-                                        <label for="{{ form.streamwatch_placement_count.id_for_label }}">{{ form.streamwatch_placement_count.label }}</label>
-                                        {{ form.streamwatch_placement_count|add_class:"form-control" }}
+                                        <label for="{{ form.streamwatch_placement_count.id_for_label }}">{{ form.activity_types.label }}</label>
+                                        {{ form.activity_types.widget }}
                                     </div>
 
                                     <div class="form-field col-6">
