@@ -61,7 +61,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'requests',
     'reset_migrations',
-    'timeseries_visualization'
+    'timeseries_visualization',
+    'formtools',
+    
 ]
 
 MIDDLEWARE = [

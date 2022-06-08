@@ -4,6 +4,11 @@ from dataloaderinterface.models import SiteRegistration
 from django.core.exceptions import ObjectDoesNotExist
 from leafpack.models import LeafPackType
 
+place_holder_choices = (
+        (1, 'Choice #1'), 
+        (2, 'Choice #2'),
+        (3, 'Choice #3')
+    )
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     template_name = 'mdl-checkbox-select-multiple.html'
 
@@ -17,6 +22,35 @@ class StreamWatchForm(forms.Form):
     
     ACTIVITY_TYPE_CHOICES = (('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
 
+    def __init__(self, *args, **kwargs):
+        super(StreamWatchForm, self).__init__(*args, **kwargs)
+        #self.fields['types'].initial = self.ACTIVITY_TYPE_CHOICES_LIST
+    
+    investigator1 = forms.CharField(
+        required=False,
+        label='Investigator #1'
+    )       
+    investigator2 = forms.CharField(
+        required=False,
+        label='Investigator #2'
+    )   
+    collect_date = forms.DateField(
+        required=False,
+        label='Date'
+    )
+    collect_time = forms.TimeField(
+        required=False,
+        label='Time'
+    )
+    # mutiple choices
+    activity_types = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        label='Activity type(s):',
+        required=True,
+        choices = ACTIVITY_TYPE_CHOICES)    
+
+    
+class StreamWatchForm2(forms.Form):
     weather_condition_choices = (
         (1, 'Clear'),
         (2, 'Partly cloudy'),
@@ -38,48 +72,13 @@ class StreamWatchForm(forms.Form):
         (5,'Petroleum'),
         (6,'Other'))
 
-    place_holder_choices = (
-        (1, 'Choice #1'), 
-        (2, 'Choice #2'),
-        (3, 'Choice #3')
-    )
-    def __init__(self, *args, **kwargs):
-        super(StreamWatchForm, self).__init__(*args, **kwargs)
-        #self.fields['types'].initial = self.ACTIVITY_TYPE_CHOICES_LIST
-    
-    investigator1 = forms.CharField(
-        label='Investigator #1'
-    )       
-    investigator2 = forms.CharField(
-        label='Investigator #2'
-    )   
-    collect_date = forms.DateField(
-        label='Date'
-    )
-    collect_time = forms.TimeField(
-        label='Time'
-    )
-    
     # types = forms.ModelMultipleChoiceField(
     #     widget=MDLCheckboxSelectMultiple,
     #     label='Activity type(s):',
     #     required=True,
     #     queryset=LeafPackType.objects.filter(created_by=None),
     # )
-    
-    # mutiple choices
-    activity_types = forms.MultipleChoiceField(
-        widget=MDLCheckboxSelectMultiple,
-        label='Activity type(s):',
-        required=True,
-        choices = ACTIVITY_TYPE_CHOICES)
-    
-    # floating number input
-    air_temp = forms.FloatField(
-        label='Air Temperature',
-        required=False,
-    )
-    
+
     # single choice
     weather_cond = forms.ChoiceField(
         required=False,
@@ -108,6 +107,12 @@ class StreamWatchForm(forms.Form):
         required=True,
         label='Water Odor:',
         choices= water_odor_choices,
+    )
+        
+    # floating number input
+    air_temp = forms.FloatField(
+        label='Air Temperature',
+        required=False,
     )
     
     turbidity = forms.ChoiceField(
@@ -138,3 +143,5 @@ class StreamWatchForm(forms.Form):
         label='Surface Coating:',
         choices= place_holder_choices,
     )
+    
+    
