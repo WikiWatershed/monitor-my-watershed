@@ -27,7 +27,7 @@
                     </div>
                 </div>
             </div>
-            <form class="form-streamwatch" method="POST"
+            <form class="form-leafpack" method="POST"
                     {% if request.resolver_match.view_name == "streamwatch:create" %}
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
