@@ -81,10 +81,8 @@
                                         <div class="row">
                                             <div class="form-field col-6">
                                                 {{ wizard.form.collect_date.errors }}
-                                                <label for="{{ wizard.form.placement_date.id_for_label }}">{{ wizard.form.collect_date.label }}
-                                                    <input type="text" class="form-control datepicker" value="{{ wizard.form.placement_date.value|date_format:'m/d/Y' }}"
-                                                        id="id_{{ wizard.form.collect_date.name }}" name="{{ wizard.form.collect_date.name }}" required>
-                                                </label>
+                                                <label for="{{ wizard.form.placement_date.id_for_label }}">{{ wizard.form.collect_date.label }}</label>                                               </label>
+                                                {{ wizard.form.collect_date|add_class:"form-control datepicker" }}
                                             </div>
         
                                             <div class="form-field col-6" >
@@ -133,6 +131,54 @@
                                     </div>
                                 </div>
                                 <br><br>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <div class="mdl-card mdl-shadow--2dp full-width">
+        
+                                    <div class="mdl-card__supporting-text default-font">
+                                        <div class="form-field">
+                                            <label for="{{ wizard.form.water_odor.id_for_label }}">{{ wizard.form.water_odor.label }}</label>
+                                            {{ wizard.form.water_odor.errors }}
+                                            {{ wizard.form.water_odor }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% elif wizard.steps.step1 == 3 %}
+                        <div class="row">
+                            <div class="col-12">
+                                <h5 class="headline d-inline-block">Enter information to setup the form. The activity type(s) selected will determine the form questions on subsequent pages.</h5>
+                            </div>
+                        </div>
+        
+                        <div class="row std-row">
+                            {{ wizard.form.site_registration }}
+                            <div class="col-sm-12 col-md-6">
+                                <div class="mdl-card mdl-shadow--2dp full-width">
+        
+                                    <div class="mdl-card__supporting-text default-font">
+                                        <div class="form-group">
+                                            <div class="form-field">
+                                                <label for="{{ wizard.form.aquatic_vegetation.id_for_label }}">{{ wizard.form.aquatic_vegetation.label }}</label>
+                                                {{ wizard.form.aquatic_vegetation|add_class:"form-control" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <br><br>
+                            </div>
+                            <div class="col-sm-12 col-md-6">
+                                <div class="mdl-card mdl-shadow--2dp full-width">
+        
+                                    <div class="mdl-card__supporting-text default-font">
+                                        <div class="form-field">
+                                            <label for="{{ wizard.form.surface_coating.id_for_label }}">{{ wizard.form.vsurface_coating.label }}</label>
+                                            {{ wizard.form.surface_coating.errors }}
+                                            {{ wizard.form.surface_coating }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         {% endif %}
