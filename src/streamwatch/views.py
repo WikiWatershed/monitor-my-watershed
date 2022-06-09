@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 
 from formtools.wizard.views import SessionWizardView, WizardView
 
-from .forms import StreamWatchForm, StreamWatchForm2
+from .forms import StreamWatchForm, StreamWatchForm2, StreamWatchForm3
 
 class xStreamWatchCreateView(FormView):
     """
@@ -44,16 +44,17 @@ class StreamWatchCreateView(SessionWizardView):
     Create View
     """
     #form_class = StreamWatchForm
-    form_list = [StreamWatchForm, StreamWatchForm2]
+    form_list = [StreamWatchForm, StreamWatchForm2, StreamWatchForm3]
     template_name = 'streamwatch/streamwatch_wizard.html'
+    #template_name = 'streamwatch/example.html'
     slug_field = 'sampling_feature_code'
     object = None
     
-    def get(self, request, *args, **kwargs):
-        try:
-            return self.render(self.get_form())
-        except KeyError:
-            return super().get(request, *args, **kwargs)
+    # def get(self, request, *args, **kwargs):
+    #     try:
+    #         return self.render(self.get_form())
+    #     except KeyError:
+    #         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
             # if 'leafpack_form' is in kwargs, that means self.form_invalid was most likely called due to a failed POST request
@@ -64,8 +65,8 @@ class StreamWatchCreateView(SessionWizardView):
 
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
 
-        if self.object is None:
-            site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-            context['form'] = StreamWatchForm(initial={'site_registration': site_registration})
+        # if self.object is None:
+        #     site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
+        #     context['form'] = StreamWatchForm(initial={'site_registration': site_registration})
 
         return context

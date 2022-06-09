@@ -3,6 +3,7 @@ from django import forms
 from dataloaderinterface.models import SiteRegistration
 from django.core.exceptions import ObjectDoesNotExist
 from leafpack.models import LeafPackType
+from .models import variable_choice_options
 
 place_holder_choices = (
         (1, 'Choice #1'), 
@@ -72,6 +73,7 @@ class StreamWatchForm2(forms.Form):
         (5,'Petroleum'),
         (6,'Other'))
 
+    abundance_choices = variable_choice_options('wildlife')
     # types = forms.ModelMultipleChoiceField(
     #     widget=MDLCheckboxSelectMultiple,
     #     label='Activity type(s):',
@@ -79,6 +81,14 @@ class StreamWatchForm2(forms.Form):
     #     queryset=LeafPackType.objects.filter(created_by=None),
     # )
 
+    #Wildlife Observations
+    # wildlife_obs = forms.ModelMultipleChoiceField(
+    #     widget=MDLCheckboxSelectMultiple,
+    #     required=True,
+    #     label='Wildlife Observations:',
+    #     queryset= abundance_choices,
+    # )
+    
     # single choice
     weather_cond = forms.ChoiceField(
         required=False,
@@ -88,7 +98,7 @@ class StreamWatchForm2(forms.Form):
         initial='1'
     )
     time_since_last_precip = forms.ChoiceField(
-        required=True,
+        required=False,
         widget=forms.Select,
         label='Time Since Last Rain or Snowmelt:',
         choices= place_holder_choices,
@@ -96,7 +106,7 @@ class StreamWatchForm2(forms.Form):
     )
     
     water_color = forms.ChoiceField(
-        required=True,
+        required=False,
         widget=forms.Select,
         label='Water Color:',
         choices= water_color_choices,
@@ -116,7 +126,7 @@ class StreamWatchForm2(forms.Form):
     )
     
     turbidity = forms.ChoiceField(
-        required=True,
+        required=False,
         widget=forms.Select,
         label='Turbidity:',
         choices= place_holder_choices,
@@ -124,12 +134,16 @@ class StreamWatchForm2(forms.Form):
     )
     
     water_movement = forms.ChoiceField(
-        required=True,
+        required=False,
         widget=forms.Select,
         label='Turbidity:',
         choices= place_holder_choices,
         initial='1'
     )
+
+    
+    
+class StreamWatchForm3(forms.Form):
     aquatic_vegetation = forms.ChoiceField(
         required=True,
         widget=forms.Select,
@@ -143,5 +157,3 @@ class StreamWatchForm2(forms.Form):
         label='Surface Coating:',
         choices= place_holder_choices,
     )
-    
-    

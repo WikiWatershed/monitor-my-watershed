@@ -11,6 +11,7 @@ def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
         )
     records = odm2_engine.read_query(query, output_format='records')
+    
     return records
 
 
