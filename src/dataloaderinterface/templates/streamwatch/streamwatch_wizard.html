@@ -114,22 +114,68 @@
                         {% elif wizard.steps.step1 == 2 %}
                         <div class="row">
                             <div class="col-12">
-                                <h5 class="headline d-inline-block">Enter information to setup the form. The activity type(s) selected will determine the form questions on subsequent pages.</h5>
+                                <span class="step-number center-icon">1</span>
+                                <h5 class="headline d-inline-block">Enter information about the current weather conditions</h5>
                             </div>
                         </div>
         
-                        <div class="row std-row">
+                        <div class="row step-row">
                             {{ wizard.form.site_registration }}
                             <div class="col-sm-12 col-md-6">
                                 <div class="mdl-card mdl-shadow--2dp full-width">
         
                                     <div class="mdl-card__supporting-text default-font">
-                                        <div class="form-group">
-                                            <div class="form-field">
-                                                <label for="{{ wizard.form.air_temp.id_for_label }}">{{ wizard.form.air_temp.label }}</label>
-                                                {{ wizard.form.air_temp|add_class:"form-control" }}
-                                            </div>
+                                        
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.air_temp.id_for_label }}">{{ wizard.form.air_temp.label }}</label>
+                                            {{ wizard.form.air_temp|add_class:"form-control" }}
                                         </div>
+
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.weather_cond.id_for_label }}">{{ wizard.form.weather_cond.label }}</label>
+                                            {{ wizard.form.weather_cond|add_class:"form-control" }}
+                                        </div>
+
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.time_since_last_precip.id_for_label }}">{{ wizard.form.time_since_last_precip.label }}</label>
+                                            {{ wizard.form.time_since_last_precip|add_class:"form-control" }}
+                                        </div> 
+                                    </div>
+                                </div>
+                                <br><br>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <span class="step-number center-icon">2</span>
+                                <h5 class="headline d-inline-block">Enter information about the current water conditions</h5>
+                            </div>
+                        </div>
+        
+                        <div class="row step-row">
+                            {{ wizard.form.site_registration }}
+                            <div class="col-sm-12 col-md-6">
+                                <div class="mdl-card mdl-shadow--2dp full-width">
+        
+                                    <div class="mdl-card__supporting-text default-font">
+                                        
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.water_color.id_for_label }}">{{ wizard.form.water_color.label }}</label>
+                                            {{ wizard.form.water_color|add_class:"form-control" }}
+                                        </div>
+
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.water_odor.id_for_label }}">{{ wizard.form.water_odor.label }}</label>
+                                            {{ wizard.form.water_odor.errors }}
+                                            {{ wizard.form.water_odor }}
+                                        </div>
+
+                                        <div class="form-field col-6">
+                                            <label for="{{ wizard.form.turbidity.id_for_label }}">{{ wizard.form.turbidity.label }}</label>
+                                            {{ wizard.form.turbidity|add_class:"form-control" }}
+                                        </div> 
+
                                     </div>
                                 </div>
                                 <br><br>
