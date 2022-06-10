@@ -105,13 +105,13 @@ class StreamWatchForm2(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Current Weather Conditions',
-        choices= water_odor_choices,
+        choices= variable_choice_options('weather'),
     )
     time_since_last_precip = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Time Since Last Rain or Snowmelt',
-        choices= place_holder_choices,
+        choices= variable_choice_options('precipitation'),
         initial='1'
     )    
     water_color = forms.ChoiceField(
@@ -125,53 +125,53 @@ class StreamWatchForm2(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Water Odor',
-        choices= water_odor_choices,
+        choices= variable_choice_options('waterOdor'),
     )
-    turbidity = forms.ChoiceField(
+    turbidity_obs = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Turbidity',
-        choices= place_holder_choices,
+        choices= variable_choice_options('turbidity'),
         initial='1'
     )
     water_movement = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Water Movement',
-        choices= place_holder_choices,
+        choices= variable_choice_options('waterMovement'),
         initial='1'
     )
     aquatic_veg_amount = forms.ChoiceField(
         required=True,
         widget=forms.Select,
         label='Aquatic Vegetation Amount',
-        choices= place_holder_choices,
+        choices= variable_choice_options('aquaticVegetation'),
         initial='1'
     )
     aquatic_veg_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=True,
         label='Aquatic Vegetation Type',
-        choices= place_holder_choices,
+        choices= variable_choice_options('aquaticVegetationType'),
     )
     surface_coating = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=True,
         label='Surface Coating',
-        choices= place_holder_choices,
+        choices= variable_choice_options('surfaceCoating'),
     )
     algae_amount = forms.ChoiceField(
         required=True,
         widget=forms.Select,
         label='Algae Amount',
-        choices= place_holder_choices,
+        choices= variable_choice_options('algaeAmount'),
         initial='1'
     )
     algae_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=True,
         label='Algae Type',
-        choices= place_holder_choices,
+        choices= variable_choice_options('algaeType'),
     )
     site_observation = forms.CharField(
         required=False,
@@ -180,7 +180,137 @@ class StreamWatchForm2(forms.Form):
     )   
     
     
-  # In-stream Habitat Assessment (BAT form)  
+    # In-stream Habitat Assessment (BAT form)  
+    instream_structure = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='In-Stream Structures',
+        choices= variable_choice_options('instreamStructures'),
+    )
+    stream_flow = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Stream Flow',
+        choices= variable_choice_options('streamFlow'),
+        initial='1'
+    )
+    percent_riffle = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Riffle Morphology',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_run = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Run Morphology',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_pool = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Pool Morphology',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    woody_debris_amt = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Woody Debris Amount',
+        choices= variable_choice_options('woodyDebris'),
+        initial='1'
+    )
+    macroinvert_habitat_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Macroinvertebrate Habitat Types',
+        choices= variable_choice_options('macroinvertHabitat'),
+    )
+    percent_silt_clay = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Silt and Clay Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_sand = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Sand Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_gravel = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Gravel Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_cobble = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Cobble Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_boulder = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Boulder Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    percent_bedrock = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Percent Bedrock Substrate',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    
+    # Riparian Habitat Assessment (BAT form)
+    bank_veg_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Bank Vegetation Type',
+        choices= variable_choice_options('bankVegetation'),
+    )
+    tree_canopy = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Tree Canopy Coverage',
+        choices= variable_choice_options('treeCanopy'),
+        initial='1'
+    )
+    land_use = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Land Uses in 1/4 Mile Radius',
+        choices= variable_choice_options('landuseQuarterMile'),
+    )
+    litter_amt = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Litter Concentration',
+        choices= variable_choice_options('litter'),
+        initial='1'
+    )
+    wildlife_obs = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Wildlife Observations',
+        choices= variable_choice_options('wildlife'),
+    )
+    macroinvert_sample_collect = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Macroinvertebrate Sample Collected?',
+        choices= place_holder_choices,
+        initial='1'
+    )
     
     
     
@@ -189,7 +319,124 @@ class StreamWatchForm2(forms.Form):
     
 class StreamWatchForm3(forms.Form):
     
+    # Field Measurmenets (CAT/BaCT Forms)
+    pH_meter = forms.CharField(
+        required=False,
+        label='pH Meter #'
+    ) 
+    ysi_meter = forms.CharField(
+        required=False,
+        label='YSI Meter #'
+    )
+    test_method = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Test Method',
+        choices= place_holder_choices,
+        initial='1'
+    )
     air_temp = forms.FloatField(
         label='Air Temperature',
         required=False,
     )
+    water_temp = forms.FloatField(
+        label='Water Temperature',
+        required=False,
+    )
+    do1 = forms.FloatField(
+        label='Dissolved Oxygen #1',
+        required=False,
+    )
+    do2 = forms.FloatField(
+        label='Dissolved Oxygen #2',
+        required=False,
+    )
+    avg_do = forms.FloatField(
+        label='Average Dissolved Oxygen',
+        required=False,
+    )
+    spec_cond = forms.FloatField(
+        label='Specific Conductivity',
+        required=False,
+    )
+    pH = forms.FloatField(
+        label='pH',
+        required=False,
+    )
+    turbidity = forms.FloatField(
+        label='Dissolved Oxygen #2',
+        required=False,
+    )
+    tds = forms.FloatField(
+        label='Total Dissolved Solids',
+        required=False,
+    )
+    nitrate = forms.FloatField(
+        label='Nitrate',
+        required=False,
+    )
+    phosphate = forms.FloatField(
+        label='Phosphate',
+        required=False,
+    )
+    water_sample_collect = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Water Sample Collected?',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    water_sample_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Water Sample Types',
+        choices= place_holder_choices,
+    )
+    wq_comments = forms.CharField(
+        required=False,
+        label='Comments about Water Quality Measurements',
+        max_length=255
+    )
+
+    # Velocity (BAT form)
+    rep_wetted_width = forms.FloatField(
+        label='Representative Wetted Width',
+        required=False,
+    )
+    rep_depth2 = forms.FloatField(
+        label='Representative Depth Profile 2',
+        required=False,
+    )
+    rep_depth3 = forms.FloatField(
+        label='Representative Depth Profile 3',
+        required=False,
+    )
+    rep_depth4 = forms.FloatField(
+        label='Representative Depth Profile 4',
+        required=False,
+    )
+    rep_depth5 = forms.FloatField(
+        label='Representative Depth Profile 5',
+        required=False,
+    )
+    avg_depth = forms.FloatField(
+        label='Average Depth',
+        required=False,
+    )
+    avg_float_time = forms.FloatField(
+        label='Average Float Time',
+        required=False,
+    )
+    avg_velocity = forms.FloatField(
+        label='Average Velocity',
+        required=False,
+    )
+    physical_assessment = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Physical Assessment Conducted?',
+        choices= place_holder_choices,
+        initial='1'
+    )
+
+
