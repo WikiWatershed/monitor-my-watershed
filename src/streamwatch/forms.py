@@ -43,10 +43,21 @@ class StreamWatchForm(forms.Form):
         required=False,
         label='Time'
     )
+    project_name = forms.ChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Project Name',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    reach_length = forms.FloatField(
+        label='Approximate Reach Length',
+        required=False,
+    )
     # mutiple choices
-    activity_types = forms.MultipleChoiceField(
+    activity_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
-        label='Activity type(s):',
+        label='Activity type(s)',
         required=True,
         choices = ACTIVITY_TYPE_CHOICES)    
 
@@ -89,71 +100,96 @@ class StreamWatchForm2(forms.Form):
     #     queryset= abundance_choices,
     # )
     
-    # single choice
-    weather_cond = forms.ChoiceField(
+    # Visual Assessment (All Forms)
+    weather_cond = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
         required=False,
-        widget=forms.Select,
-        label='Current Weather Conditions:',
-        choices= weather_condition_choices,
-        initial='1'
+        label='Current Weather Conditions',
+        choices= water_odor_choices,
     )
     time_since_last_precip = forms.ChoiceField(
         required=False,
         widget=forms.Select,
-        label='Time Since Last Rain or Snowmelt:',
+        label='Time Since Last Rain or Snowmelt',
         choices= place_holder_choices,
         initial='1'
-    )
-    
+    )    
     water_color = forms.ChoiceField(
         required=False,
         widget=forms.Select,
-        label='Water Color:',
+        label='Water Color',
         choices= water_color_choices,
         initial='1'
     )
     water_odor = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
-        required=True,
-        label='Water Odor:',
+        required=False,
+        label='Water Odor',
         choices= water_odor_choices,
     )
-        
-    # floating number input
-    air_temp = forms.FloatField(
-        label='Air Temperature',
-        required=False,
-    )
-    
     turbidity = forms.ChoiceField(
         required=False,
         widget=forms.Select,
-        label='Turbidity:',
+        label='Turbidity',
         choices= place_holder_choices,
         initial='1'
     )
-    
     water_movement = forms.ChoiceField(
         required=False,
         widget=forms.Select,
-        label='Turbidity:',
+        label='Water Movement',
         choices= place_holder_choices,
         initial='1'
     )
-
-    
-    
-class StreamWatchForm3(forms.Form):
-    aquatic_vegetation = forms.ChoiceField(
+    aquatic_veg_amount = forms.ChoiceField(
         required=True,
         widget=forms.Select,
-        label='Aquatic Vegetation:',
+        label='Aquatic Vegetation Amount',
         choices= place_holder_choices,
         initial='1'
+    )
+    aquatic_veg_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Aquatic Vegetation Type',
+        choices= place_holder_choices,
     )
     surface_coating = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=True,
-        label='Surface Coating:',
+        label='Surface Coating',
         choices= place_holder_choices,
+    )
+    algae_amount = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Algae Amount',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    algae_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
+        required=True,
+        label='Algae Type',
+        choices= place_holder_choices,
+    )
+    site_observation = forms.CharField(
+        required=False,
+        label='General Comments and Site Observations',
+        max_length=255
+    )   
+    
+    
+  # In-stream Habitat Assessment (BAT form)  
+    
+    
+    
+
+    
+    
+class StreamWatchForm3(forms.Form):
+    
+    air_temp = forms.FloatField(
+        label='Air Temperature',
+        required=False,
     )
