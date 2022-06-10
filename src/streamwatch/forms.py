@@ -117,8 +117,8 @@ class StreamWatchForm2(forms.Form):
     water_color = forms.ChoiceField(
         required=False,
         widget=forms.Select,
-        label='Water Color',
-        choices= water_color_choices,
+        label='Water Color:',
+        choices= variable_choice_options('waterColor'),
         initial='1'
     )
     water_odor = forms.MultipleChoiceField(
