@@ -1226,6 +1226,10 @@ div#followedSites .mdl-card__menu {
     width: 100px;
 }
 
+.form-streamwatch .measurement-table input[type="number"] {
+    width: auto;
+}
+
 .form-leafpack .fa {
     margin-right: 4px;
 }
