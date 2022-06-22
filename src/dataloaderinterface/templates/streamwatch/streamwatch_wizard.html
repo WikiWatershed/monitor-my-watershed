@@ -23,18 +23,18 @@
                 <div class="col-12">
                     <div class="page-title text-center">
                         {% if request.resolver_match.view_name == "streamwatch:create" %}
-                            <h3>StreamWatch Activity Form</h3>
+                            <h3>StreamWatch Assessment</h3>
                             <h6>Site ID: {{ sampling_feature_code }}</h6>
                             
                         {% else %}
-                            <h3>StreamWatch Activity Form</h3>
+                            <h3>StreamWatch Assessment Form</h3>
                             <h6>Site ID: {{ sampling_feature_code }} (Edit Form)</h6>
                         {% endif %}
                     </div>
                 </div>
             </div>
             <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
-            <form class="form-leafpack form-streamwatch" method="POST"
+            <form class="form-leafpack form-streamwatch" id="form-container" method="POST" 
                     {% if request.resolver_match.view_name == "streamwatch:create" %}
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
@@ -46,9 +46,33 @@
                     {{ wizard.management_form }}
                     {% if wizard.form.forms %}
                         {{ wizard.form.management_form }}
-                        {% for form in wizard.form.forms %}
-                            {{ form }}
-                        {% endfor %}
+                        {% if wizard.steps.step1 == 3 %}
+                            <div class="row">
+                                <div class="col-12">
+                                    <h5 class="headline d-inline-block">Enter measurements taken in the field. Select method  then add parameters</h5>
+                                </div>
+                            </div>
+                            <div class="row std-row">
+                                {{ wizard.form.site_registration }}
+                                <div class="col-12">
+                                    <button type="button" class="mdl-button mdl-button--raised mdl-button--colored" id="btn-add-method">Add Method</button>
+                                </div>
+                                <br><br>
+                                {% for form in wizard.form.forms %}
+                                    {% include 'includes/CAT_sensor_form.template.html' %}
+                                    <br><br> 
+                                {% endfor %}
+                                <div id="form-end"></div>
+                            </div>
+
+                        {% else%}
+                            {% for form in wizard.form.forms %}
+                            <div class="sensor-form">
+                                {{ form.as_p }}
+                            </div>
+                                
+                            {% endfor %}
+                        {% endif %}
 
                     {% else %}
                         {% if wizard.steps.step1 == 1 %}
@@ -254,7 +278,7 @@
                         <div class="row std-row">
                             {{ wizard.form.site_registration }}
                             <div class="col-12">
-                                <button type="button" class="mdl-button mdl-button--raised mdl-button--colored">Add Method</button>
+                                <button type="button" class="mdl-button mdl-button--raised mdl-button--colored" id="btn-add-method">Add Method</button>
                             </div>
                             <br><br>
 
@@ -309,6 +333,9 @@
                                 </div>
                             </div>
                         </div>
+                        {% comment %} {% elif wizard.steps.step1 == 3 %}
+                            {{wizard.formset.management_form}}
+                            {% for form in wizard.formset %} {{form}} {%endfor%} {% endcomment %}
                         {% endif %}
 
                     {% endif %}
@@ -319,20 +346,21 @@
                 <div class="row">
                     <div class="col">
                         <div class="d-flex justify-content-end">
-                        <!-- <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
                                 {% if streamwatch.pk is None %}
                                     href="{% url 'streamwatches' sampling_feature_code %}"
                                 {% else %}
                                     href="{% url 'streamwatch:view' sampling_feature_code streamwatch.id %}"
                                 {% endif %}
-                        >Cancel</a> -->
+                        >Cancel</a>
 
                         {% if wizard.steps.prev %}
-                        <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.first }}">{% trans "first step" %}</button>
+                        {% comment %} <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.first }}">{% trans "first step" %}</button> {% endcomment %}
                         <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
                         {% endif %}
                         <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after">
-                            {% if streamwatch.pk is None %}Next{% else %}Save Edits{% endif %}
+                            {% comment %} {% if streamwatch.pk is None %}Next{% else %}Save Edits{% endif %} {% endcomment %}
+                            {% if wizard.steps.step1 < wizard.steps.count %}Next{% else %}Save Edits{% endif %}
                         </button>
                         </div>
                     </div>

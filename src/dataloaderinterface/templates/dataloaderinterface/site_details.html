@@ -571,7 +571,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for leafpack in leafpacks %}
+                            {% comment %} {% for leafpack in leafpacks %}
                                 <tr>
                                     <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_date }}</td>
                                     <td>{{ leafpack.taxon_count }}</td>
@@ -585,7 +585,7 @@
                                         </a>
                                     </td>
                                 </tr>
-                            {% endfor %}
+                            {% endfor %} {% endcomment %}
                             </tbody>
                         </table>
                     {% else %}

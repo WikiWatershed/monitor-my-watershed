@@ -75,6 +75,12 @@
                                                     View Details
                                                 </a>
                                             </td>
+                                            <td class="mdl-data-table__cell--non-numeric">
+                                                <a class="mdl-button mdl-js-button button-link mdl-button--primary"
+                                                   href="{% url 'streamwatch:addsensor' siteregistration.sampling_feature_code leafpack.id %}">
+                                                    Add Sensor
+                                                </a>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 {% else %}

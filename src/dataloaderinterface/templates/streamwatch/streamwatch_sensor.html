@@ -1,0 +1,131 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load static %}
+{% load site %}
+{% load widget_tweaks %}
+{% load i18n %}
+
+{% block page_title %}
+    <title>
+    {% if request.resolver_match.view_name == "streamwatch:create" %}
+        Create StreamWatch Experiment at {{ sampling_feature_code }}
+    {% else %}
+        Edit StreamWatch Experiment at {{ streamwatch.site_registration.sampling_feature_name }}
+    {% endif %}
+    </title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-lightblue"></div>
+
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title text-center">
+                        {% if request.resolver_match.view_name == "streamwatch:create" %}
+                            <h3>StreamWatch Activity Form</h3>
+                            <h6>Site ID: {{ sampling_feature_code }}</h6>
+                            
+                        {% else %}
+                            <h3>StreamWatch Activity Form</h3>
+                            <h6>Site ID: {{ sampling_feature_code }} (Edit Form)</h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+           
+            <form class="form-leafpack form-streamwatch" id="form-container" method="POST" 
+                    {% if request.resolver_match.view_name == "streamwatch:create" %}
+                  action="{% url 'streamwatch:create' sampling_feature_code %}"
+                    {% else %}
+                  action="{% url 'streamwatch:addsensor' sampling_feature_code streamwatch.pk %}"
+                    {% endif %}>
+                {% csrf_token %}
+
+                <div class="row">
+                    <div class="col-12">
+                        <h5 class="headline d-inline-block">Enter measurements taken in the field. Select method  then add parameters</h5>
+                    </div>
+                </div>
+
+                <div class="col-sm-12 col-md-6 sensor-form">
+                    <div class="mdl-card mdl-shadow--2dp full-width">                                    
+                        <div class="mdl-card__supporting-text default-font">
+                
+                            <div class="form-field col-6">
+                                <label for="{{ form.test_method.id_for_label }}">{{ form.test_method.label }}</label>
+                                {{ form.test_method|add_class:"form-control" }}
+                            </div>
+
+                            <div class="row">
+                                <div class="form-field col-6">
+                                    <label for="{{ form.meter.id_for_label }}">{{ form.meter.label }}</label>
+                                    {{ form.meter|add_class:"form-control" }}
+                                </div> 
+                                <div class="form-field col-6">
+                                    {{ form.calibration_date.errors }}
+                                    <label for="{{ form.calibration_date.id_for_label }}">{{ form.calibration_date.label }}</label>                                               </label>
+                                    {{ form.calibration_date|add_class:"form-control datepicker" }}
+                                </div>
+                            </div>
+                            <br><br>
+                
+                            <div class="measurement-table">                                        
+                                <div class="row">
+                                    <div class="form-field col"><label>Parameter</label></div> 
+                                    <div class="form-field col-3"><label>Measurement</label></div> 
+                                    <div class="form-field col-4"><label>Unit</label></div> 
+                                </div>
+
+                                {{parameter_formset.management_form}}
+                
+                                {% for pform in parameter_formset %}
+                                <div class="row parameter-form">
+
+                                    {% include 'includes/sensor_parameter_form.template.html' %}
+                                    {% comment %} {{pform.as_table}} {% endcomment %}
+                                </div>
+                                {% endfor %}
+                                
+                            </div>
+                
+                            <button type="button" class="mdl-button mdl-button--raised mdl-button--colored" id="btn-add-parameter">Add Parameter</button>
+                
+                        </div>
+                    </div>
+                </div>
+
+                <br><br>
+                <div class="row">
+                    <div class="col">
+                        <div class="d-flex justify-content-end">
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                {% if streamwatch.pk is None %}
+                                    href="{% url 'streamwatches' sampling_feature_code %}"
+                                {% else %}
+                                    href="{% url 'streamwatch:view' sampling_feature_code streamwatch.id %}"
+                                {% endif %}
+                        >Cancel</a>
+                        <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after">
+                            {% if streamwatch.pk is None %}Save{% else %}Save Edits{% endif %}
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/streamwatch-create.js' %}"></script>
+{% endblock %}

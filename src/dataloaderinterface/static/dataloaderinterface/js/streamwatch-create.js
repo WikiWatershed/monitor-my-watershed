@@ -27,65 +27,55 @@
         }
     });
 
-    $("#id_had_storm").change(function () {
-        var val = parseInt($(this).val());
-        var collapse = $("#storm-additional");
-        var items = collapse.find("input");
-        if (val == 2) {
-            items.each(function () {
-                if ($(this).attr("data-name")) {
-                    $(this).attr("name", $(this).attr("data-name"));
-                    $(this).removeAttr("data-name");
-                }
-                $(this).prop('required', true);
-            });
-            $("#storm-additional").collapse('show');
-        }
-        else {
-            items.each(function () {
-                if ($(this).attr("name")) {
-                    $(this).attr("data-name", $(this).attr("name"));
-                    $(this).removeAttr("name");
-                }
-                $(this).prop('required', false);
-            });
-            $("#storm-additional").collapse('hide');
-        }
-    });
+    favorite =[];
+    //totalForms = $('#id_2_TOTAL_FORMS');
+    let totalForms = document.querySelector("#id_para-TOTAL_FORMS")
+    let sensorForm = document.querySelectorAll(".parameter-form")
+    let container = document.querySelector("#para-container")
+    let addButton = document.querySelector("#para-end")
 
-    // Trigger on page load to set properties
-    $("#id_had_storm").trigger("change");
-    $('#d_placement_date, #id_retrieval_date').trigger("change");
+    let formNum = sensorForm.length-1 // Get the number of the last form on the page with zero-based indexing
+    //alert("My selected types are: " + favorite.join(", "));
 
-    $(".bug-count").change(function() {
-        var items = $(this).closest(".mdl-card").find(".bug-count");
-        var count = 0;
-        var total = $(this).closest(".mdl-card").find(".bug-total-count");
-
-        items.each(function () {
-            var val = $(this).val();
-            if (val) {
-                count += parseInt(val);
-            }
+    $("input[name='0-activity_type']").click(function() {
+        favorite =[];
+        $.each($("input[name='0-activity_type']:checked"), function(){
+            favorite.push($(this).val());
         });
-
-        total.val(Math.max(total.val(), count));
+        //alert("My selected types are: " + favorite.join(", "));
     });
 
-    $(".bug-total-count").change(function() {
-        var items = $(this).closest(".mdl-card").find(".bug-count");
-        var count = 0;
-        var total = $(this).closest(".mdl-card").find(".bug-total-count");
+    $("form").submit(function() {
+        // favorite =[];
+        // $.each($("input[name='0-activity_type']:checked"), function(){
+        //     favorite.push($(this).val());
+        // });
+        //alert("My selected types are: " + favorite.join(", "));
+    })
 
-        items.each(function () {
-            var val = $(this).val();
-            if (val) {
-                count += parseInt(val);
-            }
-        });
+    $("#btn-add-parameter").click(function(){
+        //alert("Add method clicked!");
+        AddSensorParameterForm();
+    }); 
 
-        if (count > total.val()) {
-            $(items).val("");
-        }
-    });
+
+    // tutorial for dynamically adding Forms in Django with Formsets and JavaScript
+    // https://www.brennantymrak.com/articles/django-dynamic-formsets-javascript
+    
+    function AddSensorParameterForm() {
+        //e.preventDefault()
+    
+        let newForm = sensorForm[0].cloneNode(true) //Clone the bird form
+        let formRegex = RegExp(`para-(\\d){1}-`,'g') //Regex to find all instances of the form number
+
+        formNum++ //Increment the form number
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `para-${formNum}-`) //Update the new form to have the correct form number
+
+        //container.insertBefore(newForm, addButton) //Insert the new form at the end of the list of forms
+        //$(newForm).insertBefore( "#btn-add-parameter" );
+        $(newForm).val('');
+        $('.measurement-table').append($(newForm));
+    
+        totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
+    }
 });

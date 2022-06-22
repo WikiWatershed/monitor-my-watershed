@@ -2,6 +2,7 @@ from django import forms
 #from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from dataloaderinterface.models import SiteRegistration
 from django.core.exceptions import ObjectDoesNotExist
+from django.forms import formset_factory
 from leafpack.models import LeafPackType
 from .models import variable_choice_options
 
@@ -10,6 +11,20 @@ place_holder_choices = (
         (2, 'Choice #2'),
         (3, 'Choice #3')
     )
+
+parameter_choices = (
+        (1, 'Air Temperature'),
+        (2, 'Dissolved Oxygen (mg/L)'),
+        (3, 'Nitrate'),
+        (4, 'Phosphate'),
+        (5, 'pH'),
+        (6, 'Specific Conductivity (uL/cm)'),
+        (7, 'Total Dissolved Solids'),
+        (8, 'Turbidity (JTU)'),
+        (9, 'Water Temp (C)')
+    )
+
+
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     template_name = 'mdl-checkbox-select-multiple.html'
 
@@ -84,6 +99,8 @@ class StreamWatchForm2(forms.Form):
         (5,'Petroleum'),
         (6,'Other'))
 
+
+    
     abundance_choices = variable_choice_options('wildlife')
     # types = forms.ModelMultipleChoiceField(
     #     widget=MDLCheckboxSelectMultiple,
@@ -313,10 +330,92 @@ class StreamWatchForm2(forms.Form):
     )
     
     
+Max_Parameter_Count_=3
+class StreamWatch_CAT_Sensor_Form(forms.Form):
     
+    def __init__(self, *args, **kwargs):
+        super(StreamWatch_CAT_Sensor_Form, self).__init__(*args, **kwargs)
+        
+        for q in range(Max_Parameter_Count_):
+            self.fields['parameter_' + str(q)] = forms.ChoiceField(
+                required=False,
+                widget=forms.Select,
+                label='Parameter',
+                choices= place_holder_choices,
+                initial='1')
+            
+            self.fields['measurement_' + str(q)] = forms.FloatField(
+                label='Measurement',
+                required=False,
+            )
+            self.fields['unit_' + str(q)] = forms.ChoiceField(
+                required=False,
+                widget=forms.Select,
+                label='Unit',
+                choices= place_holder_choices,
+                initial='1'
+            )
+            
+            
+    # Field Measurmenets (CAT/BaCT Forms)
+    meter = forms.CharField(
+        required=False,
+        label='pH Meter #'
+    )     
+    calibration_date = forms.DateField(
+        required=False,
+        label='Date of Last Calibration'
+    )
+    test_method = forms.ChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Test Method',
+        choices= place_holder_choices,
+        initial='1'
+    )
 
+class StreamWatch_Sensor_Form(forms.Form):
+            
+    # Field Measurmenets (CAT/BaCT Forms)
+    meter = forms.CharField(
+        required=False,
+        label='pH Meter #'
+    )     
+    calibration_date = forms.DateField(
+        required=True,
+        label='Date of Last Calibration'
+    )
+    test_method = forms.ChoiceField(
+        required=True,
+        widget=forms.Select,
+        label='Test Method',
+        choices= place_holder_choices
+    )
+
+# a parameter measurement for a sensor
+class StreamWatch_Sensor_Parameter_Form(forms.Form):
+    parameter = forms.ChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Parameter',
+        choices= parameter_choices,
+        initial='1'
+    )
     
+    measurement = forms.FloatField(
+        label='Measurement',
+        required=False,
+    )
     
+    unit = forms.ChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Unit',
+        choices= place_holder_choices,
+        initial='1'
+    )
+
+
 class StreamWatchForm3(forms.Form):
     
     # Field Measurmenets (CAT/BaCT Forms)
