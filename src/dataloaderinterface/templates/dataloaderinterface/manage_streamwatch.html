@@ -25,7 +25,7 @@
                         </a>
 
                         <div class="mdl-tooltip" data-mdl-for="new-streamwatch-btn">
-                            Add New Streamwatch Experiment
+                            Add New Streamwatch Assessment
                         </div>
 
                         <br><br>
@@ -71,14 +71,14 @@
                                             </td>
                                             <td class="mdl-data-table__cell--non-numeric">
                                                 <a class="mdl-button mdl-js-button button-link mdl-button--primary"
-                                                   href="{% url 'leafpack:view' siteregistration.sampling_feature_code leafpack.id %}">
+                                                   href="{% url 'streamwatch:view' siteregistration.sampling_feature_code leafpack.id %}">
                                                     View Details
                                                 </a>
                                             </td>
                                             <td class="mdl-data-table__cell--non-numeric">
                                                 <a class="mdl-button mdl-js-button button-link mdl-button--primary"
                                                    href="{% url 'streamwatch:addsensor' siteregistration.sampling_feature_code leafpack.id %}">
-                                                    Add Sensor
+                                                    Add Measurement
                                                 </a>
                                             </td>
                                         </tr>

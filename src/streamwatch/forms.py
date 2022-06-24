@@ -24,6 +24,7 @@ parameter_choices = (
         (9, 'Water Temp (C)')
     )
 
+measurement_method_choices =(('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     template_name = 'mdl-checkbox-select-multiple.html'
@@ -389,7 +390,8 @@ class StreamWatch_Sensor_Form(forms.Form):
         required=True,
         widget=forms.Select,
         label='Test Method',
-        choices= place_holder_choices
+        choices= measurement_method_choices,
+        initial='Meter'
     )
 
 # a parameter measurement for a sensor

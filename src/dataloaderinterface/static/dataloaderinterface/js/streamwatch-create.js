@@ -51,7 +51,21 @@
         //     favorite.push($(this).val());
         // });
         //alert("My selected types are: " + favorite.join(", "));
-    })
+    });
+
+    $("#id_sensor-test_method").change(function() {
+        //alert("My selected types are: " + $(this).find(":selected").text());
+
+        if($(this).find(":selected").text()!="Meter") { //3rd radiobutton
+            $("#id_sensor-calibration_date").attr("disabled", "disabled"); 
+            $("#id_sensor-meter").attr("disabled", "disabled"); 
+        }
+        else {
+            $("#id_sensor-calibration_date").removeAttr("disabled"); 
+            $("#id_sensor-meter").removeAttr("disabled"); 
+        }
+
+    });
 
     $("#btn-add-parameter").click(function(){
         //alert("Add method clicked!");
@@ -77,5 +91,6 @@
         $('.measurement-table').append($(newForm));
     
         totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
+
     }
 });

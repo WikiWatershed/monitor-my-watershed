@@ -99,7 +99,45 @@ class StreamWatchCreateView(SessionWizardView):
     #     if self.steps.current == '0':
     #         self.activity_type = form.cleaned_data['activity_type'];
     #     return form.data
+    def done(self, form_list, **kwargs):
+        # process the data …
+        form_data = [form.cleaned_data for form in form_list]
+        # save/update 
+        return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
     
+class StreamWatchDetailView(DetailView):
+    """
+    Detail View
+    """
+    template_name = 'streamwatch/streamwatch_detail.html'
+    slug_field = 'sampling_feature_code'
+    context_object_name ='streamwatch'
+    #model = LeafPack
+
+    def get_object(self, queryset=None):
+        #return LeafPack.objects.get(id=self.kwargs['pk'])
+        streamwatch ={};
+        streamwatch['investigator1'] ='John Doe'
+        streamwatch['investigator2'] ='Jane Doe'
+        streamwatch['collect_date']='6/1/2022'
+        streamwatch['project_name']='Superman #1'
+        streamwatch['reach_length']='2 miles'
+        streamwatch['weather_cond']='Cloudy'
+        streamwatch['time_since_last_precip']='10 hrs'
+        streamwatch['water_color']='Clear'
+        streamwatch['water_odor']='Normal'
+        
+        streamwatch['turbidity_obs']='Clear'
+        streamwatch['water_movement']='Swift/Waves'
+        streamwatch['aquatic_veg_amount']='Scarce'
+        streamwatch['aquatic_veg_type']='Submergent'
+        streamwatch['surface_coating']='None'
+        streamwatch['algae_amount']='Scarce'
+        streamwatch['algae_type']='Filamentous'
+        streamwatch['site_observation']='Some comments on and on...'
+        return streamwatch
+        
+
 class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
     """
     Delete view
@@ -108,7 +146,7 @@ class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_object(self, queryset=None):
         #return LeafPack.objects.get(id=self.kwargs['pk'])
-        return None
+        return {}
 
     def post(self, request, *args, **kwargs):
         
@@ -157,3 +195,28 @@ class StreamWatchCreateSensorView(FormView):
             #leafpack = self.get_object()
             #leafpack.save()
             return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
+        
+def download_StreamWatch_csv(request, sampling_feature_code, pk):
+    """
+    Download handler that uses csv_writer.py to parse out a leaf pack expirement into a csv file.
+
+    :param request: the request object
+    :param sampling_feature_code: the first URL parameter
+    :param pk: the second URL parameter and id of the leafpack experiement to download 
+    """
+    filename, content = get_leafpack_csv(sampling_feature_code, pk)
+
+    response = HttpResponse(content, content_type='application/csv')
+    response['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+
+    return response
+
+
+def get_leafpack_csv(sfc, lpid):  # type: (str, int) -> (str, str)
+    # leafpack = LeafPack.objects.get(id=lpid)
+    # site = SiteRegistration.objects.get(sampling_feature_code=sfc)
+
+    # writer = LeafPackCSVWriter(leafpack, site)
+    # writer.write()
+
+    return None #writer.filename(), writer.read()
