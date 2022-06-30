@@ -332,10 +332,10 @@ class StreamWatchForm2(forms.Form):
     
     
 Max_Parameter_Count_=3
-class StreamWatch_CAT_Sensor_Form(forms.Form):
+class StreamWatch_CAT_Measurement_Form(forms.Form):
     
     def __init__(self, *args, **kwargs):
-        super(StreamWatch_CAT_Sensor_Form, self).__init__(*args, **kwargs)
+        super(StreamWatch_CAT_Measurement_Form, self).__init__(*args, **kwargs)
         
         for q in range(Max_Parameter_Count_):
             self.fields['parameter_' + str(q)] = forms.ChoiceField(
@@ -375,7 +375,7 @@ class StreamWatch_CAT_Sensor_Form(forms.Form):
         initial='1'
     )
 
-class StreamWatch_Sensor_Form(forms.Form):
+class StreamWatch_Measurement_Form(forms.Form):
             
     # Field Measurmenets (CAT/BaCT Forms)
     meter = forms.CharField(
@@ -395,26 +395,26 @@ class StreamWatch_Sensor_Form(forms.Form):
     )
 
 # a parameter measurement for a sensor
-class StreamWatch_Sensor_Parameter_Form(forms.Form):
+class StreamWatch_Measurement_Parameter_Form(forms.Form):
     parameter = forms.ChoiceField(
-        required=False,
+        required=True,
         widget=forms.Select,
         label='Parameter',
         choices= parameter_choices,
-        initial='1'
+        # initial='1'
     )
     
     measurement = forms.FloatField(
         label='Measurement',
-        required=False,
+        required=True,
     )
     
     unit = forms.ChoiceField(
-        required=False,
+        required=True,
         widget=forms.Select,
         label='Unit',
         choices= place_holder_choices,
-        initial='1'
+        # initial='1'
     )
 
 

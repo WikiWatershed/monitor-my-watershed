@@ -1,13 +1,13 @@
 {% load widget_tweaks %}
 <div class="form-field col-5">
-    {{ pform.parameter|add_class:"form-control-sm" }}
+    {{ pform.parameter|add_class:"form-control" }}
     {% comment %} htao notes: when use form-control, dropdown added in runtime won't work {% endcomment %}
 </div> 
 
 <div class="form-field col-3">
-    {{ pform.measurement|add_class:"form-control-sm" }}
+    {{ pform.measurement|add_class:"form-control" }}
 </div> 
 
 <div class="form-field col-4">
-    {{ pform.unit|add_class:"form-control-sm" }}
+    {{ pform.unit|add_class:"form-control" }}
 </div> 

@@ -77,9 +77,9 @@
                                     <div class="form-field col-4"><label>Unit</label></div> 
                                 </div>
 
-                                {{parameter_formset.management_form}}
+                                {{parameter_forms.management_form}}
                 
-                                {% for pform in parameter_formset %}
+                                {% for pform in parameter_forms %}
                                 <div class="row parameter-form">
 
                                     {% include 'includes/sensor_parameter_form.template.html' %}

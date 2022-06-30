@@ -18,7 +18,8 @@
                         StreamWatch Assessment Details at
                         <a href="{% url 'site_detail' sampling_feature_code %}"
                            style="color: inherit;">
-                            {{ streamwatch.site_registration.sampling_feature_name }}
+                            {% comment %} {{ streamwatch.site_registration.sampling_feature_name }} {% endcomment %}
+                            {{ streamwatch.sampling_feature_name }}
                         </a>
                     </div>
                 </div>
@@ -117,7 +118,7 @@
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
                         <tr>
-                            <td class="mdl-data-table__cell--icon"><i class="fa fa-calendar-minus-o icon-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-sun-o icon-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Current Weather</td>
                             <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.retrieval_date }}</td>
                         </tr>
@@ -134,239 +135,174 @@
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-three-quarters icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Water Odor</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor|default:"Unknown" }}
-                                <small> °C</small>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor}}
                             </td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Turbidity</td>
                             <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.turbidity_obs|default:"Unknown"  }}
-                                <small> °C</small>
                             </td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Water Movement</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_movement|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_movement|default:"Unknown"  }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Aquatic Vegetation Amount</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_amount|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_amount|default:"Unknown"  }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Aquatic Vegetation Type</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_type|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_type|default:"Unknown"  }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Surface Coating</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.surface_coating|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.surface_coating|default:"Unknown"  }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Algae Amount</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.algae_amount|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.algae_amount|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Algae Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.algae_type|default:"Unknown"  }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label"></td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
-                            <td class="mdl-data-table__cell--non-numeric label"></td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.|default:"Unknown"  }}
-                                <small> °C</small>
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.|default:"Unknown"  }}</td>
                         </tr>
                     </table>
                 </div>
 
                 <div class="col-sm-12 col-md-6">
-                    <h6 class="title">Storm and Non-Storm Events</h6>
+                    <h6 class="title">In-stream Habitat Assessment</h6>
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Did storms occur while your leaf packs were in
-                                the stream?
-                            </td>
-                            <td class="mdl-data-table__cell--non-numeric">
-                                {% if streamwatch.had_storm is None %}
-                                    Unknown
-                                {% elif streamwatch.had_storm %}
-                                    Yes
-                                {% else %}
-                                    No
-                                {% endif %}
-                            </td>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">In-Stream Structures</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.instream_structure|default:"Unknown"  }}</td>
                         </tr>
-                        {% if streamwatch.had_storm %}
-                            <tr>
-                                <td class="mdl-data-table__cell--non-numeric indent-left label">Number of storms that
-                                    occurred
-                                </td>
-                                <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.storm_count }}</td>
-                            </tr>
-                            <tr>
-                                <td class="mdl-data-table__cell--non-numeric indent-left label">Total precipitation depth that
-                                    occurred
-                                </td>
-                                <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.storm_precipitation }} <small>cm</small></td>
-                            </tr>
-                        {% endif %}
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Did flooding occur?</td>
-                            <td class="mdl-data-table__cell--non-numeric">
-                                {% if streamwatch.had_flood is None %}
-                                    Unknown
-                                {% elif streamwatch.had_flood %}
-                                    Yes
-                                {% else %}
-                                    No
-                                {% endif %}
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-sun-o icon-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Stream Flow</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.stream_flow }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-calendar-plus-o icon-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Riffle Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_riffle }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-leaf icon-orange" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Run Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_run }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-three-quarters icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Pool Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_pool}}
                             </td>
                         </tr>
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Was this site experiencing a drought during
-                                your experiment?
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Woody Debris Amount</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.woody_debris_amt|default:"Unknown"  }}
                             </td>
-                            <td class="mdl-data-table__cell--non-numeric">
-                                {% if streamwatch.had_drought is None %}
-                                    Unknown
-                                {% elif streamwatch.had_drought %}
-                                    Yes
-                                {% else %}
-                                    No
-                                {% endif %}
-                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Macroinvertebrate Habitat Types</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.macroinvert_habitat_type|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Silt and Clay Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_silt_clay|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Sand Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_sand|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Gravel Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_gravel|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Cobble Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_cobble|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Boulder Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_boulder|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-thermometer-quarter icon-light-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Bedrock Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_bedrock|default:"Unknown"  }}</td>
                         </tr>
                     </table>
+                </div>
+
+                
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Chemical Assessment Measurement(s)</h6>
+                    <hr class="dotted">
+                    <div id="accordion" class="title">
+                        {% for measurement  in streamwatch.CAT_measurements%}
+                            <h6>{{measurement.name}}</h6>
+                            <div>
+                                <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Test method</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Meter</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.id}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Calibration date</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.cal_date}}</td>
+                                    </tr>
+                                </table>
+
+                                <table class = "mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                                    <thead>
+                                    <tr><th class = "mdl-data-table__cell--non-numeric">Parameter</th>
+                                        <th>Measurement</th><th>Unit</th></tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        {% for par  in measurement.pars%}
+                                        <tr><td class = "mdl-data-table__cell--non-numeric">{{par.parName}}</td>
+                                            <td>{{par.measurement}}</td><td>{{par.unit}}</td></tr>
+                                        {%endfor%}
+
+                                    </tbody>
+                                </table>
+
+
+                            </div>
+                        {%endfor%}
+                    </div>
+
                 </div>
             </div>
 
             <div class="row">
-                <div class="col-12">
-                    <h5 class="headline">Macroinvertebrate Counts</h5>
-                    {% include 'includes/macroinv-link.template.html' %}
-                </div>
-                
-                {% for group in leafpack_groups%}
-
-                    <div class="col-sm-12 col-md-4">
-                            <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width macroinv" data-group="{{group.name}}">
-                                <tr>
-                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header" colspan="2" style="font-size:16px; color:#048a8a;"> {{group.name}}</th>
-                                </tr>
-                                <tr>
-                                    <th class="mdl-data-table__cell--non-numeric mdl-data-table__header">Taxon</th>
-                                    <th class="mdl-data-table__header">Tally</th>
-                                </tr>
-                                {% for bug_data in group.list %}
-                                    <tr class="taxon">
-                                        <td class="mdl-data-table__cell--non-numeric" data-name>
-                                            {% if bug_data.bug.url != None %}
-                                                <a href="{{ bug_data.bug.url }}"
-                                                   target="_blank">{{ bug_data.bug.display_name|capfirst }}</a>
-                                            {% else %}
-                                                {{ bug_data.bug.display_name|capfirst }}
-                                            {% endif %}
-                                        </td>
-                                        <td data-count>{{ bug_data.bug_count }}</td>
-                                    </tr>
-                                {% endfor %}
-                                <tr class="taxon_sum">
-                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Total # of Taxa Groups Present
-                                    </td>
-                                    <td class="mdl-data-table__header" data-count>{{ group.presentCount }}</td>
-                                </tr>
-                                <tr class="taxon_sum">
-                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Group Weighting Factor
-                                    </td>
-                                    <td class="mdl-data-table__header" data-count>{{ group.wFactor }}</td>
-                                </tr>
-                                <tr class="taxon_sum">
-                                    <td class="mdl-data-table__cell--non-numeric mdl-data-table__header" data-name>Group Index Value
-                                    </td>
-                                    <td class="mdl-data-table__header" data-count>{{ group.GroupIndexValue }}</td>
-                                </tr>
-                            </table>
-                            <br>
-                    </div>
-                {% endfor %}
-
-                <div class="col-12">
-                    <br>
-                    <h5 class="headline">Summary Analysis</h5>
-                </div>
-                <div class="col-12">
-                    <h6 class="title">Results Overview</h6>
-                    <hr class="dotted">
-                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Total Number of Individuals Found</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.taxon_count }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Score</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.PTI_score|floatformat:0 }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Pollution Tolerance Index Rating</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.PollutionToleranceIndexRating }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Percent EPT</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_EPT|floatformat:2 }}%</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="col-sm-12 col-lg-7">
-                    <div class="svg-container2 mdl-shadow--2dp"></div>
-                    <br><br>
-                </div>
-                <div class="col-sm-12 col-lg-5">
-                    <div id="legend-container2">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                </div>
-
-                <div class="col-sm-12 col-lg-7"> 
-                    <label id="chkSortContainer" class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect"
-                           for="chkSortBars">
-                        <input id="chkSortBars" type="checkbox" class="mdl-checkbox__input">
-                        <span class="mdl-checkbox__label">Sort values</span>
-                    </label>
-                    <div class="svg-container mdl-shadow--2dp"></div>
-                    <br><br>
-                </div>
-
-                <div class="row">
-                    <div class="col-sm-12 col-md-4" id="legend-container-t0">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                    <div class="col-sm-12 col-md-4" id="legend-container-t1">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                    <div class="col-sm-12 col-md-4" id="legend-container-t2">
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover no-borders"></table>
-                    </div>
-                </div>
 
                 {% if streamwatch.site_observation %}
                     <div class="col-12">
@@ -416,4 +352,6 @@
     <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/streamwatch-detail.js' %}"></script>
+
 {% endblock %}
