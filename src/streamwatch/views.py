@@ -46,8 +46,8 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
 class CATCreateView(SessionWizardView):
     form_list = [
         ('setup',StreamWatchForm), 
-        ('conditions',StreamWatchForm2), 
-        ('cat',StreamWatchForm3)]
+        ('conditions',StreamWatchForm2)
+    ]
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
     object = None
@@ -59,12 +59,16 @@ class CATCreateView(SessionWizardView):
         if self.steps.current == 'my_step_name':
             context.update({'another_var': True})
         
-        start_form_data = self.get_cleaned_data_for_step('0')
-        if start_form_data:
-            if 'chemical' in start_form_data['activity_type']:
-                context['CAT']= True
-            else:
-                context['CAT']= False
+        setup_data = self.get_cleaned_data_for_step('setup')
+        if setup_data:
+            if 'chemical' in setup_data['activity_type']:
+                self.form_list['cat'] = StreamWatchForm3
+            if 'biological' in setup_data['activity_type']:
+                #TODO - PRT these are placeholders from when these forms are implemented
+                pass
+            if 'bacterial' in setup_data['activity_type']:
+                #TODO - PRT these are placeholders from when these forms are implemented
+                pass
         return context
        
     def done(self, form_list, **kwargs):
