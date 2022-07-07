@@ -1,0 +1,66 @@
+{% load widget_tweaks %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter measurements taken in the field. Select method  then add parameters</h5>
+    </div>
+</div>
+
+<div class="row std-row">
+    {{ wizard.form.site_registration }}
+    <div class="col-12">
+        <button type="button" class="mdl-button mdl-button--raised mdl-button--colored" id="btn-add-method">Add Method</button>
+    </div>
+    <br><br>
+
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">                                    
+            <div class="mdl-card__supporting-text default-font">
+
+                <div class="form-field col-6">
+                    <label for="{{ wizard.form.test_method.id_for_label }}">{{ wizard.form.test_method.label }}</label>
+                    {{ wizard.form.test_method|add_class:"form-control" }}
+                </div>
+
+                <div class="row">
+                    <div class="form-field col-6">
+                        <label for="{{ wizard.form.meter.id_for_label }}">{{ wizard.form.meter.label }}</label>
+                        {{ wizard.form.meter|add_class:"form-control" }}
+                    </div> 
+                    <div class="form-field col-6">
+                        {{ wizard.form.calibration_date.errors }}
+                        <label for="{{ wizard.form.calibration_date.id_for_label }}">{{ wizard.form.calibration_date.label }}</label>                                               </label>
+                        {{ wizard.form.calibration_date|add_class:"form-control datepicker" }}
+                    </div>
+                </div>
+                <br><br>
+
+                <div class="field-table">                                        
+                    <div class="row">
+                        <div class="form-field col"><label>Parameter</label></div> 
+                        <div class="form-field col-3"><label>Measurement</label></div> 
+                        <div class="form-field col-4"><label>Unit</label></div> 
+                    </div>
+
+                    <div class="row">
+                        <div class="form-field col-5">
+                            {{ wizard.form.parameter|add_class:"form-control" }}
+                        </div> 
+
+                        <div class="form-field col-3">
+                            {{ wizard.form.air_temp|add_class:"form-control" }}
+                        </div> 
+
+                        <div class="form-field col-4">
+                            {{ wizard.form.unit|add_class:"form-control" }}
+                        </div> 
+                    </div>
+                </div>
+                <br>
+
+                <button type="button" class="mdl-button mdl-button--raised mdl-button--colored">Add Parameter</button>
+
+            </div>
+        </div>
+    </div>
+</div>

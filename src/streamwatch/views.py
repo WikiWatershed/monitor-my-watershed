@@ -43,50 +43,14 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
         return context
 
-class xStreamWatchCreateView(FormView):
-    form_class = StreamWatchForm
-    template_name = 'streamwatch/streamwatch_form.html'
-    slug_field = 'sampling_feature_code'
-    object = None
-    
-    def get_context_data(self, **kwargs):
-            # if 'leafpack_form' is in kwargs, that means self.form_invalid was most likely called due to a failed POST request
-        if 'form' in kwargs:
-            self.object = kwargs['form'].instance
-
-        context = super(StreamWatchCreateView, self).get_context_data(**kwargs)
-
-        context['sampling_feature_code'] = self.kwargs[self.slug_field]
-
-        if self.object is None:
-            site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-            context['form'] = StreamWatchForm(initial={'site_registration': site_registration})
-
-        return context
-
-
-class StreamWatchCreateView(SessionWizardView):
-    #form_class = StreamWatchForm
-    form_list = [StreamWatchForm, StreamWatchForm2, StreamWatchForm3]
+class CATCreateView(SessionWizardView):
+    form_list = [
+        ('setup',StreamWatchForm), 
+        ('conditions',StreamWatchForm2), 
+        ('cat',StreamWatchForm3)]
     template_name = 'streamwatch/streamwatch_wizard.html'
-    #template_name = 'streamwatch/example.html'
     slug_field = 'sampling_feature_code'
     object = None
-    
-    def get_context_data(self, **kwargs):
-            # if 'leafpack_form' is in kwargs, that means self.form_invalid was most likely called due to a failed POST request
-        # if 'form' in kwargs:
-        #     self.object = kwargs['form'].instance
-
-        context = super(StreamWatchCreateView, self).get_context_data(**kwargs)
-
-        context['sampling_feature_code'] = self.kwargs[self.slug_field]
-
-        # if self.object is None:
-        #     site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-        #     context['form'] = StreamWatchForm(initial={'site_registration': site_registration})
-
-        return context
     
     def get_context_data(self, form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
@@ -101,14 +65,8 @@ class StreamWatchCreateView(SessionWizardView):
                 context['CAT']= True
             else:
                 context['CAT']= False
-                    
         return context
        
-    
-    # def get_form_step_data(self, form):
-    #     if self.steps.current == '0':
-    #         self.activity_type = form.cleaned_data['activity_type'];
-    #     return form.data
     def done(self, form_list, **kwargs):
         id = models.sampling_feature_code_to_id(self.sampling_feature_code)
         
@@ -192,9 +150,7 @@ class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
         return {}
 
     def post(self, request, *args, **kwargs):
-        
         # to do: implement delete current streamWatch assessment
-        
         #leafpack = self.get_object()
         #leafpack.delete()
         return redirect(reverse('site_detail', kwargs={self.slug_field: self.kwargs[self.slug_field]}))

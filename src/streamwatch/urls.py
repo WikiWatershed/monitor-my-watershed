@@ -1,14 +1,13 @@
 from django.conf.urls import url
 
-from .views import StreamWatchCreateView, StreamWatchCreateMeasurementView, StreamWatchDeleteView, StreamWatchDetailView, download_StreamWatch_csv
-#, StreamWatchUpdateView, download_StreamWatch_csv
+from streamwatch import views
 
 urlpatterns = [
     # url(r'create/$', StreamWatchCreateView.as_view(), name='create'),
-    url(r'(?P<pk>.*?)/addsensor/$', StreamWatchCreateMeasurementView.as_view(), name='addsensor'),
-    url(r'create/$', StreamWatchCreateView.as_view(), name='create'),
+    url(r'(?P<pk>.*?)/addsensor/$', views.StreamWatchCreateMeasurementView.as_view(), name='addsensor'),
+    url(r'create/$', views.CATCreateView.as_view(), name='create'),
     # url(r'(?P<pk>.*?)/update/$', StreamWatchUpdateView.as_view(), name='update'),
-    url(r'(?P<pk>.*?)/delete/$', StreamWatchDeleteView.as_view(), name='delete'),
-    url(r'(?P<pk>.*?)/csv/$', download_StreamWatch_csv, name='csv_download'),
-    url(r'(?P<pk>.*?)/$', StreamWatchDetailView.as_view(), name='view'),
+    url(r'(?P<pk>.*?)/delete/$', views.StreamWatchDeleteView.as_view(), name='delete'),
+    url(r'(?P<pk>.*?)/csv/$', views.download_StreamWatch_csv, name='csv_download'),
+    url(r'(?P<pk>.*?)/$', views.StreamWatchDetailView.as_view(), name='view'),
 ]
