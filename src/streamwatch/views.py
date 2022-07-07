@@ -6,13 +6,8 @@ from django.http import HttpResponse
 from django.http import response
 from django.contrib.auth.decorators import login_required
 
-from formtools.wizard.views import SessionWizardView, WizardView
-
-#TODO - do not use relative imports please fix this
-#TODO - do not import this many classes directly 
-# better to use `from streamwatch import forms`
-# then use forms.StreamWatchForm for reference
-from .forms import StreamWatchForm, StreamWatchForm2, StreamWatchForm3, StreamWatch_CAT_Measurement_Form, StreamWatch_Measurement_Form, StreamWatch_Measurement_Parameter_Form
+from formtools.wizard.views import SessionWizardView
+from streamwatch import forms 
 
 import django
 
@@ -47,11 +42,13 @@ class CATCreateView(SessionWizardView):
     form_list = [
         ('setup',StreamWatchForm), 
         ('conditions',StreamWatchForm2)
+        ('setup',forms.SetupForm), 
+        ('conditions',forms.ConditionsForm),
     ]
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
     object = None
-    
+
     def get_context_data(self, form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
@@ -62,7 +59,7 @@ class CATCreateView(SessionWizardView):
         setup_data = self.get_cleaned_data_for_step('setup')
         if setup_data:
             if 'chemical' in setup_data['activity_type']:
-                self.form_list['cat'] = StreamWatchForm3
+                self.form_list['cat'] = forms.CATForm
             if 'biological' in setup_data['activity_type']:
                 #TODO - PRT these are placeholders from when these forms are implemented
                 pass
@@ -161,9 +158,9 @@ class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
 
 # add a streamwatch meas to CAT assessment
 
-parameter_formset=django.forms.formset_factory(StreamWatch_Measurement_Parameter_Form, extra=4)
+parameter_formset=django.forms.formset_factory(forms.CATParameterForm, extra=4)
 class StreamWatchCreateMeasurementView(FormView):
-    form_class = StreamWatch_Measurement_Form
+    form_class = forms.CATForm
     template_name = 'streamwatch/streamwatch_sensor.html'
     slug_field = 'sampling_feature_code'
     object = None
@@ -183,7 +180,7 @@ class StreamWatchCreateMeasurementView(FormView):
 
         if self.object is None:
             site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-            context['form'] = StreamWatch_Measurement_Form(initial={'site_registration': site_registration}, prefix='meas')
+            context['form'] = forms.CATForm(initial={'site_registration': site_registration}, prefix='meas')
             context['parameter_forms'] = parameter_formset(prefix ='para')
 
         return context
@@ -192,7 +189,7 @@ class StreamWatchCreateMeasurementView(FormView):
             
         # to do: implement save current streamWatch assessment
         
-        form = StreamWatch_Measurement_Form(request.POST, prefix='meas')
+        form = forms.CATForm(request.POST, prefix='meas')
         parameter_forms = parameter_formset(request.POST, prefix='para')
         if form.is_valid() and parameter_forms.is_valid():
             # process the data …

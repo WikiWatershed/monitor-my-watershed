@@ -32,14 +32,10 @@ class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
         context['name'] = name
         return self._render(self.template_name, context, renderer)
 
-class StreamWatchForm(forms.Form):
+class SetupForm(forms.Form):
     
     ACTIVITY_TYPE_CHOICES = (('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
 
-    def __init__(self, *args, **kwargs):
-        super(StreamWatchForm, self).__init__(*args, **kwargs)
-        #self.fields['types'].initial = self.ACTIVITY_TYPE_CHOICES_LIST
-    
     investigator1 = forms.CharField(
         required=False,
         label='Investigator #1'
@@ -75,7 +71,7 @@ class StreamWatchForm(forms.Form):
         choices = ACTIVITY_TYPE_CHOICES)    
 
     
-class StreamWatchForm2(forms.Form):
+class ConditionsForm(forms.Form):
     weather_condition_choices = (
         (1, 'Clear'),
         (2, 'Partly cloudy'),
@@ -372,7 +368,7 @@ class StreamWatch_CAT_Measurement_Form(forms.Form):
         initial='1'
     )
 
-class StreamWatch_Measurement_Form(forms.Form):
+class CATForm(forms.Form):
             
     # Field Measurmenets (CAT/BaCT Forms)
     meter = forms.CharField(
@@ -392,7 +388,7 @@ class StreamWatch_Measurement_Form(forms.Form):
     )
 
 # a parameter measurement for a sensor
-class StreamWatch_Measurement_Parameter_Form(forms.Form):
+class CATParameterForm(forms.Form):
     parameter = forms.ChoiceField(
         required=True,
         widget=forms.Select,
