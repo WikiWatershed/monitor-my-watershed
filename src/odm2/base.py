@@ -93,7 +93,7 @@ class ODM2Engine:
             elif output_format == 'dataframe':
                 return df
             elif output_format == 'dict':
-                return df.to_dict()
+                return df.to_dict(orient=orient)
             elif output_format == 'records':
                 return df.to_records(index=False)
             raise TypeError("Unknown output format")

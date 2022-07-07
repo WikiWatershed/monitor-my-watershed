@@ -1,19 +1,21 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-import re
 from dataloaderinterface.models import SiteRegistration
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, BaseDetailView
 from django.views.generic.detail import DetailView
 from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
-from django.core.management import call_command
-from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
 from formtools.wizard.views import SessionWizardView, WizardView
 
-from .forms import StreamWatchForm, StreamWatchForm2, StreamWatchForm3, StreamWatch_CAT_Measurement_Form, StreamWatch_Measurement_Form, StreamWatch_Measurement_Parameter_Form, formset_factory
+#TODO - do not use relative imports please fix this
+#TODO - do not import this many classes directly 
+# better to use `from streamwatch import forms`
+# then use forms.StreamWatchForm for reference
+from .forms import StreamWatchForm, StreamWatchForm2, StreamWatchForm3, StreamWatch_CAT_Measurement_Form, StreamWatch_Measurement_Form, StreamWatch_Measurement_Parameter_Form
+
+import django
+
+from streamwatch import models
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -22,9 +24,6 @@ class LoginRequiredMixin(object):
 
 
 class xStreamWatchCreateView(FormView):
-    """
-    Create View
-    """
     form_class = StreamWatchForm
     template_name = 'streamwatch/streamwatch_form.html'
     slug_field = 'sampling_feature_code'
@@ -47,21 +46,12 @@ class xStreamWatchCreateView(FormView):
 
 
 class StreamWatchCreateView(SessionWizardView):
-    """
-    Create View
-    """
     #form_class = StreamWatchForm
-    form_list = [StreamWatchForm, StreamWatchForm2]
+    form_list = [StreamWatchForm, StreamWatchForm2, StreamWatchForm3]
     template_name = 'streamwatch/streamwatch_wizard.html'
     #template_name = 'streamwatch/example.html'
     slug_field = 'sampling_feature_code'
     object = None
-    
-    # def get(self, request, *args, **kwargs):
-    #     try:
-    #         return self.render(self.get_form())
-    #     except KeyError:
-    #         return super().get(request, *args, **kwargs)
     
     def get_context_data(self, **kwargs):
             # if 'leafpack_form' is in kwargs, that means self.form_invalid was most likely called due to a failed POST request
@@ -100,8 +90,13 @@ class StreamWatchCreateView(SessionWizardView):
     #         self.activity_type = form.cleaned_data['activity_type'];
     #     return form.data
     def done(self, form_list, **kwargs):
-        # process the data …
-        form_data = [form.cleaned_data for form in form_list]
+        id = models.sampling_feature_code_to_id(self.sampling_feature_code)
+        
+        form_data = {'sampling_feature_id':id}
+        for form in form_list: form_data = form_data | form.cleaned_data
+        adapter = models.StreamWatchODM2Adapter.create_from_dict(form_data)
+
+        #form_data =  form.cleaned_data for form in form_list]
         # save/update 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
@@ -119,9 +114,6 @@ class CAT_Parameter:
     
     
 class StreamWatchDetailView(DetailView):
-    """
-    Detail View
-    """
     template_name = 'streamwatch/streamwatch_detail.html'
     slug_field = 'sampling_feature_code'
     context_object_name ='streamwatch'
@@ -129,7 +121,7 @@ class StreamWatchDetailView(DetailView):
 
     def get_object(self, queryset=None):
         #return LeafPack.objects.get(id=self.kwargs['pk'])
-        streamwatch ={};
+        streamwatch ={}
         streamwatch['sampling_feature_code'] = self.kwargs[self.slug_field]
         streamwatch['investigator1'] ='John Doe'
         streamwatch['investigator2'] ='Jane Doe'
@@ -173,9 +165,6 @@ class StreamWatchDetailView(DetailView):
         
 
 class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
-    """
-    Delete view
-    """
     slug_field = 'sampling_feature_code'
 
     def get_object(self, queryset=None):
@@ -192,11 +181,8 @@ class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
 
 # add a streamwatch meas to CAT assessment
 
-parameter_formset=formset_factory(StreamWatch_Measurement_Parameter_Form, extra=4)
+parameter_formset=django.forms.formset_factory(StreamWatch_Measurement_Parameter_Form, extra=4)
 class StreamWatchCreateMeasurementView(FormView):
-    """
-    Create View
-    """
     form_class = StreamWatch_Measurement_Form
     template_name = 'streamwatch/streamwatch_sensor.html'
     slug_field = 'sampling_feature_code'
@@ -232,6 +218,8 @@ class StreamWatchCreateMeasurementView(FormView):
             # process the data …
             #leafpack = self.get_object()
             #leafpack.save()
+
+            
             return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
         else:
             

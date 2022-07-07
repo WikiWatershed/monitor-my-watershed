@@ -7,12 +7,23 @@ import sqlalchemy
 from collections import namedtuple 
 from typing import Dict, Any, Iterable, Tuple, Union
 
+import datetime
+
 def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
     query = (sqlalchemy.select(odm2_models.Variables.variablecode, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
         )
     records = odm2_engine.read_query(query, output_format='records')
     return records
+
+def sampling_feature_code_to_id(code:str) -> Union[int,None]:
+    """Take a sampling_feature_code and finds the corresponding sampling_feature_id"""
+    query = (sqlalchemy.select(odm2_models.SamplingFeatures)
+        .where(odm2_models.SamplingFeatures.sampling_feature_code == code)
+        )
+    result = odm2_engine.read_query(query, output_format='dict')
+    if result: return result['sampling_feature_id']
+    return None
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 

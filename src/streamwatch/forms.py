@@ -1,9 +1,6 @@
 from django import forms
 #from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
-from dataloaderinterface.models import SiteRegistration
-from django.core.exceptions import ObjectDoesNotExist
 from django.forms import formset_factory
-from leafpack.models import LeafPackType
 from .models import variable_choice_options
 
 place_holder_choices = (
