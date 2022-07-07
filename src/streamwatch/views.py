@@ -40,8 +40,6 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
 
 class CATCreateView(SessionWizardView):
     form_list = [
-        ('setup',StreamWatchForm), 
-        ('conditions',StreamWatchForm2)
         ('setup',forms.SetupForm), 
         ('conditions',forms.ConditionsForm),
     ]
