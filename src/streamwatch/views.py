@@ -3,6 +3,7 @@ from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormVi
 from django.views.generic.detail import DetailView
 from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
+from django.http import response
 from django.contrib.auth.decorators import login_required
 
 from formtools.wizard.views import SessionWizardView, WizardView
@@ -22,6 +23,25 @@ class LoginRequiredMixin(object):
     def as_view(cls):
         return login_required(super(LoginRequiredMixin, cls).as_view())
 
+
+class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
+    template_name = 'dataloaderinterface/manage_streamwatch.html'
+    model = SiteRegistration
+    slug_field = 'sampling_feature_code'
+    slug_url_kwarg = 'sampling_feature_code'
+
+    def dispatch(self, request, *args, **kwargs):
+        site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
+        if request.user.is_authenticated and not request.user.can_administer_site(site):
+            raise response.Http404
+        return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return SiteRegistration.objects.with_leafpacks()
+
+    def get_context_data(self, **kwargs):
+        context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
+        return context
 
 class xStreamWatchCreateView(FormView):
     form_class = StreamWatchForm
