@@ -1,3 +1,4 @@
+from re import S
 from dataloaderinterface.models import SiteRegistration
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, BaseDetailView
 from django.views.generic.detail import DetailView
@@ -10,6 +11,8 @@ import django
 from formtools.wizard.views import SessionWizardView
 from streamwatch import forms 
 from streamwatch import models
+
+from collections import OrderedDict
 
 from typing import Dict
 from typing import List
@@ -41,47 +44,29 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
         return context
 
+def condition_cat(wizard):
+    setup_data = wizard.get_cleaned_data_for_step('setup')
+    if setup_data is not None:
+        return 'chemical' in setup_data['activity_type']
+    return True
+
+
 class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.ConditionsForm),
+        ('cat',forms.CATForm)
     ]
+    condition_dict = {
+        'cat': condition_cat
+    }
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
-
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
 
     def get_context_data(self, form:django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
-
-        if self.steps.prev == 'setup':
-            setup_data = self.get_cleaned_data_for_step('setup')
-            self.add_setup_forms(setup_data)
         return context
-
-    def add_setup_forms(self, setup_data:Dict) -> None:
-        if 'chemical' in setup_data['activity_type']: self.add_cat_form()
-        if 'biological' in setup_data['activity_type']:
-            #TODO - PRT these are placeholders from when these forms are implemented
-            pass
-        if 'bacterial' in setup_data['activity_type']:
-            #TODO - PRT these are placeholders from when these forms are implemented
-            pass
-
-    def add_cat_form(self, *args, **kwargs) -> None:
-        if 'cat_form_count' not in self.storage.extra_data:
-            self.storage.extra_data['cat_form_count'] = 0
-        self.form_list[f"cat_{self.storage.extra_data['cat_form_count']}"] = forms.CATForm
-        self.storage.extra_data['cat_form_count'] += 1
-        return 
-
-    def post(self, request, *args, **kwargs) -> HttpResponse:
-        """Override of POST method to allow dynamic addition of forms"""
-        if 'add_form' in request.POST:
-            if request.POST['add_form'] == 'cat' : self.add_cat_form()
-        return super().post(*args, **kwargs)
 
     def done(self, form_list:List[django.forms.Form], **kwargs):
         id = models.sampling_feature_code_to_id(self.slug_field)
@@ -92,7 +77,7 @@ class CreateView(SessionWizardView):
                 form_data['cat_methods'].append(form.clean_data())    
                 continue
             form_data = form_data | form.cleaned_data
-            #adapter = models.StreamWatchODM2Adapter.create_from_dict(form_data)
+        #adapter = models.StreamWatchODM2Adapter.create_from_dict(form_data)
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 

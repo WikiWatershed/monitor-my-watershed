@@ -14,19 +14,7 @@ place_holder_choices = (
         (3, 'Choice #3')
     )
 
-parameter_choices = (
-        (1, 'Air Temperature'),
-        (2, 'Dissolved Oxygen (mg/L)'),
-        (3, 'Nitrate'),
-        (4, 'Phosphate'),
-        (5, 'pH'),
-        (6, 'Specific Conductivity (uL/cm)'),
-        (7, 'Total Dissolved Solids'),
-        (8, 'Turbidity (JTU)'),
-        (9, 'Water Temp (C)')
-    )
-
-measurement_method_choices =(('Meter','Meter'), ('Lamotte', 'Lamotte'))
+measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     template_name = 'mdl-checkbox-select-multiple.html'
@@ -77,30 +65,8 @@ class SetupForm(forms.Form):
 
     
 class ConditionsForm(forms.Form):
-    weather_condition_choices = (
-        (1, 'Clear'),
-        (2, 'Partly cloudy'),
-        (3, 'Overcast')
-    )
-    water_color_choices = ((1,'Clear'),
-        (2,'Green'),
-        (3,'Blue-green'),
-        (4,'Brown'),
-        (5,'Yellow'),
-        (6,'Gray'),
-        (7,'Other'))
-
-    water_odor_choices = (
-        (1,'Normal'),
-        (2,'Anaerobic'),
-        (3,'Sulfuric'),
-        (4,'Sewage'),
-        (5,'Petroleum'),
-        (6,'Other'))
-
-
     
-    abundance_choices = models.variable_choice_options('wildlife')
+    #TODO - PRT verify and delete if these are not required
     # types = forms.ModelMultipleChoiceField(
     #     widget=MDLCheckboxSelectMultiple,
     #     label='Activity type(s):',
@@ -113,7 +79,7 @@ class ConditionsForm(forms.Form):
     #     widget=MDLCheckboxSelectMultiple,
     #     required=True,
     #     label='Wildlife Observations:',
-    #     queryset= abundance_choices,
+    #     queryset= models.variable_choice_options('wildlife'),
     # )
     
     # Visual Assessment (All Forms)
@@ -195,7 +161,8 @@ class ConditionsForm(forms.Form):
         label='General Comments and Site Observations'
     )   
     
-    
+    #TODO - PRT This is not being displayed on the condition template,
+    #this should likely be pulled into a separate form (e.g. BATForm)
     # In-stream Habitat Assessment (BAT form)  
     instream_structure = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
@@ -287,6 +254,8 @@ class ConditionsForm(forms.Form):
         initial='1'
     )
     
+    #TODO - PRT This is not being displayed on the condition template,
+    #this should likely be pulled into a separate form (e.g. BATForm)
     # Riparian Habitat Assessment (BAT form)
     bank_veg_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
@@ -330,11 +299,24 @@ class ConditionsForm(forms.Form):
 
 
 class CATParameterForm(forms.Form):
+    
+    PARAMETER_CHOICES = (
+        (1, 'Air Temperature'),
+        (2, 'Dissolved Oxygen (mg/L)'),
+        (3, 'Nitrate'),
+        (4, 'Phosphate'),
+        (5, 'pH'),
+        (6, 'Specific Conductivity (uL/cm)'),
+        (7, 'Total Dissolved Solids'),
+        (8, 'Turbidity (JTU)'),
+        (9, 'Water Temp (C)')
+    )
+    
     parameter = forms.ChoiceField(
         required=True,
         widget=forms.Select,
         label='Parameter',
-        choices= parameter_choices,
+        choices= PARAMETER_CHOICES,
         # initial='1'
     )
     

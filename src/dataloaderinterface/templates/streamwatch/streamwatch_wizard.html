@@ -49,7 +49,7 @@
                         {% include 'streamwatch/subforms/setup.html' with wizard=wizard %} 
                     {% elif wizard.form.prefix == 'conditions' %}
                         {% include 'streamwatch/subforms/conditions.html' with wizard=wizard %} 
-                    {% elif 'cat_' in wizard.form.prefix %}
+                    {% elif wizard.form.prefix == 'cat' %}
                         {% include 'streamwatch/subforms/cat.html' with wizard=wizard %} 
                     {% endif %}
                 </table>
