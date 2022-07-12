@@ -49,7 +49,7 @@
                         {% include 'streamwatch/subforms/setup.html' with wizard=wizard %} 
                     {% elif wizard.form.prefix == 'conditions' %}
                         {% include 'streamwatch/subforms/conditions.html' with wizard=wizard %} 
-                    {% elif wizard.form.prefix == 'cat' %}
+                    {% elif 'cat_' in wizard.form.prefix %}
                         {% include 'streamwatch/subforms/cat.html' with wizard=wizard %} 
                     {% endif %}
                 </table>
@@ -90,7 +90,7 @@
 
 {% block scripts %}
     {{ block.super }}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
+    {# comment <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script> endcomment #}
     <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/streamwatch-create.js' %}"></script>
 {% endblock %}

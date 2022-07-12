@@ -19,7 +19,7 @@ def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
 def sampling_feature_code_to_id(code:str) -> Union[int,None]:
     """Take a sampling_feature_code and finds the corresponding sampling_feature_id"""
     query = (sqlalchemy.select(odm2_models.SamplingFeatures)
-        .where(odm2_models.SamplingFeatures.sampling_feature_code == code)
+        .where(odm2_models.SamplingFeatures.samplingfeaturecode == code)
         )
     result = odm2_engine.read_query(query, output_format='dict')
     if result: return result['sampling_feature_id']

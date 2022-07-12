@@ -1,7 +1,12 @@
+from re import I
+from attr import field
 from django import forms
 #from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from django.forms import formset_factory
 from .models import variable_choice_options
+
+from typing import Dict
+from typing import Any
 
 place_holder_choices = (
         (1, 'Choice #1'), 
@@ -322,72 +327,8 @@ class ConditionsForm(forms.Form):
         choices= place_holder_choices,
         initial='1'
     )
-    
-    
-Max_Parameter_Count_=3
-class StreamWatch_CAT_Measurement_Form(forms.Form):
-    
-    def __init__(self, *args, **kwargs):
-        super(StreamWatch_CAT_Measurement_Form, self).__init__(*args, **kwargs)
-        
-        for q in range(Max_Parameter_Count_):
-            self.fields['parameter_' + str(q)] = forms.ChoiceField(
-                required=False,
-                widget=forms.Select,
-                label='Parameter',
-                choices= place_holder_choices,
-                initial='1')
-            
-            self.fields['measurement_' + str(q)] = forms.FloatField(
-                label='Measurement',
-                required=False,
-            )
-            self.fields['unit_' + str(q)] = forms.ChoiceField(
-                required=False,
-                widget=forms.Select,
-                label='Unit',
-                choices= place_holder_choices,
-                initial='1'
-            )
-            
-            
-    # Field Measurmenets (CAT/BaCT Forms)
-    meter = forms.CharField(
-        required=False,
-        label='pH Meter #'
-    )     
-    calibration_date = forms.DateField(
-        required=False,
-        label='Date of Last Calibration'
-    )
-    test_method = forms.ChoiceField(
-        required=False,
-        widget=forms.Select,
-        label='Test Method',
-        choices= place_holder_choices,
-        initial='1'
-    )
 
-class CATForm(forms.Form):
-            
-    # Field Measurmenets (CAT/BaCT Forms)
-    meter = forms.CharField(
-        required=False,
-        label='pH Meter #'
-    )     
-    calibration_date = forms.DateField(
-        required=True,
-        label='Date of Last Calibration'
-    )
-    test_method = forms.ChoiceField(
-        required=True,
-        widget=forms.Select,
-        label='Test Method',
-        choices= measurement_method_choices,
-        initial='Meter'
-    )
 
-# a parameter measurement for a sensor
 class CATParameterForm(forms.Form):
     parameter = forms.ChoiceField(
         required=True,
@@ -411,6 +352,48 @@ class CATParameterForm(forms.Form):
     )
 
 
+class CATParametersSet(forms.BaseFormSet):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, prefix='parameter', **kwargs)
+
+class CATParameter:
+    def __init__(self, parameter:str=None, measurement:float=None, unit:int=None) -> None:
+        self.parameter= parameter
+        self.measurement= measurement
+        self.unit= unit
+
+class CATForm(forms.Form):
+    meter = forms.CharField(
+        required=False,
+        label='pH Meter #'
+    )     
+    calibration_date = forms.DateField(
+        required=False,
+        label='Date of Last Calibration'
+    )
+    test_method = forms.ChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Test Method',
+        choices= place_holder_choices,
+        initial='1'
+    )
+    parameters = formset_factory(CATParameterForm, formset=CATParametersSet, extra=3)
+
+    
+    def clean_data(self) -> Dict[str, Any]:
+        cleaned = self.cleaned_data
+        parameters  = {}
+        for key in self.data:
+            if 'parameter' not in key: continue
+            _, index, attribute = key.split('-')
+            if index not in parameters: parameters[index] = CATParameter()
+            setattr(parameters[index], attribute, self.data[key])
+        cleaned['parameters'] = list(parameters.values())
+        return cleaned
+
+#TODO - PRT Verify this form is no longer needed
 class StreamWatchForm3(forms.Form):
     
     # Field Measurmenets (CAT/BaCT Forms)

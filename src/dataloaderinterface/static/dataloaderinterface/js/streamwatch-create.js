@@ -67,7 +67,7 @@
 
     });
 
-    $("#btn-add-parameter").click(function(){
+    $(".btn-add-parameter").click(function(){
         //alert("Add method clicked!");
         AddSensorParameterForm();
     }); 
@@ -79,8 +79,9 @@
     function AddSensorParameterForm() {
         //e.preventDefault()
     
-        let newForm = sensorForm[0].cloneNode(true) //Clone the bird form
-        let formRegex = RegExp(`para-(\\d){1}-`,'g') //Regex to find all instances of the form number
+        const newForm = sensorForm[0].cloneNode(true) //Clone the bird form
+        $(newForm).attr('class','row parameter-form');
+        let formRegex = RegExp(`parameter-(\\d){1}-`,'g') //Regex to find all instances of the form number
 
         formNum++ //Increment the form number
         newForm.innerHTML = newForm.innerHTML.replace(formRegex, `para-${formNum}-`) //Update the new form to have the correct form number
@@ -88,7 +89,7 @@
         //container.insertBefore(newForm, addButton) //Insert the new form at the end of the list of forms
         //$(newForm).insertBefore( "#btn-add-parameter" );
         $(newForm).val('');
-        $('.measurement-table').append($(newForm));
+        $('.parameter-card').append($(newForm));
     
         totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
 
