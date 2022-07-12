@@ -5,15 +5,14 @@ from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
 from django.http import response
 from django.contrib.auth.decorators import login_required
+import django
 
 from formtools.wizard.views import SessionWizardView
 from streamwatch import forms 
-
-import django
-
 from streamwatch import models
 
 from typing import Dict
+from typing import List
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -27,7 +26,7 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
     slug_field = 'sampling_feature_code'
     slug_url_kwarg = 'sampling_feature_code'
 
-    def dispatch(self, request, *args, **kwargs):
+    def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise response.Http404
@@ -82,7 +81,7 @@ class CATCreateView(SessionWizardView):
             if request.POST['add_form'] == 'cat' : self.add_cat_form()
         return super().post(*args, **kwargs)
 
-    def done(self, form_list, **kwargs):
+    def done(self, form_list:List[django.forms.Form], **kwargs):
         id = models.sampling_feature_code_to_id(self.slug_field)
         
         form_data = {'sampling_feature_id':id, 'cat_methods':[]}
@@ -93,15 +92,8 @@ class CATCreateView(SessionWizardView):
             form_data = form_data | form.cleaned_data
             #adapter = models.StreamWatchODM2Adapter.create_from_dict(form_data)
 
-        #form_data =  form.cleaned_data for form in form_list]
-        # save/update 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
-class CAT_Measurement:
-        def __init__(self, name, id,cal_date):
-            self.name= name
-            self.id=id
-            self.cal_date= cal_date
             
 
     
@@ -109,51 +101,14 @@ class StreamWatchDetailView(DetailView):
     template_name = 'streamwatch/streamwatch_detail.html'
     slug_field = 'sampling_feature_code'
     context_object_name ='streamwatch'
-    #model = LeafPack
 
     def get_object(self, queryset=None):
         #return LeafPack.objects.get(id=self.kwargs['pk'])
-        streamwatch ={}
-        streamwatch['sampling_feature_code'] = self.kwargs[self.slug_field]
-        streamwatch['investigator1'] ='John Doe'
-        streamwatch['investigator2'] ='Jane Doe'
-        streamwatch['collect_date']='6/1/2022'
-        streamwatch['project_name']='Superman #1'
-        streamwatch['reach_length']='2 miles'
-        streamwatch['weather_cond']='Cloudy'
-        streamwatch['time_since_last_precip']='10 hrs'
-        streamwatch['water_color']='Clear'
-        streamwatch['water_odor']='Normal'
-        
-        streamwatch['turbidity_obs']='Clear'
-        streamwatch['water_movement']='Swift/Waves'
-        streamwatch['aquatic_veg_amount']='Scarce'
-        streamwatch['aquatic_veg_type']='Submergent'
-        streamwatch['surface_coating']='None'
-        streamwatch['algae_amount']='Scarce'
-        streamwatch['algae_type']='Filamentous'
-        streamwatch['site_observation']='Some comments on and on...'
-        
-        streamwatch['CAT_measurements']=[]
-        
-        
-        par1 = []
-        par1.append(CAT_Parameter("Air temperature", 15, "C"))
-        par1.append(CAT_Parameter("Dissolved oxygen", 6.5, "mg/L"))
-        par1.append(CAT_Parameter("Phosphorus", 9.5, "ug/L"))
-        meas1 = CAT_Measurement("YSI1","4531","06/13/2011")
-        meas1.pars = par1
-        streamwatch['CAT_measurements'].append(meas1)
-        
-        par2 = []
-        par2.append(CAT_Parameter("Air temperature", 16, "C"))
-        par2.append(CAT_Parameter("Dissolved oxygen", 7.5, "mg/L"))
-        par2.append(CAT_Parameter("Phosphorus", 6.5, "ug/L"))
-        meas2 = CAT_Measurement("YSI2","4555","10/30/2007")
-        meas2.pars = par2
-        
-        streamwatch['CAT_measurements'].append(meas2)
-        return streamwatch
+
+        #TODO - PRT - implement method to get action_id
+        action_id = 1
+        data = models.StreamWatchODM2Adapter.from_action_id(action_id)
+        return data
         
 
 class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):

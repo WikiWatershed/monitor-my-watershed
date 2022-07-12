@@ -27,6 +27,18 @@ def sampling_feature_code_to_id(code:str) -> Union[int,None]:
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
+class CATParameter:
+    def __init__(self, parameter:str=None, measurement:float=None, unit:int=None) -> None:
+        self.parameter= parameter
+        self.measurement= measurement
+        self.unit= unit
+
+
+class CATMeasurement:
+        def __init__(self, name:str=None, id:str=None ,cal_date:datetime=None) -> None:
+            self.name= name
+            self.id=id
+            self.cal_date= cal_date
 
 class _BaseFieldAdapter():
     """"""
@@ -111,12 +123,15 @@ class StreamWatchODM2Adapter():
         """Constructor to retrieve existing form data from database based on assessment ActionId.
         
         input:
-        action_id:int - the `actionid` corresponding to the StreamWatch assessment.
+        action_id:int - the `actionid` corresponding to the root action for the StreamWatch assessment.
         
         output:
         instance of the StreamWatchODM2Adapter
         """
-        raise NotImplementedError
+        return streamwatch_data
+
+        #TODO - PRT concrete implementation needed 
+        #raise NotImplementedError
 
     @classmethod
     def from_dict(cls, form_attributes:Dict[str,Any]) -> "StreamWatchODM2Adapter":
@@ -156,3 +171,49 @@ class StreamWatchODM2Adapter():
     def _reverse_crosswalk(cls) -> Dict[str,Any]:
         return {v[0]:(k,*v[1:]) for k,v in cls.parameter_crosswalk.items() }
 
+
+
+
+
+
+#PRT -> temporary data delete once fully implemented
+streamwatch_data ={}
+streamwatch_data['sampling_feature_code'] = 'Some Site Id'
+streamwatch_data['investigator1'] ='John Doe'
+streamwatch_data['investigator2'] ='Jane Doe'
+streamwatch_data['collect_date']='6/1/2022'
+streamwatch_data['project_name']='Superman #1'
+streamwatch_data['reach_length']='2 miles'
+streamwatch_data['weather_cond']='Cloudy'
+streamwatch_data['time_since_last_precip']='10 hrs'
+streamwatch_data['water_color']='Clear'
+streamwatch_data['water_odor']='Normal'
+
+streamwatch_data['turbidity_obs']='Clear'
+streamwatch_data['water_movement']='Swift/Waves'
+streamwatch_data['aquatic_veg_amount']='Scarce'
+streamwatch_data['aquatic_veg_type']='Submergent'
+streamwatch_data['surface_coating']='None'
+streamwatch_data['algae_amount']='Scarce'
+streamwatch_data['algae_type']='Filamentous'
+streamwatch_data['site_observation']='Some comments on and on...'
+
+streamwatch_data['CAT_measurements']=[]
+
+
+par1 = []
+par1.append(CATParameter("Air temperature", 15, "C"))
+par1.append(CATParameter("Dissolved oxygen", 6.5, "mg/L"))
+par1.append(CATParameter("Phosphorus", 9.5, "ug/L"))
+meas1 = CATMeasurement("YSI1","4531","06/13/2011")
+meas1.pars = par1
+streamwatch_data['CAT_measurements'].append(meas1)
+
+par2 = []
+par2.append(CATParameter("Air temperature", 16, "C"))
+par2.append(CATParameter("Dissolved oxygen", 7.5, "mg/L"))
+par2.append(CATParameter("Phosphorus", 6.5, "ug/L"))
+meas2 = CATMeasurement("YSI2","4555","10/30/2007")
+meas2.pars = par2
+
+streamwatch_data['CAT_measurements'].append(meas2)

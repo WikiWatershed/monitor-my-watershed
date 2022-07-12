@@ -3,7 +3,7 @@ from attr import field
 from django import forms
 #from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from django.forms import formset_factory
-from .models import variable_choice_options
+from streamwatch import models
 
 from typing import Dict
 from typing import Any
@@ -100,7 +100,7 @@ class ConditionsForm(forms.Form):
 
 
     
-    abundance_choices = variable_choice_options('wildlife')
+    abundance_choices = models.variable_choice_options('wildlife')
     # types = forms.ModelMultipleChoiceField(
     #     widget=MDLCheckboxSelectMultiple,
     #     label='Activity type(s):',
@@ -121,73 +121,73 @@ class ConditionsForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Current Weather Conditions',
-        choices= variable_choice_options('weather'),
+        choices= models.variable_choice_options('weather'),
     )
     time_since_last_precip = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Time Since Last Rain or Snowmelt',
-        choices= variable_choice_options('precipitation'),
+        choices= models.variable_choice_options('precipitation'),
         initial='1'
     )    
     water_color = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Water Color:',
-        choices= variable_choice_options('waterColor'),
+        choices= models.variable_choice_options('waterColor'),
         initial='1'
     )
     water_odor = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Water Odor',
-        choices= variable_choice_options('waterOdor'),
+        choices= models.variable_choice_options('waterOdor'),
     )
     turbidity_obs = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Turbidity',
-        choices= variable_choice_options('turbidity'),
+        choices= models.variable_choice_options('turbidity'),
         initial='1'
     )
     water_movement = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Water Movement',
-        choices= variable_choice_options('waterMovement'),
+        choices= models.variable_choice_options('waterMovement'),
         initial='1'
     )
     aquatic_veg_amount = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Aquatic Vegetation Amount',
-        choices= variable_choice_options('aquaticVegetation'),
+        choices= models.variable_choice_options('aquaticVegetation'),
         initial='1'
     )
     aquatic_veg_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Aquatic Vegetation Type',
-        choices= variable_choice_options('aquaticVegetationType'),
+        choices= models.variable_choice_options('aquaticVegetationType'),
     )
     surface_coating = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Surface Coating',
-        choices= variable_choice_options('surfaceCoating'),
+        choices= models.variable_choice_options('surfaceCoating'),
     )
     algae_amount = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Algae Amount',
-        choices= variable_choice_options('algaeAmount'),
+        choices= models.variable_choice_options('algaeAmount'),
         initial='1'
     )
     algae_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Algae Type',
-        choices= variable_choice_options('algaeType'),
+        choices= models.variable_choice_options('algaeType'),
     )
     site_observation = forms.CharField(
         widget=forms.Textarea(),
@@ -201,13 +201,13 @@ class ConditionsForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='In-Stream Structures',
-        choices= variable_choice_options('instreamStructures'),
+        choices= models.variable_choice_options('instreamStructures'),
     )
     stream_flow = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Stream Flow',
-        choices= variable_choice_options('streamFlow'),
+        choices= models.variable_choice_options('streamFlow'),
         initial='1'
     )
     percent_riffle = forms.ChoiceField(
@@ -235,14 +235,14 @@ class ConditionsForm(forms.Form):
         required=False,
         widget=forms.Select,
         label='Woody Debris Amount',
-        choices= variable_choice_options('woodyDebris'),
+        choices= models.variable_choice_options('woodyDebris'),
         initial='1'
     )
     macroinvert_habitat_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Macroinvertebrate Habitat Types',
-        choices= variable_choice_options('macroinvertHabitat'),
+        choices= models.variable_choice_options('macroinvertHabitat'),
     )
     percent_silt_clay = forms.ChoiceField(
         required=False,
@@ -292,33 +292,33 @@ class ConditionsForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Bank Vegetation Type',
-        choices= variable_choice_options('bankVegetation'),
+        choices= models.variable_choice_options('bankVegetation'),
     )
     tree_canopy = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Tree Canopy Coverage',
-        choices= variable_choice_options('treeCanopy'),
+        choices= models.variable_choice_options('treeCanopy'),
         initial='1'
     )
     land_use = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Land Uses in 1/4 Mile Radius',
-        choices= variable_choice_options('landuseQuarterMile'),
+        choices= models.variable_choice_options('landuseQuarterMile'),
     )
     litter_amt = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Litter Concentration',
-        choices= variable_choice_options('litter'),
+        choices= models.variable_choice_options('litter'),
         initial='1'
     )
     wildlife_obs = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Wildlife Observations',
-        choices= variable_choice_options('wildlife'),
+        choices= models.variable_choice_options('wildlife'),
     )
     macroinvert_sample_collect = forms.ChoiceField(
         required=False,
@@ -357,11 +357,7 @@ class CATParametersSet(forms.BaseFormSet):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, prefix='parameter', **kwargs)
 
-class CATParameter:
-    def __init__(self, parameter:str=None, measurement:float=None, unit:int=None) -> None:
-        self.parameter= parameter
-        self.measurement= measurement
-        self.unit= unit
+
 
 class CATForm(forms.Form):
     meter = forms.CharField(
@@ -388,7 +384,7 @@ class CATForm(forms.Form):
         for key in self.data:
             if 'parameter' not in key: continue
             _, index, attribute = key.split('-')
-            if index not in parameters: parameters[index] = CATParameter()
+            if index not in parameters: parameters[index] = models.CATParameter()
             setattr(parameters[index], attribute, self.data[key])
         cleaned['parameters'] = list(parameters.values())
         return cleaned
