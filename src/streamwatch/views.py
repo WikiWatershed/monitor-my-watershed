@@ -33,13 +33,15 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
         return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        #TODO - PRT verify this queryset is correct.
+        #It makes sense that we would query SiteRegistrations but using a `with_leafpacks` method seems incorrect 
         return SiteRegistration.objects.with_leafpacks()
 
     def get_context_data(self, **kwargs):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
         return context
 
-class CATCreateView(SessionWizardView):
+class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.ConditionsForm),
