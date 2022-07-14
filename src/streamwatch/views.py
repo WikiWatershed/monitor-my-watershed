@@ -96,6 +96,15 @@ class StreamWatchDetailView(DetailView):
         action_id = 1
         data = models.StreamWatchODM2Adapter.from_action_id(action_id)
         return data
+    
+    def get_context_data(self, **kwargs):
+        context = super(StreamWatchDetailView, self).get_context_data(**kwargs)
+
+        registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
+        user = self.request.user
+        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
+        context['is_site_owner'] = self.request.user == registration.django_user
+        return context
         
 
 class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):

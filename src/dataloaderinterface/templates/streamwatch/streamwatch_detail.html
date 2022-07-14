@@ -36,11 +36,11 @@
                     </a>
 
                     {% if can_administer_site %}
-                        <a href="{% url 'streamwatch:update' sampling_feature_code streamwatch.id %}"
+                        {% comment %} <a href="{% url 'streamwatch:update' sampling_feature_code streamwatch.id %}"
                            id="btn-edit-leaf-exp"
                            class="button-link mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
                             <i class="material-icons center-icon">mode_edit</i> Edit
-                        </a>
+                        </a> {% endcomment %}
 
                         <button id="btn-del-leaf-exp" type="button"
                                 data-toggle="modal" data-target="#experiment-delete-dialog"
