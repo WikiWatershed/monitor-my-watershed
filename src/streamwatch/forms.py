@@ -27,7 +27,7 @@ class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 
 class SetupForm(forms.Form):
     
-    ACTIVITY_TYPE_CHOICES = (('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
+    ACTIVITY_TYPE_CHOICES = (('School', 'School Program'),('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
 
     investigator1 = forms.CharField(
         required=False,
