@@ -137,6 +137,26 @@ a:hover {
     color: rgb(23, 190, 207);
 }
 
+.icon-dark-blue {
+    color: rgb(0, 53, 71);
+}
+
+.icon-medium-orange {
+    color: rgb(237, 139, 22);;
+}
+
+.icon-teal {
+    color: rgb(0, 94, 84);
+}
+
+.icon-brown-green {
+    color: rgb(194, 187, 0);
+}
+
+.icon-bright-red {
+    color: rgb(225, 82, 60);
+}
+
 .map-container {
     height: 410px;
 }
