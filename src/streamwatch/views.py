@@ -47,15 +47,15 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
 def condition_cat(wizard):
     setup_data = wizard.get_cleaned_data_for_step('setup')
     if setup_data is not None:
-        return 'chemical' in setup_data['activity_type']
+        return 'chemical' in setup_data['assessment_type']
     return True
 
 
 class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
-        ('conditions',forms.ConditionsForm),
-        ('cat',forms.CATForm)
+        ('conditions',forms.VisualAssessmentForm),
+        ('cat',forms.WaterQualityForm)
     ]
     condition_dict = {
         'cat': condition_cat
@@ -73,7 +73,7 @@ class CreateView(SessionWizardView):
         
         form_data = {'sampling_feature_id':id, 'cat_methods':[]}
         for form in form_list: 
-            if isinstance(form,forms.CATForm):
+            if isinstance(form,forms.WaterQualityForm):
                 form_data['cat_methods'].append(form.clean_data())    
                 continue
             form_data.update(form.cleaned_data)
@@ -122,9 +122,9 @@ class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
 
 # add a streamwatch meas to CAT assessment
 
-parameter_formset=django.forms.formset_factory(forms.CATParameterForm, extra=4)
+parameter_formset=django.forms.formset_factory(forms.WaterQualityParametersForm, extra=4)
 class StreamWatchCreateMeasurementView(FormView):
-    form_class = forms.CATForm
+    form_class = forms.WaterQualityForm
     template_name = 'streamwatch/streamwatch_sensor.html'
     slug_field = 'sampling_feature_code'
     object = None
@@ -144,7 +144,7 @@ class StreamWatchCreateMeasurementView(FormView):
 
         if self.object is None:
             site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-            context['form'] = forms.CATForm(initial={'site_registration': site_registration}, prefix='meas')
+            context['form'] = forms.WaterQualityForm(initial={'site_registration': site_registration}, prefix='meas')
             context['parameter_forms'] = parameter_formset(prefix ='para')
 
         return context
@@ -153,7 +153,7 @@ class StreamWatchCreateMeasurementView(FormView):
             
         # to do: implement save current streamWatch assessment
         
-        form = forms.CATForm(request.POST, prefix='meas')
+        form = forms.WaterQualityForm(request.POST, prefix='meas')
         parameter_forms = parameter_formset(request.POST, prefix='para')
         if form.is_valid() and parameter_forms.is_valid():
             # process the data …
