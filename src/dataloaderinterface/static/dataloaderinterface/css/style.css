@@ -150,7 +150,7 @@ a:hover {
 }
 
 .icon-brown-green {
-    color: rgb(194, 187, 0);
+    color: rgb(133, 128, 1);
 }
 
 .icon-bright-red {
@@ -1331,6 +1331,13 @@ td.label, p.label {
     font-weight: 700;
 }
 
+td.block-label {
+    color: #66CCCC;
+    /* font-weight: 700; */
+    font-style: italic;
+    font-size: 15px
+}
+
 .form-leafpack .step-number {
     display: inline-block;
     border-radius: 50%;
@@ -1512,4 +1519,9 @@ i.file-icon {
     box-shadow: none !important;
     pointer-events: none !important;
     cursor: default !important;
+}
+
+/* Detail Page Styling */
+.block-label {
+    color: #66CCCC
 }
