@@ -144,21 +144,20 @@ class SimpleHabitatAssessmentForm(forms.Form):
         required=False,
         widget=forms.Select,
         label='Woody Debris Amount',
-        choices= models.variable_choice_options('woodyDebris'),
+        choices= place_holder_choices,
         initial='1'
     )
-    simple_woody_debris_type = forms.ChoiceField(
+    simple_woody_debris_type = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
         required=False,
-        widget=forms.Select,
-        label='Woody Debris Amount',
-        choices= models.variable_choice_options('woodyDebris'),
-        initial='1'
+        label='Woody Debris Type',
+        choices= place_holder_choices,
     )
     simple_land_use = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
-        label='Land Uses in 1/4 Mile Radius',
-        choices= models.variable_choice_options('landuseQuarterMile'),
+        label='Land Use Characteristics',
+        choices= place_holder_choices,
     )
 
 class StreamHabitatAssessmentForm(forms.Form):

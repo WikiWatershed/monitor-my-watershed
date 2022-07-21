@@ -52,7 +52,7 @@
                     {% elif wizard.form.prefix == 'cat' %}
                         {% include 'streamwatch/subforms/cat.html' with wizard=wizard %}
                     {% elif wizard.form.prefix == 'school' %}
-                        {% include 'streamwatch/subforms/simple_hab.html' with wizard=wizard %}  
+                        {% include 'streamwatch/subforms/simple_habitat.html' with wizard=wizard %}  
                     {% else %}
                         {{wizard.form.as_p}}
                     {% endif %}
