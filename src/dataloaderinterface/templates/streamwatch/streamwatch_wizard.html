@@ -50,7 +50,9 @@
                     {% elif wizard.form.prefix == 'conditions' %}
                         {% include 'streamwatch/subforms/conditions.html' with wizard=wizard %} 
                     {% elif wizard.form.prefix == 'cat' %}
-                        {% include 'streamwatch/subforms/cat.html' with wizard=wizard %} 
+                        {% include 'streamwatch/subforms/cat.html' with wizard=wizard %}
+                    {% elif wizard.form.prefix == 'school' %}
+                        {% include 'streamwatch/subforms/simple_hab.html' with wizard=wizard %}  
                     {% else %}
                         {{wizard.form.as_p}}
                     {% endif %}
@@ -69,7 +71,7 @@
                         >Cancel</a>
 
                         {% if wizard.steps.prev %}
-                        {% comment %} <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.first }}">{% trans "first step" %}</button> {% endcomment %}
+                        <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.first }}">{% trans "first step" %}</button>
                         <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
                         {% endif %}
                         <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after">
