@@ -12,9 +12,6 @@ from formtools.wizard.views import SessionWizardView
 from streamwatch import forms 
 from streamwatch import models
 
-from collections import OrderedDict
-
-from typing import Dict
 from typing import List
 
 class LoginRequiredMixin(object):
@@ -50,15 +47,22 @@ def condition_cat(wizard):
         return 'chemical' in setup_data['assessment_type']
     return True
 
+def condition_school(wizard):
+    setup_data = wizard.get_cleaned_data_for_step('setup')
+    if setup_data is not None:
+        return 'school' in setup_data['assessment_type']
+    return True
 
 class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.VisualAssessmentForm),
-        ('cat',forms.WaterQualityForm)
+        ('cat',forms.WaterQualityForm),
+        ('school',forms.SimpleHabitatAssessmentForm),
     ]
     condition_dict = {
-        'cat': condition_cat
+        'cat': condition_cat,
+        'school': condition_school
     }
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
