@@ -14,9 +14,11 @@
         <div class="mdl-card mdl-shadow--2dp full-width">               
             
             <div class="measurement-card mdl-card__supporting-text default-font">
-                <div class="form-field col-6">
-                    <label for="{{ wizard.form.test_method.id_for_label }}">{{ wizard.form.test_method.label }}</label>
-                    {{ wizard.form.test_method|add_class:"form-control" }}
+                <div class="row">                
+                    <div class="form-field col-6">
+                        <label for="{{ wizard.form.test_method.id_for_label }}">{{ wizard.form.test_method.label }}</label>
+                        {{ wizard.form.test_method|add_class:"form-control" }}
+                    </div>
                 </div>
                 <div class="row">
                     <div class="form-field col-6">
@@ -33,7 +35,7 @@
 
                 <div class="parameter-card">                                        
                     <div class="row">
-                        <div class="form-field col"><label>Parameter</label></div> 
+                        <div class="form-field col-5"><label>Parameter</label></div> 
                         <div class="form-field col-3"><label>Measurement</label></div> 
                         <div class="form-field col-4"><label>Unit</label></div> 
                     </div>
