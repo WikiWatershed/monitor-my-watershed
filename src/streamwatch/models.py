@@ -22,8 +22,26 @@ def sampling_feature_code_to_id(code:str) -> Union[int,None]:
         .where(odm2_models.SamplingFeatures.samplingfeaturecode == code)
         )
     result = odm2_engine.read_query(query, output_format='dict')
-    if result: return result['sampling_feature_id']
+    if result: return result[0]['samplingfeatureid']
     return None
+
+def samplingfeature_surveys(sampling_feature_code:str) -> Dict[str,Any]:
+    """Get a joined list joined the featureactions and actions based on sampling_feature_code"""
+    sampling_feature_id = sampling_feature_code_to_id(sampling_feature_code)
+    if sampling_feature_id is None: return {}
+    
+    query = (sqlalchemy.select(odm2_models.FeatureActions, odm2_models.Actions)
+        .join(odm2_models.Actions, odm2_models.FeatureActions.actionid == odm2_models.Actions.actionid)
+        .where(odm2_models.FeatureActions.samplingfeatureid == sampling_feature_id)
+        .where(odm2_models.Actions.methodid == 1)
+        .order_by(odm2_models.Actions.begindatetime)
+        )
+    result = odm2_engine.read_query(query, output_format='dict')
+    return result
+
+def delete_streamwatch_survey(action_id:int) -> None:
+    """Deletes a StreamWatch Survey from the database based on the parent action id"""
+    result = odm2_engine.delete_object(odm2_models.Actions, action_id)
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 

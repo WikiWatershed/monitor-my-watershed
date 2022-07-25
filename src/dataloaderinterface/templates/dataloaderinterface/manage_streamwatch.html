@@ -12,8 +12,11 @@
 
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
-            <div class="page-title">Manage Streamwatch Experiments at  <a style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
-                    {{ siteregistration.sampling_feature_code }}</a></div>
+            <div class="page-title">Manage Streamwatch Surveys at  
+                <a id="sampling_feature_code" sampling_feature_code="{{ siteregistration.sampling_feature_code }}"  style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
+                {{ siteregistration.sampling_feature_code }}
+                </a>
+            </div>
             <fieldset class="form-fieldset">
                 {% csrf_token %}
                 <div class="row">
@@ -31,28 +34,22 @@
                         <br><br>
 
                         <div style="overflow: auto;">
-                            {#                                            TODO: Populate this table#}
                             <table class="no-hover mdl-data-table mdl-js-data-table macroinvertebrate">
                                 <thead>
                                 <tr class="full-width">
-                                    {#                                                    <th class="mdl-data-table__cell--non-numeric">Experiment ID#}
-                                    {#                                                    </th>#}
-                                    {#                                                    <th class="mdl-data-table__cell--non-numeric">Experiment Type</th>#}
                                     <th class="mdl-data-table__cell--non-numeric">Begin Date</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Content</th>
-                                    <th class="mdl-data-table__cell--non-numeric">Deployment Type</th>
+                                    {#<th class="mdl-data-table__cell--non-numeric">Content</th>#}
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
                                     <th></th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% if object.leafpack_set.count > 0 %}
-                                    {% for leafpack in object.leafpack_set.all %}
-                                        <tr class="bg-white leafpack-form" data-id="{{ leafpack.id }}">
-                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_date }}</td>
-                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.content|default:"N/A" }}</td>
-                                            <td class="mdl-data-table__cell--non-numeric">{{ leafpack.deployment_type|default:"N/A" }}</td>
+                                {% if streamwatchsurveys %}
+                                    {% for survey in streamwatchsurveys %}
+                                        <tr class="bg-white leafpack-form" data-id="{{ survey.actionid }}">
+                                            <td class="mdl-data-table__cell--non-numeric">{{ survey.begindatetime }}</td>
+                                            {#<td class="mdl-data-table__cell--non-numeric">{{ survey.actiontypecv|default:"NA" }}</td>#}
                                             <td class="mdl-data-table__cell--non-numeric">
                                                 <a href="{% url 'leafpack:update' siteregistration.sampling_feature_code leafpack.id %}"
                                                    class="mdl-button mdl-button--accent">
@@ -65,20 +62,12 @@
                                                         style="color: #d9534f"
                                                         type="button">
                                                     <i class="material-icons center-icon">delete_forever</i>
-                                                    {#                                                                    TODO: SETUP THIS DELETE FORM SIMILAR TO SENSOR DELETE FORMS #}
-                                                    {{ leafpack.DELETE }}
                                                 </button>
                                             </td>
                                             <td class="mdl-data-table__cell--non-numeric">
                                                 <a class="mdl-button mdl-js-button button-link mdl-button--primary"
                                                    href="{% url 'streamwatch:view' siteregistration.sampling_feature_code leafpack.id %}">
                                                     View Details
-                                                </a>
-                                            </td>
-                                            <td class="mdl-data-table__cell--non-numeric">
-                                                <a class="mdl-button mdl-js-button button-link mdl-button--primary"
-                                                   href="{% url 'streamwatch:addsensor' siteregistration.sampling_feature_code leafpack.id %}">
-                                                    Add Measurement
                                                 </a>
                                             </td>
                                         </tr>
@@ -108,12 +97,12 @@
     <div class="modal fade" id="confirm-delete-experiment" role="dialog" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content mdl-modal-content mdl-shadow--4dp">
-                <h4 class="mdl-dialog__title">Delete Experiment?</h4>
+                <h4 class="mdl-dialog__title">Delete Survey?</h4>
 
                 <div class="mdl-dialog__content">
                     <div class="alert alert-danger hidden">All stored data corresponding to
-                        this experiment will be deleted.<br/></div>
-                    <p>Are you sure you want to remove this experiment?</p>
+                        this survey will be deleted.<br/></div>
+                    <p>Are you sure you want to remove this survey?</p>
                 </div>
                 <div class="mdl-dialog__actions text-right">
                     <button type="button" class="mdl-button mdl-button--raised" id="btn-confirm-delete-experiment">
@@ -138,5 +127,6 @@
 {% block scripts %}
     {{ block.super }}
 {#    <script src="{% static 'dataloaderinterface/js/bootstrap-toolkit.min.js' %}"></script>#}
-    <script src="{% static 'dataloaderinterface/js/manage-leafpack.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/websdl-utils.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/manage-streamwatch.js' %}"></script>
 {% endblock %}

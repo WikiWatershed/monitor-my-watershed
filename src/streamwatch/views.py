@@ -1,4 +1,3 @@
-from re import S
 from dataloaderinterface.models import SiteRegistration
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, BaseDetailView
 from django.views.generic.detail import DetailView
@@ -32,13 +31,12 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
             raise response.Http404
         return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
 
-    def get_queryset(self):
-        #TODO - PRT verify this queryset is correct.
-        #It makes sense that we would query SiteRegistrations but using a `with_leafpacks` method seems incorrect 
-        return SiteRegistration.objects.with_leafpacks()
-
     def get_context_data(self, **kwargs):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
+
+        sampling_feature_code = self.kwargs['sampling_feature_code']
+        surveys = models.samplingfeature_surveys(sampling_feature_code)
+        context['streamwatchsurveys'] = surveys
         return context
 
 def condition_cat(wizard):
@@ -111,18 +109,13 @@ class StreamWatchDetailView(DetailView):
         return context
         
 
-class StreamWatchDeleteView(LoginRequiredMixin, DeleteView):
+class DeleteView(LoginRequiredMixin, DeleteView):
     slug_field = 'sampling_feature_code'
 
-    def get_object(self, queryset=None):
-        #return LeafPack.objects.get(id=self.kwargs['pk'])
-        return {}
-
     def post(self, request, *args, **kwargs):
-        # to do: implement delete current streamWatch assessment
-        #leafpack = self.get_object()
-        #leafpack.delete()
-        return redirect(reverse('site_detail', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
+        feature_action_id = request.POST.get('id')
+        models.delete_streamwatch_survey(feature_action_id) 
+        return HttpResponse('Survey deleted successfully', status=202)
 
 # add a streamwatch meas to CAT assessment
 
