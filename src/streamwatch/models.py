@@ -41,7 +41,7 @@ def samplingfeature_surveys(sampling_feature_code:str) -> Dict[str,Any]:
 
 def delete_streamwatch_survey(action_id:int) -> None:
     """Deletes a StreamWatch Survey from the database based on the parent action id"""
-    result = odm2_engine.delete_object(odm2_models.Actions, action_id)
+    odm2_engine.delete_object(odm2_models.Actions, action_id)
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
@@ -60,25 +60,28 @@ class CATMeasurement:
 
 class _BaseFieldAdapter():
     """"""
+    
+    QUALITY_CODE_CV =  'None'
+    PROCESSING_LEVEL = 1 #indicating raw results
 
-    def create_result(self, action_id:int, variable_id:int, units_id:int, result_type:str, medium:str) -> int:
+    @classmethod
+    def create_result(cls, feature_action_id:int, variable_id:int, units_id:int, result_type:str, medium:str) -> int:
         """Create a result record"""
-        with odm2_engine.session_maker() as session:
-            result = odm2_models.Result()
-            result.featureactionid = action_id
-            result.resulttypecy = result_type
-            result.variableid = variable_id
-            result.units = units_id
-            result.processinglevelid = 1
-            result.sampledmediumcv = medium
-            result.valuecount = -9999
-            session.add(result)
-            session.commit()
-            return result.resultid
-
+        result = odm2_models.Result()
+        result.featureactionid = feature_action_id
+        result.resulttypecy = result_type
+        result.variableid = variable_id
+        result.units = units_id
+        result.processinglevelid = 1
+        result.sampledmediumcv = medium
+        result.valuecount = -9999
+        return odm2_engine.create_object(result)
+        
 class _ChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating single select field data into ODM2 results structure"""
-    
+
+    RESULT_TYPE_CV = ''
+
     @classmethod
     def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
         raise NotImplementedError    
@@ -89,6 +92,8 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
 
 class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating multi-select field into ODM2 results structure"""
+    
+    RESULT_TYPE_CV = ''
 
     @classmethod
     def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
@@ -100,6 +105,8 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
 class _FloatFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating float value into ODM2 results structure"""
+    
+    RESULT_TYPE_CV = 'Measurement'
 
     @classmethod
     def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
@@ -111,10 +118,33 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
 
 class _TextFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating string value into ODM2 results structure"""
+    
+    RESULT_TYPE_CV = 'Category observation'
+    QUALITY_CODE_CV =  'None'
 
     @classmethod
-    def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError    
+    def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        result_id = cls.create_result(
+            feature_action_id=feature_action_id, 
+            resulttypecv=cls.RESULT_TYPE_CV,
+            variableid=config.variable_identifier,
+            unitsid=config.units,
+            #skip taxonomicclassiferid
+            processinglevelid=cls.PROCESSING_LEVEL,
+            medium=config.medium
+            )
+        
+        categoricalresult = odm2_models.CategoricalResult
+        categoricalresult.resultid = result_id
+        categoricalresult.qualitycodecv = cls.QUALITY_CODE_CV
+        odm2_engine.create_object(categoricalresult, preserve_pkey=True)
+
+        categoricalresultvalue = odm2_models.CategoricalResultValue
+        categoricalresultvalue.resultid = result_id
+        categoricalresultvalue.datavalue = value
+        categoricalresultvalue.valuedatetime = datetime
+        categoricalresultvalue.valuedatetimeutcoffset = utc_offset
+        odm2_engine.create_object(categoricalresultvalue)
     
     @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
@@ -124,16 +154,31 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 class StreamWatchODM2Adapter():
     """Adapter class for translating stream watch form data in and out of ODM2"""
 
+    ROOT_METHOD_ID = 1
 
     #This is intended be more flexible way to map form field ODM2 data
     #FieldConfig variable_identifier, adapterclass, units_id, medium
-    #PRT - TODO - flesh out crosswalk with AKA
-    parameter_crosswalk = {
-        'aqautic_veg_typ' : FieldConfig('',_ChoiceFieldAdapter,1,2) #example 
+    #TODO - flesh out crosswalk with AKA
+    PARAMETER_CROSSWALK = {
+        'algae_amount' : FieldConfig('algaeAmount',_ChoiceFieldAdapter,1,2),
+        'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,1,2),
+        'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,1,2),
+        'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,1,2),
+        'site_observation' : FieldConfig('????',_TextFieldAdapter,416,11),
+        'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
+        'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
+        'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
+        'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,1,2),
+        'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,1,2),
+        'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,1,2),
+        'water_color' : FieldConfig('waterColor',_ChoiceFieldAdapter,1,2),
+        'water_movement' : FieldConfig('waterMovement',_ChoiceFieldAdapter,1,2),
+        'water_odor' : FieldConfig('waterOdor',_MultiChoiceFieldAdapter,1,2),
+        'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,1,2),
     }
 
-    def __init__(self) -> None:
-        self.feature_action_id
+    def __init__(self, sampling_feature_id:int) -> None:
+        self.sampling_feature_id = sampling_feature_id
         self._attributes = {}
 
     @classmethod 
@@ -151,14 +196,30 @@ class StreamWatchODM2Adapter():
         #TODO - PRT concrete implementation needed 
         #raise NotImplementedError
 
+    def _create_parent_action(self) -> None:
+        """Helper method to create a parent a new action StreamWatch parent action"""
+        #TODO - wire up based on form parameters
+        #TODO - check with Anthony on efficiently adding user information
+        self.parent_action_id = 5929 #PRT - for now return dummy action that was created manually
+
+    def _create_feature_action(self, actionid:id) -> int:
+        """Helper method to register an action to the SamplingFeature"""
+        samplingfeature = odm2_models.SamplingFeature.from_dict({
+            'samplingfeatureid':self.sampling_feature_id, 
+            'actionid':actionid
+            })
+        return odm2_engine.create_object(samplingfeature)
+
     @classmethod
     def from_dict(cls, form_attributes:Dict[str,Any]) -> "StreamWatchODM2Adapter":
         """Constructor to create new entry for a form on initial submittal"""
-        instance = StreamWatchODM2Adapter()
-        #PRT - TODO - implement methods/logic to store variables outside of the crosswalk
+        sampling_feature_id = form_attributes['sampling_feature_id']
+        instance = StreamWatchODM2Adapter(sampling_feature_id)
+        instance._create_parent_action()
+        feature_action_id = instance._create_feature_action(instance.parent_action_id)
         for key, value in form_attributes.items():
-            if key in instance.parameter_crosswalk:
-                config = instance.parameter_crosswalk[key]
+            if key in instance.PARAMETER_CROSSWALK:
+                config = instance.PARAMETER_CROSSWALK[key]
                 config.adapter_class.create(value, instance.feature_action_id, config)    
         return instance
 
@@ -174,12 +235,12 @@ class StreamWatchODM2Adapter():
                 self._update_parameter(key, value)
             else:
                 #Handles situationally populated fields that might not have been initially checked
-                config = self.parameter_crosswalk[key]
+                config = self.PARAMETER_CROSSWALK[key]
                 config.adapter_class.create(value, self.action_id, config)
         
     def _update_parameter(self, field:str, value:Any) -> None:
-        if field in self.parameter_crosswalk:
-            config = self.parameter_cross[field]
+        if field in self.PARAMETER_CROSSWALK:
+            config = self.PARAMETER_CROSS[field]
             return config.adapter_class.update(value, self.action_id, config)
         #PRT - TODO still need to resolve how to efficiently update parameters that are not
         # handled by the adapter classes. Further discussion needed with dev team
@@ -187,7 +248,7 @@ class StreamWatchODM2Adapter():
 
     @classmethod
     def _reverse_crosswalk(cls) -> Dict[str,Any]:
-        return {v[0]:(k,*v[1:]) for k,v in cls.parameter_crosswalk.items() }
+        return {v[0]:(k,*v[1:]) for k,v in cls.PARAMETER_CROSSWALK.items() }
 
 
 

@@ -300,7 +300,8 @@ class StreamHabitatAssessmentForm(forms.Form):
 
 
 class WaterQualityParametersForm(forms.Form):
-    
+
+    #TODO convert index to variable ID  
     PARAMETER_CHOICES = (
         (1, 'Air Temperature'),
         (2, 'Dissolved Oxygen (mg/L)'),

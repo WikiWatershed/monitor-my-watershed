@@ -103,7 +103,7 @@ class ODM2Engine:
             session.add_all(objs)
             session.commit()
 
-    def create_object(self, obj:object, perserve_pkey:bool=False) -> Union[int, str]:
+    def create_object(self, obj:object, preserve_pkey:bool=False) -> Union[int, str]:
         """ Accepts an ORM mapped model and created a corresponding database record
 
         Accepts on one of the ORM mapped models and creates the corresponding database 
@@ -121,7 +121,7 @@ class ODM2Engine:
 
         """
         
-        if not perserve_pkey:
+        if not preserve_pkey:
             pkey_name = obj.get_pkey_name()
             setattr(obj, pkey_name, None)
 
