@@ -10,6 +10,7 @@ import django
 from formtools.wizard.views import SessionWizardView
 from streamwatch import forms 
 from streamwatch import models
+from streamwatch import csv_writer
 
 from typing import List
 
@@ -26,7 +27,7 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
     slug_url_kwarg = 'sampling_feature_code'
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
-        site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
+        site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise response.Http404
         return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
@@ -34,7 +35,7 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
 
-        sampling_feature_code = self.kwargs['sampling_feature_code']
+        sampling_feature_code = self.kwargs[self.slug_field]
         surveys = models.samplingfeature_surveys(sampling_feature_code)
         context['streamwatchsurveys'] = surveys
         return context
@@ -67,7 +68,7 @@ class CreateView(SessionWizardView):
 
     def get_context_data(self, form:django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
-        context['sampling_feature_code'] = self.kwargs[self.slug_field]
+        context[self.slug_field] = self.kwargs[self.slug_field]
         return context
 
     def done(self, form_list:List[django.forms.Form], **kwargs):
@@ -102,7 +103,7 @@ class StreamWatchDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(StreamWatchDetailView, self).get_context_data(**kwargs)
 
-        registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
+        registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         user = self.request.user
         context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
         context['is_site_owner'] = self.request.user == registration.django_user
@@ -137,7 +138,7 @@ class StreamWatchCreateMeasurementView(FormView):
 
         context = super(StreamWatchCreateMeasurementView, self).get_context_data(**kwargs)
 
-        context['sampling_feature_code'] = self.kwargs[self.slug_field]
+        context[self.slug_field] = self.kwargs[self.slug_field]
 
         if self.object is None:
             site_registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
@@ -171,7 +172,7 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     :param sampling_feature_code: the first URL parameter
     :param pk: the second URL parameter and id of the leafpack experiement to download 
     """
-    filename, content = get_leafpack_csv(sampling_feature_code, pk)
+    filename, content = get_csv(sampling_feature_code, pk)
 
     response = HttpResponse(content, content_type='application/csv')
     response['Content-Disposition'] = 'inline; filename={0}'.format(filename)
@@ -179,11 +180,12 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     return response
 
 
-def get_leafpack_csv(sfc, lpid):  # type: (str, int) -> (str, str)
-    # leafpack = LeafPack.objects.get(id=lpid)
-    # site = SiteRegistration.objects.get(sampling_feature_code=sfc)
+def get_csv(sfc, action_id):  # type: (str, int) -> (str, str)
+    
+    survey_data = models.StreamWatchODM2Adapter.from_action_id(action_id)
+    site = SiteRegistration.objects.get(sampling_feature_code=sfc)
 
-    # writer = LeafPackCSVWriter(leafpack, site)
-    # writer.write()
+    writer = csv_writer.StreamWatchCSVWriter(survey_data, site)
+    writer.write()
 
-    return None #writer.filename(), writer.read()
+    return writer.filename(), writer.read()

@@ -196,6 +196,7 @@ class StreamWatchODM2Adapter():
 
 #PRT -> temporary data delete once fully implemented
 streamwatch_data ={}
+streamwatch_data['action_id'] = -999
 streamwatch_data['sampling_feature_code'] = 'Some Site Id'
 streamwatch_data['investigator1'] ='John Doe'
 streamwatch_data['investigator2'] ='Jane Doe'
