@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'(?P<pk>.*?)/delete/$', LeafPackDeleteView.as_view(), name='delete'),
     url(r'(?P<pk>.*?)/csv/$', download_leafpack_csv, name='csv_download'),
     url(r'(?P<pk>.*?)/$', LeafPackDetailView.as_view(), name='view'),
+    #url(r'delete/$', LeafPackDeleteView.as_view(), name='delete'),
 ]

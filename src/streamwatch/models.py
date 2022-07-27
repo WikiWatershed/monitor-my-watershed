@@ -37,6 +37,7 @@ def samplingfeature_surveys(sampling_feature_code:str) -> Dict[str,Any]:
         .order_by(odm2_models.Actions.begindatetime)
         )
     result = odm2_engine.read_query(query, output_format='dict')
+    result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
     return result
 
 def delete_streamwatch_survey(action_id:int) -> None:
@@ -191,7 +192,8 @@ class StreamWatchODM2Adapter():
         output:
         instance of the StreamWatchODM2Adapter
         """
-        return streamwatch_data
+        if action_id ==-999:
+            return streamwatch_data
 
         #TODO - PRT concrete implementation needed 
         #raise NotImplementedError

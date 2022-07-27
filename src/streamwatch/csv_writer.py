@@ -26,8 +26,6 @@ class StreamWatchCSVWriter(object):
         streamwatch = self.streamwatch
         site_registration = self.site
 
-        data = self.get_data()
-
         # Write file header
         self.writerow(['StreamWatch Survey Details'])
         self.make_header(['These data were copied to HydroShare from the WikiWatershed Data Sharing Portal.'])

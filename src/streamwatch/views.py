@@ -93,10 +93,9 @@ class StreamWatchDetailView(DetailView):
     context_object_name ='streamwatch'
 
     def get_object(self, queryset=None):
-        #return LeafPack.objects.get(id=self.kwargs['pk'])
 
         #TODO - PRT - implement method to get action_id
-        action_id = 1
+        action_id = int(self.kwargs['pk'])
         data = models.StreamWatchODM2Adapter.from_action_id(action_id)
         return data
     
@@ -107,6 +106,7 @@ class StreamWatchDetailView(DetailView):
         user = self.request.user
         context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
         context['is_site_owner'] = self.request.user == registration.django_user
+        context['sampling_feature_code'] = self.kwargs[self.slug_field]
         return context
         
 
