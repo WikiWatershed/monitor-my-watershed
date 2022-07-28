@@ -379,7 +379,7 @@
                 </div>
                 <div class="mdl-dialog__actions text-right">
                     <form method="POST"
-                          action="{% autoescape off %}{% url 'streamwatch:delete' sampling_feature_code streamwatch.id %}{% endautoescape %}">
+                          action="{% autoescape off %}{% url 'streamwatch:delete' sampling_feature_code %}{% endautoescape %}">
                         {% csrf_token %}
                         <button type="submit" class="mdl-button mdl-button--raised"
                                 style="background: #d9534f; color:#FFF;" id="btn-confirm-delete">Delete
