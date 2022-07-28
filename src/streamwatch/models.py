@@ -1,3 +1,6 @@
+from dataclasses import Field
+
+from django import conf
 from odm2 import odm2datamodels
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
@@ -66,15 +69,15 @@ class _BaseFieldAdapter():
     PROCESSING_LEVEL = 1 #indicating raw results
 
     @classmethod
-    def create_result(cls, feature_action_id:int, variable_id:int, units_id:int, result_type:str, medium:str) -> int:
+    def create_result(cls, feature_action_id:int, config:FieldConfig, result_type:str, variable_id:int=None) -> int:
         """Create a ODM2 result record"""
         result = odm2_models.Result()
         result.featureactionid = feature_action_id
         result.resulttypecy = result_type
-        result.variableid = variable_id
-        result.units = units_id
-        result.processinglevelid = 1
-        result.sampledmediumcv = medium
+        result.variableid = variable_id if variable_id else config.variable_id
+        result.units = config.units_id
+        result.processinglevelid = cls.PROCESSING_LEVEL
+        result.sampledmediumcv = config.medium
         result.valuecount = -9999
         return odm2_engine.create_object(result)
         
@@ -84,7 +87,7 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
     RESULT_TYPE_CV = ''
 
     @classmethod
-    def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+    def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
         raise NotImplementedError    
     
     @classmethod
@@ -97,7 +100,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
     RESULT_TYPE_CV = ''
 
     @classmethod
-    def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+    def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
         raise NotImplementedError 
 
     @classmethod
@@ -113,16 +116,8 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     TIME_AGGREGATION_INTERVAL_UNIT_ID = ''
 
     @classmethod
-    def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
-        result_id = cls.create_result(
-            feature_action_id=feature_action_id, 
-            resulttypecv=cls.RESULT_TYPE_CV,
-            variableid=config.variable_identifier,
-            unitsid=config.units,
-            #skip taxonomicclassiferid
-            processinglevelid=cls.PROCESSING_LEVEL,
-            medium=config.medium
-            )
+    def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         measurementresult = odm2_models.MeasurementResults
         measurementresult.resultid = result_id
@@ -150,15 +145,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
-        result_id = cls.create_result(
-            feature_action_id=feature_action_id, 
-            resulttypecv=cls.RESULT_TYPE_CV,
-            variableid=config.variable_identifier,
-            unitsid=config.units,
-            #skip taxonomicclassiferid
-            processinglevelid=cls.PROCESSING_LEVEL,
-            medium=config.medium
-            )
+        result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         categoricalresult = odm2_models.CategoricalResults
         categoricalresult.resultid = result_id
