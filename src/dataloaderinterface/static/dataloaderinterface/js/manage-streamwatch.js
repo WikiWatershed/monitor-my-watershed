@@ -26,11 +26,11 @@ $(document).ready(function() {
             if (xhr.status === 202) {
                 // Valid
                 row.remove();
-                snackbarMsg('StreamWatch survey has been deleted!');
+                snackbarMsg('StreamWatch assessment has been deleted!');
 
             } else if (xhr.status === 206) {
                 // Invalid
-                snackbarMsg('StreamWatch could not be deleted!');
+                snackbarMsg('StreamWatch assessment could not be deleted!');
             }
         }).fail(function (xhr, error) {
             console.log(error);

@@ -36,7 +36,7 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
 
         sampling_feature_code = self.kwargs[self.slug_field]
-        surveys = models.samplingfeature_surveys(sampling_feature_code)
+        surveys = models.samplingfeature_assessments(sampling_feature_code)
         context['streamwatchsurveys'] = surveys
         return context
 
@@ -115,8 +115,8 @@ class DeleteView(LoginRequiredMixin, DeleteView):
 
     def post(self, request, *args, **kwargs):
         feature_action_id = request.POST.get('id')
-        models.delete_streamwatch_survey(feature_action_id) 
-        return HttpResponse('Survey deleted successfully', status=202)
+        models.delete_streamwatch_assessment(feature_action_id) 
+        return HttpResponse('Assessment deleted successfully', status=202)
 
 # add a streamwatch meas to CAT assessment
 

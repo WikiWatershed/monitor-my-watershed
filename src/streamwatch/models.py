@@ -25,7 +25,7 @@ def sampling_feature_code_to_id(code:str) -> Union[int,None]:
     if result: return result[0]['samplingfeatureid']
     return None
 
-def samplingfeature_surveys(sampling_feature_code:str) -> Dict[str,Any]:
+def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
     """Get a joined list joined the featureactions and actions based on sampling_feature_code"""
     sampling_feature_id = sampling_feature_code_to_id(sampling_feature_code)
     if sampling_feature_id is None: return {}
@@ -40,8 +40,8 @@ def samplingfeature_surveys(sampling_feature_code:str) -> Dict[str,Any]:
     result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
     return result
 
-def delete_streamwatch_survey(action_id:int) -> None:
-    """Deletes a StreamWatch Survey from the database based on the parent action id"""
+def delete_streamwatch_assessment(action_id:int) -> None:
+    """Deletes a StreamWatch assessment from the database based on the parent action id"""
     odm2_engine.delete_object(odm2_models.Actions, action_id)
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
@@ -67,7 +67,7 @@ class _BaseFieldAdapter():
 
     @classmethod
     def create_result(cls, feature_action_id:int, variable_id:int, units_id:int, result_type:str, medium:str) -> int:
-        """Create a result record"""
+        """Create a ODM2 result record"""
         result = odm2_models.Result()
         result.featureactionid = feature_action_id
         result.resulttypecy = result_type
@@ -108,10 +108,36 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating float value into ODM2 results structure"""
     
     RESULT_TYPE_CV = 'Measurement'
+    AGGREGATION_STATICS_CV = ''
+    TIME_AGGREGATION_INTERVAL = ''
+    TIME_AGGREGATION_INTERVAL_UNIT_ID = ''
 
     @classmethod
     def create(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError    
+        result_id = cls.create_result(
+            feature_action_id=feature_action_id, 
+            resulttypecv=cls.RESULT_TYPE_CV,
+            variableid=config.variable_identifier,
+            unitsid=config.units,
+            #skip taxonomicclassiferid
+            processinglevelid=cls.PROCESSING_LEVEL,
+            medium=config.medium
+            )
+        
+        measurementresult = odm2_models.MeasurementResults
+        measurementresult.resultid = result_id
+        measurementresult.qualitycodecv = cls.QUALITY_CODE_CV
+        measurementresult.aggregationstatisticcv = cls.AGGREGATION_STATISTIC_CV
+        measurementresult.timeaggregationinterval = cls.TIME_AGGREGATION_INTERVAL
+        measurementresult.timeaggregationintervalunitsid = cls.TIME_AGGREGATION_INTERVAL_UNIT_ID
+        odm2_engine.create_object(measurementresult, preserve_pkey=True)
+
+        measurementresultvalue = odm2_models.MeasurementResultValues    
+        measurementresultvalue.resultid = result_id
+        measurementresultvalue.datavalue = value
+        measurementresultvalue.valuedatetime = datetime
+        measurementresultvalue.valuedatetimeutcoffset = utc_offset
+        odm2_engine.create_object(measurementresultvalue)    
     
     @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
@@ -121,7 +147,6 @@ class _TextFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating string value into ODM2 results structure"""
     
     RESULT_TYPE_CV = 'Category observation'
-    QUALITY_CODE_CV =  'None'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -135,12 +160,12 @@ class _TextFieldAdapter(_BaseFieldAdapter):
             medium=config.medium
             )
         
-        categoricalresult = odm2_models.CategoricalResult
+        categoricalresult = odm2_models.CategoricalResults
         categoricalresult.resultid = result_id
         categoricalresult.qualitycodecv = cls.QUALITY_CODE_CV
         odm2_engine.create_object(categoricalresult, preserve_pkey=True)
 
-        categoricalresultvalue = odm2_models.CategoricalResultValue
+        categoricalresultvalue = odm2_models.CategoricalResultValues
         categoricalresultvalue.resultid = result_id
         categoricalresultvalue.datavalue = value
         categoricalresultvalue.valuedatetime = datetime
@@ -202,7 +227,16 @@ class StreamWatchODM2Adapter():
         """Helper method to create a parent a new action StreamWatch parent action"""
         #TODO - wire up based on form parameters
         #TODO - check with Anthony on efficiently adding user information
-        self.parent_action_id = 5929 #PRT - for now return dummy action that was created manually
+        
+        #PRT - for now set to dummy action that was created manually
+        action = odm2_models.Action
+        action.action_id = 5929 
+        action.actiontypecv = 'Field activity'
+        action.methodid = self.ROOT_METHOD_ID
+        action.begindatetime = datetime.datetime.now()
+        action.begindatetimeutcoffset = -5
+        self.parent_action = action
+        
 
     def _create_feature_action(self, actionid:id) -> int:
         """Helper method to register an action to the SamplingFeature"""
@@ -218,11 +252,17 @@ class StreamWatchODM2Adapter():
         sampling_feature_id = form_attributes['sampling_feature_id']
         instance = StreamWatchODM2Adapter(sampling_feature_id)
         instance._create_parent_action()
-        feature_action_id = instance._create_feature_action(instance.parent_action_id)
+        feature_action_id = instance._create_feature_action(instance.parent_action.action_id)
         for key, value in form_attributes.items():
             if key in instance.PARAMETER_CROSSWALK:
                 config = instance.PARAMETER_CROSSWALK[key]
-                config.adapter_class.create(value, instance.feature_action_id, config)    
+                config.adapter_class.create(
+                    value, 
+                    instance.parent_action.begindatetime, 
+                    instance.parent_action.begindatetimeutcoffset, 
+                    feature_action_id,
+                    config
+                    )    
         return instance
 
     def to_dict(self) -> Dict[str,Any]:
