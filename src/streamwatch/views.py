@@ -85,7 +85,7 @@ class CreateView(SessionWizardView):
         return context
 
     def done(self, form_list:List[django.forms.Form], **kwargs):
-        id = models.sampling_feature_code_to_id(self.slug_field)
+        id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         
         form_data = {'sampling_feature_id':id, 'cat_methods':[]}
         for form in form_list: 
@@ -93,7 +93,7 @@ class CreateView(SessionWizardView):
                 form_data['cat_methods'].append(form.clean_data())    
                 continue
             form_data.update(form.cleaned_data)
-        adapter = models.StreamWatchODM2Adapter.create_from_dict(form_data)
+        adapter = models.StreamWatchODM2Adapter.from_dict(form_data)
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
