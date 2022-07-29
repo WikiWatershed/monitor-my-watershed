@@ -8,5 +8,5 @@ class ActionDirectives():
 class Directives():
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2LabAnalyses_Directives.html"""
 
-class SpecimenBatchPositions():
+class SpecimenBatchPostions():
 	"""http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2LabAnalyses_SpecimenBatchPostions.html"""

@@ -13,7 +13,7 @@ from typing import Dict, Any, Iterable, Tuple, Union
 import datetime
 
 def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
-    query = (sqlalchemy.select(odm2_models.Variables.variablecode, odm2_models.Variables.variabledefinition)
+    query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
         )
     records = odm2_engine.read_query(query, output_format='records')
@@ -37,7 +37,7 @@ def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
         .join(odm2_models.Actions, odm2_models.FeatureActions.actionid == odm2_models.Actions.actionid)
         .where(odm2_models.FeatureActions.samplingfeatureid == sampling_feature_id)
         .where(odm2_models.Actions.methodid == 1)
-        .order_by(odm2_models.Actions.begindatetime)
+        #.order_by(odm2_models.Actions.begindatetime)
         )
     result = odm2_engine.read_query(query, output_format='dict')
     result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
@@ -71,24 +71,29 @@ class _BaseFieldAdapter():
     @classmethod
     def create_result(cls, feature_action_id:int, config:FieldConfig, result_type:str, variable_id:int=None) -> int:
         """Create a ODM2 result record"""
-        result = odm2_models.Result()
+        result = odm2_models.Results()
         result.featureactionid = feature_action_id
-        result.resulttypecy = result_type
+        result.resulttypecv = result_type
         result.variableid = variable_id if variable_id else config.variable_id
-        result.units = config.units_id
+        result.unitsid = config.units
         result.processinglevelid = cls.PROCESSING_LEVEL
         result.sampledmediumcv = config.medium
         result.valuecount = -9999
         return odm2_engine.create_object(result)
         
 class _ChoiceFieldAdapter(_BaseFieldAdapter):
-    """Adapter class for translating single select field data into ODM2 results structure"""
+    """Adapter class for translating single select field data into ODM2 results structure
+    
+        Implemented through the `results` table. Presence of a result record means a field
+        was populated, and the `variableid` of the result record indicates the categorical value
+        that was selected. 
+    """
 
-    RESULT_TYPE_CV = ''
+    RESULT_TYPE_CV = 'Category observation'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError    
+        result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, value)
     
     @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
@@ -97,11 +102,12 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
 class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating multi-select field into ODM2 results structure"""
     
-    RESULT_TYPE_CV = ''
+    RESULT_TYPE_CV = 'Category observation'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError 
+        for selected in value:
+            cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
     @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
@@ -111,9 +117,9 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating float value into ODM2 results structure"""
     
     RESULT_TYPE_CV = 'Measurement'
-    AGGREGATION_STATICS_CV = ''
-    TIME_AGGREGATION_INTERVAL = ''
-    TIME_AGGREGATION_INTERVAL_UNIT_ID = ''
+    AGGREGATION_STATICS_CV = 'Sporadic'
+    TIME_AGGREGATION_INTERVAL = 1.0
+    TIME_AGGREGATION_INTERVAL_UNIT_ID = 2 #hour minute
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -170,24 +176,24 @@ class StreamWatchODM2Adapter():
     ROOT_METHOD_ID = 1
 
     #This is intended be more flexible way to map form field ODM2 data
-    #FieldConfig variable_identifier, adapterclass, units_id, medium
+    #FieldConfig variable_identifier, adapterclass, units, medium
     #TODO - flesh out crosswalk with AKA
     PARAMETER_CROSSWALK = {
-        'algae_amount' : FieldConfig('algaeAmount',_ChoiceFieldAdapter,1,2),
-        'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,1,2),
-        'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,1,2),
-        'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,1,2),
-        'site_observation' : FieldConfig('????',_TextFieldAdapter,416,11),
-        'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
-        'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
-        'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
-        'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,1,2),
-        'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,1,2),
-        'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,1,2),
-        'water_color' : FieldConfig('waterColor',_ChoiceFieldAdapter,1,2),
-        'water_movement' : FieldConfig('waterMovement',_ChoiceFieldAdapter,1,2),
-        'water_odor' : FieldConfig('waterOdor',_MultiChoiceFieldAdapter,1,2),
-        'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,1,2),
+        'algae_amount' : FieldConfig('algaeAmount',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
+        'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
+        #'site_observation' : FieldConfig('????',_TextFieldAdapter,416,11),
+        #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
+        #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
+        #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
+        'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
+        'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
+        'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'water_color' : FieldConfig('waterColor',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'water_movement' : FieldConfig('waterMovement',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'water_odor' : FieldConfig('waterOdor',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
+        'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,395,'Air'),
     }
 
     def __init__(self, sampling_feature_id:int) -> None:
@@ -210,13 +216,16 @@ class StreamWatchODM2Adapter():
         #TODO - PRT concrete implementation needed 
         #raise NotImplementedError
 
+    def _get_from_database(self, parent_action_id:int) -> "TDB":
+        """"""
+
     def _create_parent_action(self) -> None:
         """Helper method to create a parent a new action StreamWatch parent action"""
         #TODO - wire up based on form parameters
         #TODO - check with Anthony on efficiently adding user information
         
         #PRT - for now set to dummy action that was created manually
-        action = odm2_models.Action
+        action = odm2_models.Actions
         action.action_id = 5929 
         action.actiontypecv = 'Field activity'
         action.methodid = self.ROOT_METHOD_ID
@@ -225,13 +234,13 @@ class StreamWatchODM2Adapter():
         self.parent_action = action
         
 
-    def _create_feature_action(self, actionid:id) -> int:
+    def _create_feature_action(self, actionid:int) -> int:
         """Helper method to register an action to the SamplingFeature"""
-        samplingfeature = odm2_models.SamplingFeature.from_dict({
+        featureaction = odm2_models.FeatureActions.from_dict({
             'samplingfeatureid':self.sampling_feature_id, 
             'actionid':actionid
             })
-        return odm2_engine.create_object(samplingfeature)
+        return odm2_engine.create_object(featureaction)
 
     @classmethod
     def from_dict(cls, form_attributes:Dict[str,Any]) -> "StreamWatchODM2Adapter":
