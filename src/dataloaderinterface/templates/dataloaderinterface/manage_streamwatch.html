@@ -51,7 +51,7 @@
                                             <td class="mdl-data-table__cell--non-numeric">{{ survey.begindatetime }}</td>
                                             {#<td class="mdl-data-table__cell--non-numeric">{{ survey.actiontypecv|default:"NA" }}</td>#}
                                             <td class="mdl-data-table__cell--non-numeric">
-                                                <a href="{% url 'leafpack:update' siteregistration.sampling_feature_code survey.actionid %}"
+                                                <a href="{% url 'streamwatch:update' siteregistration.sampling_feature_code survey.actionid %}"
                                                    class="mdl-button mdl-button--accent">
                                                     <i class="material-icons center-icon">mode_edit</i>
                                                 </a>

@@ -13,6 +13,7 @@ from streamwatch import models
 from streamwatch import csv_writer
 
 from typing import List
+import csv
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -56,16 +57,28 @@ class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.VisualAssessmentForm),
-        ('cat',forms.WaterQualityForm),
+        ('simplecat',forms.SimpleWaterQualityForm),
         ('school',forms.SimpleHabitatAssessmentForm),
     ]
     condition_dict = {
-        'cat': condition_cat,
+        'simplecat': condition_cat,
         'school': condition_school
     }
+    
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
+    
+            
+    def get(self, request, *args, **kwargs):
+        if 'pk' in kwargs.keys():
+            # htao temp hard coded data to test dynamically load initial values
+            self.initial_dict = {
+            'setup': {'investigator1': 'John Isner', 'sender': 'user@example.com'},
+            'simplecat': {'simple_water_temperature': 21}
+            }
 
+        return super().get(request, *args, **kwargs)
+            
     def get_context_data(self, form:django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
         context[self.slug_field] = self.kwargs[self.slug_field]
@@ -84,7 +97,6 @@ class CreateView(SessionWizardView):
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
-            
 
     
 class StreamWatchDetailView(DetailView):
@@ -174,8 +186,14 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     """
     filename, content = get_csv(sampling_feature_code, pk)
 
-    response = HttpResponse(content, content_type='application/csv')
-    response['Content-Disposition'] = 'inline; filename={0}'.format(filename)
+    response = HttpResponse(content, content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    # response = HttpResponse(content_type='text/csv')
+    # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    # writer = csv.writer(response)
+    # writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+    # writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
 
     return response
 

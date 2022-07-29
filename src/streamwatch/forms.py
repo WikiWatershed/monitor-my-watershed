@@ -298,6 +298,25 @@ class StreamHabitatAssessmentForm(forms.Form):
         initial='1'
     )
 
+class SimpleWaterQualityForm(forms.Form):
+    
+    PARAMETER_CHOICES = (
+        ('simple_air_temperature', 'Air Temperature'),
+        ('simple_dissolved_oxygen', 'Dissolved Oxygen (mg/L)'),
+        ('simple_nitrate', 'Nitrate'),
+        ('simple_phosphate', 'Phosphate'),
+        ('simple_ph', 'pH'),
+        ('simple_specific_onductivity', 'Specific Conductivity (uL/cm)'),
+        ('simple_total_dissolved_solids', 'Total Dissolved Solids'),
+        ('simple_turbidity', 'Turbidity (JTU)'),
+        ('simple_water_temperature', 'Water Temp (C)'))
+        
+    def __init__(self, *args, **kwargs):
+        super(SimpleWaterQualityForm, self).__init__(*args, **kwargs)
+        counter = 1
+        for keyname, plabel in self.PARAMETER_CHOICES:
+            self.fields[keyname] = forms.CharField(label=plabel, required=False)
+            counter += 1
 
 class WaterQualityParametersForm(forms.Form):
 
