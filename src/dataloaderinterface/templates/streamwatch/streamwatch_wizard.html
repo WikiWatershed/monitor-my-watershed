@@ -51,6 +51,8 @@
                         {% include 'streamwatch/subforms/conditions.html' with wizard=wizard %} 
                     {% elif wizard.form.prefix == 'cat' %}
                         {% include 'streamwatch/subforms/cat.html' with wizard=wizard %}
+                    {% elif wizard.form.prefix == 'simplecat' %}
+                        {% include 'streamwatch/subforms/simple_waterquality.html' with wizard=wizard %}
                     {% elif wizard.form.prefix == 'school' %}
                         {% include 'streamwatch/subforms/simple_habitat.html' with wizard=wizard %}  
                     {% else %}
