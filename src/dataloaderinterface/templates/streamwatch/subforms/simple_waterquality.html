@@ -1,0 +1,82 @@
+{% load widget_tweaks %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter school simple chemical measurements.</h5>
+    </div>
+</div>
+
+<div class="row std-row">
+    {{ wizard.form.site_registration }}
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">
+                    
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_air_temperature.label }}</label>                                               </label>
+                        {{ wizard.form.simple_air_temperature|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_dissolved_oxygen.label }}</label>                                               </label>
+                        {{ wizard.form.simple_dissolved_oxygen|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_nitrate.label }}</label>                                               </label>
+                        {{ wizard.form.simple_nitrate|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_phosphate.label }}</label>                                               </label>
+                        {{ wizard.form.simple_phosphate|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_ph.label }}</label>                                               </label>
+                        {{ wizard.form.simple_ph|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_specific_onductivity.label }}</label>                                               </label>
+                        {{ wizard.form.simple_specific_onductivity|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_total_dissolved_solids.label }}</label>                                               </label>
+                        {{ wizard.form.simple_total_dissolved_solids|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_turbidity.label }}</label>                                               </label>
+                        {{ wizard.form.simple_turbidity|add_class:"form-control" }}
+                    </div>
+                </div> 
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.simple_water_temperature.label }}</label>                                               </label>
+                        {{ wizard.form.simple_water_temperature|add_class:"form-control" }}
+                    </div>
+                </div> 
+            </div>
+        </div>
+        <br><br>
+    </div>

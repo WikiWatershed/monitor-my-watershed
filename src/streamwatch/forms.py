@@ -1,6 +1,7 @@
 from re import I
 from attr import field
 from django import forms
+from django.contrib.auth import get_user_model
 #from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from django.forms import formset_factory
 from streamwatch import models
@@ -8,12 +9,19 @@ from streamwatch import models
 from typing import Dict
 from typing import Any
 
+from dataloaderinterface.models import Affiliation
+
 place_holder_choices = (
         (1, 'Choice #1'), 
         (2, 'Choice #2'),
         (3, 'Choice #3')
     )
 
+user_affiliations = [
+    affiliation[0]
+    for affiliation
+    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
+]
 measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
@@ -29,12 +37,17 @@ class SetupForm(forms.Form):
     
     ASSESSMENT_TYPE_CHOICES = (('school', 'StreamWatch Schools'),('chemical', 'Chemical Action Team'), ('biological', 'Biological Action Team'), ('baterial', 'Baterial Action Team'))
 
-    investigator1 = forms.CharField(
+    
+    investigator1 = forms.ModelChoiceField(
+        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
         required=False,
+        help_text='Select a user as the main investigator',
         label='Investigator #1'
-    )       
-    investigator2 = forms.CharField(
+    )  
+    investigator2 = forms.ModelChoiceField(
+        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
         required=False,
+        help_text='Select a user as the secondary investigator',
         label='Investigator #2'
     )   
     collect_date = forms.DateField(
