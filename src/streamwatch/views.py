@@ -116,10 +116,9 @@ class StreamWatchDetailView(DetailView):
     context_object_name ='streamwatch'
 
     def get_object(self, queryset=None):
-
-        #TODO - PRT - implement method to get action_id
+        sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         action_id = int(self.kwargs['pk'])
-        data = models.StreamWatchODM2Adapter.from_action_id(action_id)
+        data = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
         return data
     
     def get_context_data(self, **kwargs):
@@ -209,10 +208,10 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     return response
 
 
-def get_csv(sfc, action_id):  # type: (str, int) -> (str, str)
-    
-    survey_data = models.StreamWatchODM2Adapter.from_action_id(action_id)
-    site = SiteRegistration.objects.get(sampling_feature_code=sfc)
+def get_csv(sampling_feature_code, action_id):  # type: (str, int) -> (str, str)
+    sampling_feature_id = models.sampling_feature_code_to_id(sampling_feature_code)
+    survey_data = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
+    site = SiteRegistration.objects.get(sampling_feature_code=sampling_feature_code)
 
     writer = csv_writer.StreamWatchCSVWriter(survey_data, site)
     writer.write()

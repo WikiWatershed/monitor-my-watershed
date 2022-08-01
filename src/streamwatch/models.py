@@ -1,6 +1,3 @@
-from dataclasses import Field
-
-from django import conf
 from odm2 import odm2datamodels
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
@@ -8,7 +5,7 @@ odm2_models = odm2datamodels.models
 import sqlalchemy
 
 from collections import namedtuple 
-from typing import Dict, Any, Iterable, Tuple, Union
+from typing import Dict, Any, Iterable, Tuple, Union, List
 
 import datetime
 
@@ -19,6 +16,7 @@ def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
     records = odm2_engine.read_query(query, output_format='records')
     return records
 
+
 def sampling_feature_code_to_id(code:str) -> Union[int,None]:
     """Take a sampling_feature_code and finds the corresponding sampling_feature_id"""
     query = (sqlalchemy.select(odm2_models.SamplingFeatures)
@@ -27,6 +25,7 @@ def sampling_feature_code_to_id(code:str) -> Union[int,None]:
     result = odm2_engine.read_query(query, output_format='dict')
     if result: return result[0]['samplingfeatureid']
     return None
+
 
 def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
     """Get a joined list joined the featureactions and actions based on sampling_feature_code"""
@@ -43,11 +42,14 @@ def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
     result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
     return result
 
+
 def delete_streamwatch_assessment(action_id:int) -> None:
     """Deletes a StreamWatch assessment from the database based on the parent action id"""
     odm2_engine.delete_object(odm2_models.Actions, action_id)
 
+
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
+
 
 class CATParameter:
     def __init__(self, parameter:str=None, measurement:float=None, unit:int=None) -> None:
@@ -62,11 +64,13 @@ class CATMeasurement:
             self.id=id
             self.cal_date= cal_date
 
+
 class _BaseFieldAdapter():
     """"""
     
     QUALITY_CODE_CV =  'None'
     PROCESSING_LEVEL = 1 #indicating raw results
+    VALUE_FIELD_NAME = '' #database field to return from read method
 
     @classmethod
     def create_result(cls, feature_action_id:int, config:FieldConfig, result_type:str, variable_id:int=None) -> int:
@@ -80,6 +84,11 @@ class _BaseFieldAdapter():
         result.sampledmediumcv = config.medium
         result.valuecount = -9999
         return odm2_engine.create_object(result)
+
+    @classmethod
+    def read(cls, database_record:Dict[str, Any]) -> Any:
+        return database_record[cls.VALUE_FIELD_NAME]
+
         
 class _ChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating single select field data into ODM2 results structure
@@ -90,6 +99,7 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
     """
 
     RESULT_TYPE_CV = 'Category observation'
+    VALUE_FIELD_NAME = 'variableid'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -99,10 +109,12 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
         raise NotImplementedError   
 
+
 class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating multi-select field into ODM2 results structure"""
     
     RESULT_TYPE_CV = 'Category observation'
+    VALUE_FIELD_NAME = 'variableid'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -110,8 +122,13 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
     @classmethod
+    def read(cls, database_record:Dict[str, Any]) -> Any:
+        return database_record['variableid']
+
+    @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
         raise NotImplementedError   
+
 
 class _FloatFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating float value into ODM2 results structure"""
@@ -120,6 +137,7 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     AGGREGATION_STATICS_CV = 'Sporadic'
     TIME_AGGREGATION_INTERVAL = 1.0
     TIME_AGGREGATION_INTERVAL_UNIT_ID = 2 #hour minute
+    VALUE_FIELD_NAME = 'measurement_datavalue'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -144,10 +162,12 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
         raise NotImplementedError   
 
+
 class _TextFieldAdapter(_BaseFieldAdapter):
     """Adapter for translating string value into ODM2 results structure"""
     
     RESULT_TYPE_CV = 'Category observation'
+    VALUE_FIELD_NAME = 'categorical_datavalue'
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
@@ -175,6 +195,8 @@ class StreamWatchODM2Adapter():
 
     ROOT_METHOD_ID = 1
     PARENT_ACTION_TYPE_CV = 'Field activity'
+    VARIABLE_CODE = 'variablecode'
+    VARIABLE_TYPE = 'variabletypecv'
 
     #This is intended be more flexible way to map form field ODM2 data
     #FieldConfig variable_identifier, adapterclass, units, medium
@@ -202,7 +224,7 @@ class StreamWatchODM2Adapter():
         self._attributes = {}
 
     @classmethod 
-    def from_action_id(cls, action_id:int) -> "StreamWatchODM2Adapter":
+    def from_action_id(cls, feature_action_id:int, action_id:int) -> "StreamWatchODM2Adapter":
         """Constructor to retrieve existing form data from database based on assessment ActionId.
         
         input:
@@ -211,28 +233,59 @@ class StreamWatchODM2Adapter():
         output:
         instance of the StreamWatchODM2Adapter
         """
+        
+        #TODO - fix implementation
         if action_id ==-999:
             return streamwatch_data
-
-        #TODO - PRT concrete implementation needed 
-        #raise NotImplementedError
-
-    def _get_from_database(self, parent_action_id:int) -> "TDB":
-        """"""
-
-    def _create_parent_action(self, form_data:Dict[str,Any]) -> None:
-        """Helper method to create a parent a new action StreamWatch parent action"""
-        #TODO - check with Anthony on efficiently adding user information
-        #TODO - check with Anthony on how to best store selected activity information
         
-        action = odm2_models.Actions()
-        action.actiontypecv = self.PARENT_ACTION_TYPE_CV
-        action.methodid = self.ROOT_METHOD_ID
-        action.begindatetime = datetime.datetime.now()
-        action.begindatetimeutcoffset = -5
-        action.actionid = odm2_engine.create_object(action)
-        self.parent_action = action
-        
+        instance = cls(feature_action_id)
+        data = instance._read_from_database(action_id)
+        instance._map_database_to_dict(data)
+        return instance
+
+    def _read_from_database(self, parent_action_id:int) -> List[Dict[str,Any]]:
+        """Helper method to query the data from the database"""
+        query = (
+            sqlalchemy.select(
+                odm2_models.Actions, odm2_models.FeatureActions, odm2_models.Results, odm2_models.Variables,
+                odm2_models.MeasurementResultValues.datavalue.label('measurement_datavalue'), 
+                odm2_models.CategoricalResultValues.datavalue.label('categorical_datavalue')
+                )
+            .join(odm2_models.FeatureActions, odm2_models.FeatureActions.actionid==odm2_models.Actions.actionid)
+            .join(odm2_models.Results, odm2_models.Results.featureactionid==odm2_models.FeatureActions.featureactionid)
+            .join(odm2_models.Variables, odm2_models.Variables.variableid==odm2_models.Results.variableid)
+            .outerjoin(odm2_models.MeasurementResults, odm2_models.MeasurementResults.resultid==odm2_models.Results.resultid)
+            .outerjoin(odm2_models.MeasurementResultValues, odm2_models.MeasurementResultValues.resultid==odm2_models.MeasurementResults.resultid)
+            .outerjoin(odm2_models.CategoricalResults, odm2_models.CategoricalResults.resultid==odm2_models.Results.resultid)
+            .outerjoin(odm2_models.CategoricalResultValues, odm2_models.CategoricalResultValues.resultid==odm2_models.CategoricalResults.resultid)
+            .where(odm2_models.Actions.actionid==parent_action_id) #TODO: this eventually need to be scaled to include related actions
+            )
+        data = odm2_engine.read_query(query, output_format='dict')
+        return data
+
+    def _map_database_to_dict(self, data:Dict[str,Any]) -> None:
+        """Reverses the database crosswalk to map data back to dictionary""" 
+
+
+        self._map_database_to_dict_special_cases(data)
+        crosswalk = self._reverse_crosswalk()
+        for record in data:
+            if record[self.VARIABLE_CODE] in crosswalk:
+                parameter_information = crosswalk[record[self.VARIABLE_CODE]]
+                field_adapter = parameter_information[1]
+                self._attributes[parameter_information[0]] = field_adapter.read(record)
+            elif record[self.VARIABLE_TYPE] in crosswalk:
+                parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
+                field_adapter = parameter_information[1]
+                if field_adapter is _MultiChoiceFieldAdapter:
+                    if parameter_information[0] not in self._attributes: 
+                        self._attributes[parameter_information[0]] = []
+                    self._attributes[parameter_information[0]].append(field_adapter.read(record))
+                else: 
+                    self._attributes[parameter_information[0]] = field_adapter.read(record)
+
+    def _map_database_to_dict_special_cases(self, data:Dict[str,Any]) -> None:
+        pass
 
     def _create_feature_action(self, actionid:int) -> int:
         """Helper method to register an action to the SamplingFeature"""
@@ -245,20 +298,33 @@ class StreamWatchODM2Adapter():
     @classmethod
     def from_dict(cls, form_data:Dict[str,Any]) -> "StreamWatchODM2Adapter":
         """Constructor to create new entry for a form on initial submittal"""
+        
+        def create_parent_action(form_data:Dict[str,Any]) -> None:
+            """Helper method to create a parent a new action StreamWatch parent action"""
+            #TODO - check with Anthony on efficiently adding user information
+            #TODO - check with Anthony on how to best store selected activity information
+            action = odm2_models.Actions()
+            action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
+            action.methodid = cls.ROOT_METHOD_ID
+            action.begindatetime = datetime.datetime.now()
+            action.begindatetimeutcoffset = -5
+            action.actionid = odm2_engine.create_object(action)
+            return action
+        
         sampling_feature_id = form_data['sampling_feature_id']
         instance = StreamWatchODM2Adapter(sampling_feature_id)
-        instance._create_parent_action(form_data)
-        feature_action_id = instance._create_feature_action(instance.parent_action.actionid)
+        parent_action = create_parent_action(form_data)
+        feature_action_id = instance._create_feature_action(parent_action.actionid)
         for key, value in form_data.items():
-            if key in instance.PARAMETER_CROSSWALK:
-                config = instance.PARAMETER_CROSSWALK[key]
-                config.adapter_class.create(
-                    value, 
-                    instance.parent_action.begindatetime, 
-                    instance.parent_action.begindatetimeutcoffset, 
-                    feature_action_id,
-                    config
-                    )    
+            if key not in instance.PARAMETER_CROSSWALK: continue
+            config = instance.PARAMETER_CROSSWALK[key]
+            config.adapter_class.create(
+                value, 
+                parent_action.begindatetime, 
+                parent_action.begindatetimeutcoffset, 
+                feature_action_id,
+                config
+            )    
         return instance
 
     def to_dict(self) -> Dict[str,Any]:
