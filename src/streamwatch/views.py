@@ -67,17 +67,6 @@ class CreateView(SessionWizardView):
     
     template_name = 'streamwatch/streamwatch_wizard.html'
     slug_field = 'sampling_feature_code'
-    
-            
-    def get(self, request, *args, **kwargs):
-        if 'pk' in kwargs.keys():
-            # htao temp hard coded data to test dynamically load initial values
-            self.initial_dict = {
-            'setup': {'investigator1': 'John Isner', 'sender': 'user@example.com'},
-            'simplecat': {'simple_water_temperature': 21}
-            }
-
-        return super().get(request, *args, **kwargs)
             
     def get_context_data(self, form:django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
@@ -97,6 +86,28 @@ class CreateView(SessionWizardView):
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
+class UpdateView(CreateView):
+    def get(self, request, *args, **kwargs):
+        if 'pk' in kwargs.keys():
+            # htao temp hard coded data to prove concept of dynamic loading initial values
+            self.initial_dict['simplecat'] = {'simple_water_temperature': 21}
+            self.initial_dict['setup'] = {'investigator1': 'John Isner'}
+            self.initial_dict['conditions'] = {'weather_cond': 378}
+        
+        return super().get(request, *args, **kwargs)
+    
+    def done(self, form_list:List[django.forms.Form], **kwargs):
+        id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
+        
+        form_data = {'sampling_feature_id':id, 'cat_methods':[]}
+        for form in form_list: 
+            if isinstance(form,forms.WaterQualityForm):
+                form_data['cat_methods'].append(form.clean_data())    
+                continue
+            form_data.update(form.cleaned_data)
+        adapter = models.StreamWatchODM2Adapter.from_dict(form_data)
+
+        return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
     
 class StreamWatchDetailView(DetailView):
