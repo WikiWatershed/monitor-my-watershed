@@ -125,3 +125,4 @@ docker-compose.yml
 /src/WebSDL/WebSDL/settings/settings.json
 settings.json
 settings.*.json
+src/odm2/modelcache.pkl

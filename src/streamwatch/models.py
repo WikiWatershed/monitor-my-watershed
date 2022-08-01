@@ -174,6 +174,7 @@ class StreamWatchODM2Adapter():
     """Adapter class for translating stream watch form data in and out of ODM2"""
 
     ROOT_METHOD_ID = 1
+    PARENT_ACTION_TYPE_CV = 'Field activity'
 
     #This is intended be more flexible way to map form field ODM2 data
     #FieldConfig variable_identifier, adapterclass, units, medium
@@ -219,18 +220,17 @@ class StreamWatchODM2Adapter():
     def _get_from_database(self, parent_action_id:int) -> "TDB":
         """"""
 
-    def _create_parent_action(self) -> None:
+    def _create_parent_action(self, form_data:Dict[str,Any]) -> None:
         """Helper method to create a parent a new action StreamWatch parent action"""
-        #TODO - wire up based on form parameters
         #TODO - check with Anthony on efficiently adding user information
+        #TODO - check with Anthony on how to best store selected activity information
         
-        #PRT - for now set to dummy action that was created manually
-        action = odm2_models.Actions
-        action.action_id = 5929 
-        action.actiontypecv = 'Field activity'
+        action = odm2_models.Actions()
+        action.actiontypecv = self.PARENT_ACTION_TYPE_CV
         action.methodid = self.ROOT_METHOD_ID
         action.begindatetime = datetime.datetime.now()
         action.begindatetimeutcoffset = -5
+        action.actionid = odm2_engine.create_object(action)
         self.parent_action = action
         
 
@@ -243,13 +243,13 @@ class StreamWatchODM2Adapter():
         return odm2_engine.create_object(featureaction)
 
     @classmethod
-    def from_dict(cls, form_attributes:Dict[str,Any]) -> "StreamWatchODM2Adapter":
+    def from_dict(cls, form_data:Dict[str,Any]) -> "StreamWatchODM2Adapter":
         """Constructor to create new entry for a form on initial submittal"""
-        sampling_feature_id = form_attributes['sampling_feature_id']
+        sampling_feature_id = form_data['sampling_feature_id']
         instance = StreamWatchODM2Adapter(sampling_feature_id)
-        instance._create_parent_action()
-        feature_action_id = instance._create_feature_action(instance.parent_action.action_id)
-        for key, value in form_attributes.items():
+        instance._create_parent_action(form_data)
+        feature_action_id = instance._create_feature_action(instance.parent_action.actionid)
+        for key, value in form_data.items():
             if key in instance.PARAMETER_CROSSWALK:
                 config = instance.PARAMETER_CROSSWALK[key]
                 config.adapter_class.create(
