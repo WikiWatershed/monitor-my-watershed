@@ -1,15 +1,17 @@
-from odm2 import odm2datamodels
-odm2_engine = odm2datamodels.odm2_engine
-odm2_models = odm2datamodels.models
+from collections import namedtuple 
+import datetime
+from typing import Dict, Any, Iterable, Tuple, Union, List
 
 import sqlalchemy
 
-from collections import namedtuple 
-from typing import Dict, Any, Iterable, Tuple, Union, List
+from odm2 import odm2datamodels
 
-import datetime
+
+odm2_engine = odm2datamodels.odm2_engine
+odm2_models = odm2datamodels.models
 
 def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
+    """Get categorical options from the variables table of the ODM2 database"""
     query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
         )
@@ -66,7 +68,6 @@ class CATMeasurement:
 
 
 class _BaseFieldAdapter():
-    """"""
     
     QUALITY_CODE_CV =  'None'
     PROCESSING_LEVEL = 1 #indicating raw results
@@ -111,7 +112,16 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
 
 
 class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
-    """Adapter class for translating multi-select field into ODM2 results structure"""
+    """Adapter class for translating multi-select field into ODM2 results structure
+    
+        Implemented through the `results` table. Presence of a result record means an 
+        option was selected and the `variableid` of the result record indicates which 
+        categorical value was selected. As a multi-choice field, when two or more 
+        options are selected, each selected value will be stored in the database 
+        as distinct result record. Creating a full list of which options were selected 
+        requires reading the `variableid` from all result records with the same 
+        `variabletypecv` field.   
+    """
     
     RESULT_TYPE_CV = 'Category observation'
     VALUE_FIELD_NAME = 'variableid'
@@ -122,16 +132,15 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
     @classmethod
-    def read(cls, database_record:Dict[str, Any]) -> Any:
-        return database_record['variableid']
-
-    @classmethod
     def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
         raise NotImplementedError   
 
 
 class _FloatFieldAdapter(_BaseFieldAdapter):
-    """Adapter for translating float value into ODM2 results structure"""
+    """Adapter for translating float value into ODM2 results structure
+    
+        Implemented through the `MeasurementResults` and `MeasurementResultValues` tables. 
+    """
     
     RESULT_TYPE_CV = 'Measurement'
     AGGREGATION_STATICS_CV = 'Sporadic'
@@ -164,7 +173,10 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
 
 
 class _TextFieldAdapter(_BaseFieldAdapter):
-    """Adapter for translating string value into ODM2 results structure"""
+    """Adapter for translating string value into ODM2 results structure
+    
+       Implemented through the `CategoricalResults` and `CategoricalResultValues` tables. 
+    """
     
     RESULT_TYPE_CV = 'Category observation'
     VALUE_FIELD_NAME = 'categorical_datavalue'
@@ -228,10 +240,10 @@ class StreamWatchODM2Adapter():
         """Constructor to retrieve existing form data from database based on assessment ActionId.
         
         input:
-        action_id:int - the `actionid` corresponding to the root action for the StreamWatch assessment.
+            action_id:int - the `actionid` corresponding to the root action for the StreamWatch assessment.
         
         output:
-        instance of the StreamWatchODM2Adapter
+            StreamWatchODM2Adapter object
         """
         
         #TODO - fix implementation
@@ -266,7 +278,6 @@ class StreamWatchODM2Adapter():
     def _map_database_to_dict(self, data:Dict[str,Any]) -> None:
         """Reverses the database crosswalk to map data back to dictionary""" 
 
-
         self._map_database_to_dict_special_cases(data)
         crosswalk = self._reverse_crosswalk()
         for record in data:
@@ -297,7 +308,16 @@ class StreamWatchODM2Adapter():
 
     @classmethod
     def from_dict(cls, form_data:Dict[str,Any]) -> "StreamWatchODM2Adapter":
-        """Constructor to create new entry for a form on initial submittal"""
+        """Constructor to create new entry for a form on initial submittal
+        
+        inputs: 
+            form_data:Dict[str,Any] = a dictionary of data containing the form parameters
+                with the dictionary key being the form field name, and the dictionary value
+                being the user input value of the field from the form. 
+
+        output: 
+            StreamWatchODM2Adapter object
+        """
         
         def create_parent_action(form_data:Dict[str,Any]) -> None:
             """Helper method to create a parent a new action StreamWatch parent action"""
@@ -328,12 +348,28 @@ class StreamWatchODM2Adapter():
         return instance
 
     def to_dict(self) -> Dict[str,Any]:
-        """Return attributes as dictionary with form fields mapped as keys and user inputs as values"""
+        """Return attributes as dictionary with form fields mapped as keys and user inputs as values
+        
+            inputs: 
+                None
+
+            outputs:
+                Dict[str,Any]: Dictionary of form data with form field names mapped as keys and 
+                    user inputs mapped to dictionary values. 
+        """
         return self._attributes()
 
-    def update_from_dict(self, form_attributes:Dict[str,Any]) -> None:
-        """Method to take dictionary of attributes from the form and update the database records"""
-        for key, value in form_attributes.items():
+    def update_from_dict(self, form_data:Dict[str,Any]) -> None:
+        """Method to take dictionary of data from the form and update the database records
+        
+            inputs: 
+                Dict[str,Any]: Dictionary of form data with form field names mapped as keys and
+                    user inputs mapped to dictionary values.
+            
+            outputs:
+                None
+        """
+        for key, value in form_data.items():
             if key in self._attributes:
                 if value == self._attributes[key]: continue
                 self._update_parameter(key, value)
