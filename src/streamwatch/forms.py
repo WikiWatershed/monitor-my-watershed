@@ -315,20 +315,23 @@ class SimpleWaterQualityForm(forms.Form):
     
     PARAMETER_CHOICES = (
         ('simple_air_temperature', 'Air Temperature'),
-        ('simple_dissolved_oxygen', 'Dissolved Oxygen (mg/L)'),
-        ('simple_nitrate', 'Nitrate'),
+        ('simple_dissolved_oxygen', 'Dissolved Oxygen'),
+        ('simple_nitrate', 'Nitrate Nitrogen'),
         ('simple_phosphate', 'Phosphate'),
         ('simple_ph', 'pH'),
-        ('simple_specific_onductivity', 'Specific Conductivity (uL/cm)'),
+        ('simple_salinity','Salinity'),
+        ('simple_specific_conductivity', 'Specific Conductivity'),
         ('simple_total_dissolved_solids', 'Total Dissolved Solids'),
-        ('simple_turbidity', 'Turbidity (JTU)'),
-        ('simple_water_temperature', 'Water Temp (C)'))
+        ('simple_turbidity', 'Turbidity'),
+        ('simple_turbidity_reagent_amt', 'Amount of Turbidity Reagent Added'),
+        ('simple_turbidity_sample_size', 'Turbidity Sample Size'),
+        ('simple_water_temperature', 'Water Temperature'))
         
     def __init__(self, *args, **kwargs):
         super(SimpleWaterQualityForm, self).__init__(*args, **kwargs)
         counter = 1
         for keyname, plabel in self.PARAMETER_CHOICES:
-            self.fields[keyname] = forms.CharField(label=plabel, required=False)
+            self.fields[keyname] = forms.FloatField(label=plabel, required=False)
             counter += 1
 
 class WaterQualityParametersForm(forms.Form):

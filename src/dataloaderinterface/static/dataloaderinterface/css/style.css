@@ -1250,6 +1250,10 @@ div#followedSites .mdl-card__menu {
     width: 100%;
 }
 
+.form-streamwatch .num-input .num-field label {
+    width: 100%;
+}
+
 .field-table div.form-field {
     padding-bottom: 2px;
     padding-left: 5px;
