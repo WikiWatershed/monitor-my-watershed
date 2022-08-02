@@ -7,9 +7,9 @@
 {% block page_title %}
     <title>
     {% if request.resolver_match.view_name == "streamwatch:create" %}
-        Create StreamWatch Experiment at {{ sampling_feature_code }}
+        Create StreamWatch Assessment at {{ sampling_feature_code }}
     {% else %}
-        Edit StreamWatch Experiment at {{ streamwatch.site_registration.sampling_feature_name }}
+        Edit StreamWatch Assessment at {{ streamwatch.site_registration.sampling_feature_name }}
     {% endif %}
     </title>
 {% endblock %}
