@@ -10,6 +10,7 @@ from odm2 import odm2datamodels
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
+
 def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
     """Get categorical options from the variables table of the ODM2 database"""
     query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
@@ -90,6 +91,19 @@ class _BaseFieldAdapter():
     def read(cls, database_record:Dict[str, Any]) -> Any:
         return database_record[cls.VALUE_FIELD_NAME]
 
+    def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[str,Any]:
+        query = (sqlalchemy.Select(odm2_models.Result)
+            .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureaction==odm2_models.Results.featureactionid)
+            .join(odm2_models.Variables, odm2_models.Variables.variableid==odm2_models.Results.variableid)
+            .where(odm2_models.FeatureActions.actionid==action_id)
+            )
+        if variable_id: 
+            query = query.where(odm2_models.Results.variableid == variable_id)
+        if variable_type_cv: 
+            query = query.where(odm2_models.Variables.variabletypecv == variable_type_cv)
+        results = odm2_engine.read_query(query, output_format='dict')
+        return results
+
         
 class _ChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating single select field data into ODM2 results structure
@@ -107,8 +121,12 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, value)
     
     @classmethod
-    def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError   
+    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        if not result_records: 
+            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+        result_id = result_records[0]['resultid']
+        odm2_engine.update_object(odm2_models.Results, result_id, {'variableid':value})   
 
 
 class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
@@ -132,7 +150,20 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
     @classmethod
-    def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
+    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        if not result_records: 
+            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+        
+        #TODO - finish implementation
+        # general approach - two list/hashmap 
+        #   variables in result_records
+        #   variables in value argument
+        # if variable in both: do nothing
+        # if variable only in value argument create record new record
+        #       probably need mechanism to fetch parent action datetime and utc_offset
+        # if variable only in result_records: delete record
+
         raise NotImplementedError   
 
 
@@ -168,8 +199,12 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
         odm2_engine.create_object(measurementresultvalue)    
     
     @classmethod
-    def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError   
+    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        if not result_records: 
+            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+        result_id = result_records[0]['resultid']
+        odm2_engine.update_object(odm2_models.MeasurementResultValues, result_id, {'datavalue':value})
 
 
 class _TextFieldAdapter(_BaseFieldAdapter):
@@ -198,8 +233,12 @@ class _TextFieldAdapter(_BaseFieldAdapter):
         odm2_engine.create_object(categoricalresultvalue)
     
     @classmethod
-    def update(cls, value:Any, result_id:int, config:FieldConfig) -> None:
-        raise NotImplementedError   
+    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        if not result_records: 
+            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+        result_id = result_records[0]['resultid']
+        odm2_engine.update_object(odm2_models.CategoricalResultValues, result_id, {'datavalue':value})   
 
 
 class StreamWatchODM2Adapter():
@@ -218,7 +257,7 @@ class StreamWatchODM2Adapter():
         'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
-        #'site_observation' : FieldConfig('????',_TextFieldAdapter,416,11),
+        #'site_observation' : FieldConfig('commentSite',_TextFieldAdapter,499,11),
         #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
         #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
         #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
@@ -234,6 +273,10 @@ class StreamWatchODM2Adapter():
     def __init__(self, sampling_feature_id:int) -> None:
         self.sampling_feature_id = sampling_feature_id
         self._attributes = {}
+
+    @classmethod
+    def _reverse_crosswalk(cls) -> Dict[str,Any]:
+        return {v[0]:(k,*v[1:]) for k,v in cls.PARAMETER_CROSSWALK.items() }
 
     @classmethod 
     def from_action_id(cls, feature_action_id:int, action_id:int) -> "StreamWatchODM2Adapter":
@@ -384,11 +427,11 @@ class StreamWatchODM2Adapter():
             return config.adapter_class.update(value, self.action_id, config)
         #PRT - TODO still need to resolve how to efficiently update parameters that are not
         # handled by the adapter classes. Further discussion needed with dev team
+        # One though is a hashmap of special case update methods and then 
+        #   if not in hashmap use field adapter update method 
         return None
 
-    @classmethod
-    def _reverse_crosswalk(cls) -> Dict[str,Any]:
-        return {v[0]:(k,*v[1:]) for k,v in cls.PARAMETER_CROSSWALK.items() }
+
 
 
 
