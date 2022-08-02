@@ -89,23 +89,28 @@ class CreateView(SessionWizardView):
 class UpdateView(CreateView):
     def get(self, request, *args, **kwargs):
         if 'pk' in kwargs.keys():
-            # htao temp hard coded data to prove concept of dynamic loading initial values
-            self.initial_dict['simplecat'] = {'simple_water_temperature': 21}
-            self.initial_dict['setup'] = {'investigator1': 'John Isner'}
-            self.initial_dict['conditions'] = {'weather_cond': 378}
+            action_id = int(kwargs['pk'])
+            adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
+            form_data = adapter.to_dict()
+            self.initial_dict['simplecat'] = form_data
+            self.initial_dict['setup'] = form_data
+            self.initial_dict['conditions'] = form_data
         
         return super().get(request, *args, **kwargs)
     
     def done(self, form_list:List[django.forms.Form], **kwargs):
         sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
-        
         form_data = {'sampling_feature_id':sampling_feature_id, 'cat_methods':[]}
         for form in form_list: 
             if isinstance(form,forms.WaterQualityForm):
                 form_data['cat_methods'].append(form.clean_data())    
                 continue
             form_data.update(form.cleaned_data)
-        adapter = models.StreamWatchODM2Adapter.from_dict(form_data)
+        
+        #TODO: figure out actionid is not showing up in kwargs
+        action_id = int(kwargs['pk'])
+        adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
+        adapter.update_from_dict(form_data)
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
@@ -199,9 +204,8 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     HYPERLINK_BASE_URL = 'https://monitormywatershed.org'
 
     action_id = int(pk)
+    form_data = models.StreamWatchODM2Adapter.from_action_id(action_id)
     
-    sampling_feature_id = models.sampling_feature_code_to_id(sampling_feature_code)
-    survey_data = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
     site = SiteRegistration.objects.get(sampling_feature_code=sampling_feature_code)
     
     filename = '{}_{}_{:03d}.csv'.format(sampling_feature_code,
@@ -238,7 +242,7 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     writer.writerow(['StreamWatch Survey Details'])
     writer.writerow(['-' * DEFAULT_DASH_LENGTH])
 
-    for key, value in survey_data.items():
+    for key, value in form_data.items():
         writer.writerow([key.title(), value])
     
     writer.writerow(['URL', '{0}/sites/{1}/streamwatch/{2}'.format(HYPERLINK_BASE_URL,

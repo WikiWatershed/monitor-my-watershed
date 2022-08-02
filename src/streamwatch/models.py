@@ -283,8 +283,7 @@ class StreamWatchODM2Adapter():
         'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,395,'Air'),
     }
 
-    def __init__(self, sampling_feature_id:int) -> None:
-        self.sampling_feature_id = sampling_feature_id
+    def __init__(self) -> None:
         self._attributes = {}
 
     @classmethod
@@ -292,7 +291,7 @@ class StreamWatchODM2Adapter():
         return {v[0]:(k,*v[1:]) for k,v in cls.PARAMETER_CROSSWALK.items() }
 
     @classmethod 
-    def from_action_id(cls, feature_action_id:int, action_id:int) -> "StreamWatchODM2Adapter":
+    def from_action_id(cls, action_id:int) -> "StreamWatchODM2Adapter":
         """Constructor to retrieve existing form data from database based on assessment ActionId.
         
         input:
@@ -301,7 +300,7 @@ class StreamWatchODM2Adapter():
         output:
             StreamWatchODM2Adapter object
         """
-        instance = cls(feature_action_id)
+        instance = cls()
         data = instance._read_from_database(action_id)
         instance._map_database_to_dict(data)
         return instance
@@ -349,10 +348,10 @@ class StreamWatchODM2Adapter():
     def _map_database_to_dict_special_cases(self, data:Dict[str,Any]) -> None:
         pass
 
-    def _create_feature_action(self, actionid:int) -> int:
+    def _create_feature_action(self, actionid:int, sampling_feature_id:int) -> int:
         """Helper method to register an action to the SamplingFeature"""
         featureaction = odm2_models.FeatureActions.from_dict({
-            'samplingfeatureid':self.sampling_feature_id, 
+            'samplingfeatureid':sampling_feature_id, 
             'actionid':actionid
             })
         return odm2_engine.create_object(featureaction)
@@ -382,10 +381,9 @@ class StreamWatchODM2Adapter():
             action.actionid = odm2_engine.create_object(action)
             return action
         
-        sampling_feature_id = form_data['sampling_feature_id']
-        instance = StreamWatchODM2Adapter(sampling_feature_id)
+        instance = StreamWatchODM2Adapter()
         parent_action = create_parent_action(form_data)
-        feature_action_id = instance._create_feature_action(parent_action.actionid)
+        feature_action_id = instance._create_feature_action(parent_action.actionid, form_data['sampling_feature_id']) 
         for key, value in form_data.items():
             if key not in instance.PARAMETER_CROSSWALK: continue
             config = instance.PARAMETER_CROSSWALK[key]
