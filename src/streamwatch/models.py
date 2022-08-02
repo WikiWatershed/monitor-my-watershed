@@ -91,6 +91,7 @@ class _BaseFieldAdapter():
     def read(cls, database_record:Dict[str, Any]) -> Any:
         return database_record[cls.VALUE_FIELD_NAME]
 
+    @classmethod
     def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[str,Any]:
         query = (sqlalchemy.Select(odm2_models.Result)
             .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureaction==odm2_models.Results.featureactionid)
@@ -257,7 +258,7 @@ class StreamWatchODM2Adapter():
         'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
-        #'site_observation' : FieldConfig('commentSite',_TextFieldAdapter,499,11),
+        'site_observation' : FieldConfig('commentSite',_TextFieldAdapter,499,11),
         #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
         #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
         #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
