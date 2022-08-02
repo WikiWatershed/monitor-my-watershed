@@ -10,10 +10,10 @@ import django
 from formtools.wizard.views import SessionWizardView
 from streamwatch import forms 
 from streamwatch import models
-from streamwatch import csv_writer
 
 from typing import List
 import csv
+import datetime
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -74,9 +74,9 @@ class CreateView(SessionWizardView):
         return context
 
     def done(self, form_list:List[django.forms.Form], **kwargs):
-        id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
+        sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         
-        form_data = {'sampling_feature_id':id, 'cat_methods':[]}
+        form_data = {'sampling_feature_id':sampling_feature_id, 'cat_methods':[]}
         for form in form_list: 
             if isinstance(form,forms.WaterQualityForm):
                 form_data['cat_methods'].append(form.clean_data())    
@@ -97,9 +97,9 @@ class UpdateView(CreateView):
         return super().get(request, *args, **kwargs)
     
     def done(self, form_list:List[django.forms.Form], **kwargs):
-        id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
+        sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         
-        form_data = {'sampling_feature_id':id, 'cat_methods':[]}
+        form_data = {'sampling_feature_id':sampling_feature_id, 'cat_methods':[]}
         for form in form_list: 
             if isinstance(form,forms.WaterQualityForm):
                 form_data['cat_methods'].append(form.clean_data())    
@@ -188,32 +188,60 @@ class StreamWatchCreateMeasurementView(FormView):
 
 def download_StreamWatch_csv(request, sampling_feature_code, pk):
     """
-    Download handler that uses csv_writer.py to parse out a leaf pack expirement into a csv file.
+    Download handler that uses csv_writer.py to parse out a StreamWatch assessment into a csv file.
 
     :param request: the request object
     :param sampling_feature_code: the first URL parameter
     :param pk: the second URL parameter and id of the leafpack experiement to download 
     """
-    filename, content = get_csv(sampling_feature_code, pk)
+    DEFAULT_DASH_LENGTH = 20
+    HYPERLINK_BASE_URL = 'https://monitormywatershed.org'
 
-    response = HttpResponse(content, content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
-    # response = HttpResponse(content_type='text/csv')
-    # response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-
-    # writer = csv.writer(response)
-    # writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
-    # writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
-
-    return response
-
-
-def get_csv(sampling_feature_code, action_id):  # type: (str, int) -> (str, str)
+    action_id = int(pk)
+    
     sampling_feature_id = models.sampling_feature_code_to_id(sampling_feature_code)
     survey_data = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
     site = SiteRegistration.objects.get(sampling_feature_code=sampling_feature_code)
+    
+    filename = '{}_{}_{:03d}.csv'.format(sampling_feature_code,
+                                         datetime.datetime.now(), action_id)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
 
-    writer = csv_writer.StreamWatchCSVWriter(survey_data, site)
-    writer.write()
+    writer = csv.writer(response)
+    
+    # Write file header
+    writer.writerow(['StreamWatch Survey Details'])
+    writer.writerow(['These data were copied to HydroShare from the WikiWatershed Data Sharing Portal.'])
+    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
+    writer.writerow([])
 
-    return writer.filename(), writer.read()
+    # write site registration information
+    #writer.make_header(['Site Information'])
+    writer.writerow(['Site Information'])
+    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
+
+    writer.writerow(['Site Code', site.sampling_feature_code])
+    writer.writerow(['Site Name', site.sampling_feature_name])
+    writer.writerow(['Site Description', site.sampling_feature.sampling_feature_description])
+    writer.writerow(['Latitude', site.latitude])
+    writer.writerow(['Longitude', site.longitude])
+    writer.writerow(['Elevation (m)', site.elevation_m])
+    writer.writerow(['Vertical Datum', site.sampling_feature.elevation_datum])
+    writer.writerow(['Site Type', site.site_type])
+
+    writer.writerow([])
+
+    # write streamwatch data
+    # todo: separate into different activities:
+    writer.writerow(['StreamWatch Survey Details'])
+    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
+
+    for key, value in survey_data.items():
+        writer.writerow([key.title(), value])
+    
+    writer.writerow(['URL', '{0}/sites/{1}/streamwatch/{2}'.format(HYPERLINK_BASE_URL,
+                                                     sampling_feature_code,
+                                                     action_id)])
+
+    return response
