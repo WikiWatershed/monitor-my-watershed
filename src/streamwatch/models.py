@@ -92,7 +92,7 @@ class _BaseFieldAdapter():
         return database_record[cls.VALUE_FIELD_NAME]
 
     @classmethod
-    def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[str,Any]:
+    def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[Dict[str,Any]]:
         query = (sqlalchemy.Select(odm2_models.Result)
             .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureaction==odm2_models.Results.featureactionid)
             .join(odm2_models.Variables, odm2_models.Variables.variableid==odm2_models.Results.variableid)
