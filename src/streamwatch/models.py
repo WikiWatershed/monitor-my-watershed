@@ -80,7 +80,7 @@ class _BaseFieldAdapter():
         result = odm2_models.Results()
         result.featureactionid = feature_action_id
         result.resulttypecv = result_type
-        result.variableid = variable_id if variable_id else config.variable_id
+        result.variableid = variable_id if variable_id else config.variable_identifier
         result.unitsid = config.units
         result.processinglevelid = cls.PROCESSING_LEVEL
         result.sampledmediumcv = config.medium
@@ -221,12 +221,12 @@ class _TextFieldAdapter(_BaseFieldAdapter):
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
-        categoricalresult = odm2_models.CategoricalResults
+        categoricalresult = odm2_models.CategoricalResults()
         categoricalresult.resultid = result_id
         categoricalresult.qualitycodecv = cls.QUALITY_CODE_CV
         odm2_engine.create_object(categoricalresult, preserve_pkey=True)
 
-        categoricalresultvalue = odm2_models.CategoricalResultValues
+        categoricalresultvalue = odm2_models.CategoricalResultValues()
         categoricalresultvalue.resultid = result_id
         categoricalresultvalue.datavalue = value
         categoricalresultvalue.valuedatetime = datetime
@@ -258,7 +258,7 @@ class StreamWatchODM2Adapter():
         'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
-        'site_observation' : FieldConfig('commentSite',_TextFieldAdapter,499,11),
+        'site_observation' : FieldConfig(499,_TextFieldAdapter,394,'Liquid aqueous'),
         #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
         #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
         #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),

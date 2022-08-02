@@ -121,8 +121,8 @@ class ODM2Engine:
 
         """
         
+        pkey_name = obj.get_pkey_name()
         if not preserve_pkey:
-            pkey_name = obj.get_pkey_name()
             setattr(obj, pkey_name, None)
 
         with self.session_maker() as session:
