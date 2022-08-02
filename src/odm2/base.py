@@ -251,12 +251,3 @@ class ODM2DataModels():
                 pickle.dump(self._model_base.metadata, file)
         except FileNotFoundError:
             warnings.warn('Unable to cache models which may lead to degraded performance.', RuntimeWarning)
-
-try:
-    with open(cache_path, 'rb') as file:
-        metadata = pickle.load(file=file)
-        _model_base = declarative_base(cls=Base, bind=engine, metadata=metadata)
-        cached = True
-except: 
-    metadata = sqlalchemy.MetaData(schema='odm2')
-    _model_base = automap_base(cls=Base, metadata=metadata)

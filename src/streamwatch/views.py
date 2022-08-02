@@ -61,7 +61,7 @@ class CreateView(SessionWizardView):
         ('school',forms.SimpleHabitatAssessmentForm),
     ]
     condition_dict = {
-        'simplecat': condition_cat,
+        'simplecat': condition_school,
         'school': condition_school
     }
     
@@ -118,7 +118,8 @@ class StreamWatchDetailView(DetailView):
     def get_object(self, queryset=None):
         sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         action_id = int(self.kwargs['pk'])
-        data = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
+        adapter = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
+        data = adapter.to_dict(string_format=True)
         return data
     
     def get_context_data(self, **kwargs):

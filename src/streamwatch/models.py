@@ -1,4 +1,5 @@
 from collections import namedtuple 
+import copy
 import datetime
 from typing import Dict, Any, Iterable, Tuple, Union, List
 
@@ -50,6 +51,17 @@ def delete_streamwatch_assessment(action_id:int) -> None:
     """Deletes a StreamWatch assessment from the database based on the parent action id"""
     odm2_engine.delete_object(odm2_models.Actions, action_id)
 
+
+def get_odm2_units() -> Dict[int,Dict[str,Any]]:
+    """Get a dictionary of units in the ODM2 data"""
+    query = sqlalchemy.select(odm2_models.Units)
+    return odm2_engine.read_query(query, output_format='dict')
+
+
+def get_odm2_variables() -> Dict[int, Dict[str,Any]]:
+    """Get a dictionary of variables in the ODM2 data"""
+    query = sqlalchemy.select(odm2_models.Variables)
+    return odm2_engine.read_query(query, output_format='dict')
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
@@ -289,11 +301,6 @@ class StreamWatchODM2Adapter():
         output:
             StreamWatchODM2Adapter object
         """
-        
-        #TODO - fix implementation
-        if action_id ==-999:
-            return streamwatch_data
-        
         instance = cls(feature_action_id)
         data = instance._read_from_database(action_id)
         instance._map_database_to_dict(data)
@@ -391,17 +398,28 @@ class StreamWatchODM2Adapter():
             )    
         return instance
 
-    def to_dict(self) -> Dict[str,Any]:
+    def to_dict(self, string_format:bool=False) -> Dict[str,Any]:
         """Return attributes as dictionary with form fields mapped as keys and user inputs as values
         
             inputs: 
-                None
+                string_format:boolean | optional | default=False
+                    Bool flag indicating if `variable` and `unit` parameters should be converted to strings
 
             outputs:
-                Dict[str,Any]: Dictionary of form data with form field names mapped as keys and 
+                Dict[str,Any]: 
+                    Dictionary of form data with form field names mapped as keys and 
                     user inputs mapped to dictionary values. 
         """
-        return self._attributes()
+        if not string_format: return self._attributes
+
+        data = copy.deepcopy(self._attributes)
+        variables = get_odm2_variables()
+        for key, value in data.items():
+            if key not in self.PARAMETER_CROSSWALK: continue
+            config = self.PARAMETER_CROSSWALK[key] 
+            if config.adapter_class is _ChoiceFieldAdapter: data[key] = variables[value]['variabledefinition']
+            elif config.adapter_class is _MultiChoiceFieldAdapter: data[key] = [variables[x]['variabledefinition'] for x in value]
+        return data
 
     def update_from_dict(self, form_data:Dict[str,Any]) -> None:
         """Method to take dictionary of data from the form and update the database records
