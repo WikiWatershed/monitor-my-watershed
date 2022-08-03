@@ -121,9 +121,8 @@ class StreamWatchDetailView(DetailView):
     context_object_name ='streamwatch'
 
     def get_object(self, queryset=None):
-        sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         action_id = int(self.kwargs['pk'])
-        adapter = models.StreamWatchODM2Adapter.from_action_id(sampling_feature_id, action_id)
+        adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
         data = adapter.to_dict(string_format=True)
         return data
     
