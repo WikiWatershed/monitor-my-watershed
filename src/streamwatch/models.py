@@ -16,6 +16,7 @@ def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
     """Get categorical options from the variables table of the ODM2 database"""
     query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
+            .order_by(odm2_models.Variables.variableid)
         )
     records = odm2_engine.read_query(query, output_format='records')
     return records
@@ -55,13 +56,17 @@ def delete_streamwatch_assessment(action_id:int) -> None:
 def get_odm2_units() -> Dict[int,Dict[str,Any]]:
     """Get a dictionary of units in the ODM2 data"""
     query = sqlalchemy.select(odm2_models.Units)
-    return odm2_engine.read_query(query, output_format='dict')
+    df = odm2_engine.read_query(query, output_format='dataframe')
+    df = df.set_index('unitsid')
+    return df.to_dict(orient='index')
 
 
 def get_odm2_variables() -> Dict[int, Dict[str,Any]]:
     """Get a dictionary of variables in the ODM2 data"""
     query = sqlalchemy.select(odm2_models.Variables)
-    return odm2_engine.read_query(query, output_format='dict')
+    df = odm2_engine.read_query(query, output_format='dataframe')
+    df = df.set_index('variableid')
+    return df.to_dict(orient='index')
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
@@ -187,7 +192,8 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     """
     
     RESULT_TYPE_CV = 'Measurement'
-    AGGREGATION_STATICS_CV = 'Sporadic'
+    CENSOR_CODE_CV = 'Unknown'
+    AGGREGATION_STATISTIC_CV = 'Sporadic'
     TIME_AGGREGATION_INTERVAL = 1.0
     TIME_AGGREGATION_INTERVAL_UNIT_ID = 2 #hour minute
     VALUE_FIELD_NAME = 'measurement_datavalue'
@@ -196,15 +202,16 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
-        measurementresult = odm2_models.MeasurementResults
+        measurementresult = odm2_models.MeasurementResults()
         measurementresult.resultid = result_id
+        measurementresult.censorcodecv = cls.CENSOR_CODE_CV
         measurementresult.qualitycodecv = cls.QUALITY_CODE_CV
         measurementresult.aggregationstatisticcv = cls.AGGREGATION_STATISTIC_CV
         measurementresult.timeaggregationinterval = cls.TIME_AGGREGATION_INTERVAL
         measurementresult.timeaggregationintervalunitsid = cls.TIME_AGGREGATION_INTERVAL_UNIT_ID
         odm2_engine.create_object(measurementresult, preserve_pkey=True)
 
-        measurementresultvalue = odm2_models.MeasurementResultValues    
+        measurementresultvalue = odm2_models.MeasurementResultValues()
         measurementresultvalue.resultid = result_id
         measurementresultvalue.datavalue = value
         measurementresultvalue.valuedatetime = datetime
@@ -263,17 +270,31 @@ class StreamWatchODM2Adapter():
     VARIABLE_TYPE = 'variabletypecv'
 
     #This is intended be more flexible way to map form field ODM2 data
-    #FieldConfig variable_identifier, adapterclass, units, medium
-    #TODO - flesh out crosswalk with AKA
+    #and limit the hardcoding to a single location
+    #FieldConfig(variable_identifier:str|int, adapterclass|Class, units:int, medium:str)
+    #for variable_identifier int corresponding to variableid should be populated for Text and Floats 
+    #   ans str corresponding to variabletypecv should be populated for Choice and MultiChoice 
     PARAMETER_CROSSWALK = {
         'algae_amount' : FieldConfig('algaeAmount',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
-        'site_observation' : FieldConfig(499,_TextFieldAdapter,394,'Liquid aqueous'),
-        #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,1,2),
-        #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
-        #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,1,2),
+        'site_observation' : FieldConfig(499,_TextFieldAdapter,394,'Not applicable'),
+        'simple_air_temperature' : FieldConfig(507,_FloatFieldAdapter,362,'Air'),
+        'simple_dissolved_oxygen' : FieldConfig(510,_FloatFieldAdapter,404,'Liquid aqueous'),
+        'simple_nitrate' : FieldConfig(512,_FloatFieldAdapter,404,'Liquid aqueous'),
+        'simple_phosphate' : FieldConfig(513,_FloatFieldAdapter,404,'Liquid aqueous'),
+        'simple_ph' : FieldConfig(509,_FloatFieldAdapter,385,'Liquid aqueous'),
+        #'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,0,'Liquid aqueous'),
+        #'simple_specific_conductivity' : FieldConfig(0,_FloatFieldAdapter,0,'Liquid aqueous'),
+        #'simple_total_dissolved_solids' : FieldConfig(0,_FloatFieldAdapter,0,'Liquid aqueous'),
+        'simple_turbidity' : FieldConfig(516,_FloatFieldAdapter,364,'Liquid aqueous'),
+        'simple_turbidity_reagent_amt' : FieldConfig(514,_FloatFieldAdapter,364,'Liquid aqueous'),
+        'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),
+        'simple_water_temperature' : FieldConfig(508,_FloatFieldAdapter,362,'Liquid aqueous'),
+        #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,394,''),
+        #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,394,''),
+        #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,394,''),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
         'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
@@ -283,7 +304,8 @@ class StreamWatchODM2Adapter():
         'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,395,'Air'),
     }
 
-    def __init__(self) -> None:
+    def __init__(self, action_id:int) -> None:
+        self.action_id = action_id
         self._attributes = {}
 
     @classmethod
@@ -300,9 +322,64 @@ class StreamWatchODM2Adapter():
         output:
             StreamWatchODM2Adapter object
         """
-        instance = cls()
+        instance = cls(action_id)
+        instance._read_and_map_special_cases()
         data = instance._read_from_database(action_id)
         instance._map_database_to_dict(data)
+        return instance
+
+    @classmethod
+    def from_dict(cls, form_data:Dict[str,Any]) -> "StreamWatchODM2Adapter":
+        """Constructor to create new entry for a form on initial submittal
+        
+        inputs: 
+            form_data:Dict[str,Any] = a dictionary of data containing the form parameters
+                with the dictionary key being the form field name, and the dictionary value
+                being the user input value of the field from the form. 
+
+        output: 
+            StreamWatchODM2Adapter object
+        """
+        
+        def create_parent_action(form_data:Dict[str,Any]) -> None:
+            """Helper method to create a parent a new action StreamWatch parent action"""
+            #TODO - check with Anthony on efficiently adding user information
+            #TODO - check with Anthony on how to best store selected activity information
+            action = odm2_models.Actions()
+            action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
+            action.methodid = cls.ROOT_METHOD_ID
+            action.begindatetime = datetime.datetime.now()
+            action.begindatetimeutcoffset = -5
+            action.actionid = odm2_engine.create_object(action)
+            action.actiondescription = ','.join(form_data['assessment_type'])
+            return action
+
+        def create_investigator(action_id:int, afflication_id:int, is_lead=False) -> None:
+            actionby = odm2_models.ActionBy()
+            actionby.actionid = action_id
+            actionby.affiliationid = afflication_id
+            actionby.isactionlead = is_lead
+            odm2_engine.create_object(actionby)
+
+        parent_action = create_parent_action(form_data)
+        instance = StreamWatchODM2Adapter(parent_action.actionid)
+        instance._attributes = form_data    
+        feature_action_id = instance._create_feature_action(instance.action_id, form_data['sampling_feature_id']) 
+        #TODO - fix investigator fields. They need to return affiliation_id not an affliation object
+        create_investigator(instance.action_id, form_data['investigator1'].affiliation_id, True)
+        if form_data['investigator2'] is not None:
+            create_investigator(instance.action_id, form_data['investigator2'].affiliation_id, False)
+        
+        for key, value in form_data.items():
+            if key not in instance.PARAMETER_CROSSWALK: continue
+            config = instance.PARAMETER_CROSSWALK[key]
+            config.adapter_class.create(
+                value, 
+                parent_action.begindatetime, 
+                parent_action.begindatetimeutcoffset, 
+                feature_action_id,
+                config
+            )
         return instance
 
     def _read_from_database(self, parent_action_id:int) -> List[Dict[str,Any]]:
@@ -328,7 +405,7 @@ class StreamWatchODM2Adapter():
     def _map_database_to_dict(self, data:Dict[str,Any]) -> None:
         """Reverses the database crosswalk to map data back to dictionary""" 
 
-        self._map_database_to_dict_special_cases(data)
+        self._read_and_map_special_cases()
         crosswalk = self._reverse_crosswalk()
         for record in data:
             if record[self.VARIABLE_CODE] in crosswalk:
@@ -345,8 +422,24 @@ class StreamWatchODM2Adapter():
                 else: 
                     self._attributes[parameter_information[0]] = field_adapter.read(record)
 
-    def _map_database_to_dict_special_cases(self, data:Dict[str,Any]) -> None:
-        pass
+    def _read_and_map_special_cases(self) -> None:
+        action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
+        self._attributes['assessment_type'] = [] 
+        if action['actiondescription']:
+            action['actiondescription'].split(',')
+        #TODO: update based on AKA datetime logic
+        self._attributes['collect_date'] = datetime.datetime.now().date()
+        self._attributes['collect_time'] = datetime.datetime.now().time()
+
+        query = (sqlalchemy.select(odm2_models.ActionBy)
+            .where(odm2_models.ActionBy.actionid == self.action_id)
+            )
+        investigators = odm2_engine.read_query(query, output_format='dict') 
+        for investigator in investigators:
+            if investigator['isactionlead']: 
+                self._attributes['investigator1'] = investigator['affiliationid']
+                continue
+            self._attributes['investigator2'] = investigator['affiliationid']
 
     def _create_feature_action(self, actionid:int, sampling_feature_id:int) -> int:
         """Helper method to register an action to the SamplingFeature"""
@@ -355,46 +448,6 @@ class StreamWatchODM2Adapter():
             'actionid':actionid
             })
         return odm2_engine.create_object(featureaction)
-
-    @classmethod
-    def from_dict(cls, form_data:Dict[str,Any]) -> "StreamWatchODM2Adapter":
-        """Constructor to create new entry for a form on initial submittal
-        
-        inputs: 
-            form_data:Dict[str,Any] = a dictionary of data containing the form parameters
-                with the dictionary key being the form field name, and the dictionary value
-                being the user input value of the field from the form. 
-
-        output: 
-            StreamWatchODM2Adapter object
-        """
-        
-        def create_parent_action(form_data:Dict[str,Any]) -> None:
-            """Helper method to create a parent a new action StreamWatch parent action"""
-            #TODO - check with Anthony on efficiently adding user information
-            #TODO - check with Anthony on how to best store selected activity information
-            action = odm2_models.Actions()
-            action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
-            action.methodid = cls.ROOT_METHOD_ID
-            action.begindatetime = datetime.datetime.now()
-            action.begindatetimeutcoffset = -5
-            action.actionid = odm2_engine.create_object(action)
-            return action
-        
-        instance = StreamWatchODM2Adapter()
-        parent_action = create_parent_action(form_data)
-        feature_action_id = instance._create_feature_action(parent_action.actionid, form_data['sampling_feature_id']) 
-        for key, value in form_data.items():
-            if key not in instance.PARAMETER_CROSSWALK: continue
-            config = instance.PARAMETER_CROSSWALK[key]
-            config.adapter_class.create(
-                value, 
-                parent_action.begindatetime, 
-                parent_action.begindatetimeutcoffset, 
-                feature_action_id,
-                config
-            )    
-        return instance
 
     def to_dict(self, string_format:bool=False) -> Dict[str,Any]:
         """Return attributes as dictionary with form fields mapped as keys and user inputs as values
@@ -429,24 +482,40 @@ class StreamWatchODM2Adapter():
             outputs:
                 None
         """
+        self._update_special_cases(form_data)
         for key, value in form_data.items():
+            if key not in self.PARAMETER_CROSSWALK: continue
+            config = self.PARAMETER_CROSSWALK[key]
             if key in self._attributes:
-                if value == self._attributes[key]: continue
-                self._update_parameter(key, value)
-            else:
-                #Handles situationally populated fields that might not have been initially checked
-                config = self.PARAMETER_CROSSWALK[key]
-                config.adapter_class.create(value, self.action_id, config)
+                config.adapter_class.update(value, self.action_id, config)
+                continue
+            config.adapter_class.create(value, self.action_id, config)
         
-    def _update_parameter(self, field:str, value:Any) -> None:
-        if field in self.PARAMETER_CROSSWALK:
-            config = self.PARAMETER_CROSS[field]
-            return config.adapter_class.update(value, self.action_id, config)
-        #PRT - TODO still need to resolve how to efficiently update parameters that are not
-        # handled by the adapter classes. Further discussion needed with dev team
-        # One though is a hashmap of special case update methods and then 
-        #   if not in hashmap use field adapter update method 
-        return None
+    def _update_special_cases(self, form_data:Dict[str,Any]) -> None:
+        """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""
+        if (form_data['collect_date'] != self._attributes['collect_date'] 
+            | form_data['collect_time'] != self._attributes['collect_time']
+        ):
+            #TODO update begindatetime and begindatetimeutcoffset
+            pass
+
+        if form_data['assessment_type'] != self._attributes['assessment_type']:
+            odm2_engine.update_object(
+                odm2_models.Action, 
+                self.action_id, 
+                {'actiondescription': ','.join(form_data['assessment_type'])}
+            )      
+
+        if form_data['investigator1'] != self._attributes['investigator1']:
+            #TODO method to update actionby
+            pass
+
+        if form_data['investigator2'] != self._attributes['investigator2']:
+            #TODO method to update actionby
+            #note need to check if this is blank
+            #and possibly issue delete query
+            pass
+
 
 
 
