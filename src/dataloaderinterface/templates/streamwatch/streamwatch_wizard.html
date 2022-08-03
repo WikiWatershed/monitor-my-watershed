@@ -37,7 +37,7 @@
                     {% if request.resolver_match.view_name == "streamwatch:create" %}
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
-                  action="{% url 'streamwatch:update' sampling_feature_code streamwatch.pk %}"
+                  action="{% url 'streamwatch:update' sampling_feature_code action_id %}"
                     {% endif %}>
                 {% csrf_token %}
 

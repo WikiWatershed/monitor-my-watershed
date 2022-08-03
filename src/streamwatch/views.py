@@ -1,3 +1,4 @@
+from multiprocessing import context
 from dataloaderinterface.models import SiteRegistration
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, BaseDetailView
 from django.views.generic.detail import DetailView
@@ -87,9 +88,12 @@ class CreateView(SessionWizardView):
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
 class UpdateView(CreateView):
+
+    PRIMARY_KEY_FIELD = 'action_id'
+
     def get(self, request, *args, **kwargs):
-        if 'pk' in kwargs.keys():
-            action_id = int(kwargs['pk'])
+        if self.PRIMARY_KEY_FIELD in kwargs.keys():
+            action_id = int(kwargs[self.PRIMARY_KEY_FIELD])
             adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
             form_data = adapter.to_dict()
             self.initial_dict['simplecat'] = form_data
@@ -97,7 +101,13 @@ class UpdateView(CreateView):
             self.initial_dict['conditions'] = form_data
         
         return super().get(request, *args, **kwargs)
-    
+
+    def get_context_data(self, form:django.forms.Form, **kwargs):
+        context_data = super().get_context_data(form, **kwargs)
+        if self.PRIMARY_KEY_FIELD in self.kwargs:
+            context_data[self.PRIMARY_KEY_FIELD] = self.kwargs[self.PRIMARY_KEY_FIELD]
+        return context_data
+
     def done(self, form_list:List[django.forms.Form], **kwargs):
         sampling_feature_id = models.sampling_feature_code_to_id(self.kwargs[self.slug_field])
         form_data = {'sampling_feature_id':sampling_feature_id, 'cat_methods':[]}
@@ -107,8 +117,7 @@ class UpdateView(CreateView):
                 continue
             form_data.update(form.cleaned_data)
         
-        #TODO: figure out actionid is not showing up in kwargs
-        action_id = int(kwargs['pk'])
+        action_id = int(self.kwargs[self.PRIMARY_KEY_FIELD])
         adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
         adapter.update_from_dict(form_data)
 
