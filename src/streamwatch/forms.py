@@ -152,25 +152,25 @@ class VisualAssessmentForm(forms.Form):
 
 class SimpleHabitatAssessmentForm(forms.Form):
 
-    #TODO Confirm correct choice options
+    # Simple Habitat Assesment (School form)
     simple_woody_debris_amt = forms.ChoiceField(
         required=False,
         widget=forms.Select,
         label='Woody Debris Amount',
-        choices= place_holder_choices,
+        choices= models.variable_choice_options('woodyDebris'),
         initial='1'
     )
     simple_woody_debris_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Woody Debris Type',
-        choices= place_holder_choices,
+        choices= models.variable_choice_options('woodyDebrisType'),
     )
     simple_land_use = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Land Use Characteristics',
-        choices= place_holder_choices,
+        choices= models.variable_choice_options('landUse'),
     )
 
 class StreamHabitatAssessmentForm(forms.Form):
