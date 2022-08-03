@@ -82,36 +82,29 @@
                     </table>
                     <br>
                 </div>
+            </div>
 
-                <div class="col-sm-12 col-md-6">
-                    <h6 class="title">Leaf Pack Type and Composition</h6>
-                    <hr class="dotted">
-                    <p class="label">Predominant Leaf Species:</p>
-                    {% for lp in streamwatch.types.all %}
-                        <h5 class="d-inline"><span class="badge badge-info">{{ lp }}</span></h5>
-                    {% endfor %}
-                    <br><br>
-                </div>
                 
+            <div class="row">
                 <div class="col-sm-12 col-md-6">
                     <h6 class="title">Weather Condition and Visual Assessment</h6>
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Current Weather</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.retrieval_date }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.retrieval_date|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Time Since Last Rain or Snowmelt</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.time_since_last_precip }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.time_since_last_precip|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Water Color</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_color }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_color|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Water Odor</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor}}
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor|default:"Unknown"}}
                             </td>
                         </tr>
                         <tr>
@@ -167,15 +160,15 @@
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Representative Wetted Width</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_wetted_width }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_wetted_width|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 1</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth1 }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth1|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 2</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth2 }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth2|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 3</td>
@@ -219,7 +212,7 @@
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Approximate Reach Length</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.reach_length }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.reach_length|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">In-Stream Structures</td>
@@ -227,19 +220,19 @@
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Stream Flow</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.stream_flow }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.stream_flow|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Percent Riffle Morphology</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_riffle }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_riffle|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Percent Run Morphology</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_run }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_run|default:"Unknown" }}</td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Percent Pool Morphology</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_pool}}
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_pool|default:"Unknown" }}
                             </td>
                         </tr>
                         <tr>
@@ -310,6 +303,51 @@
                 <div class="col-sm-12 col-md-6">
                     <h6 class="title">Chemical Assessment Measurement(s)</h6>
                     <hr class="dotted">
+
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Air Temperature (°C)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_air_temperature|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Temperature (°C)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_water_temperature|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Nitrate Nitrogen (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_nitrate|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Phosphates (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_phosphate|default:"Unknown"}}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">pH</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_ph|default:"Unknown" }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Turbidity Sample Size (mL)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_sample_size|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Amount of Turbidity Reagent Added (mL)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_reagent_amt|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Turbidity (JTU)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Dissolved Oxygen (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_dissolved_oxygen|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Salinity (ppt)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_salinity|default:"Unknown" }}</td>
+                        </tr>                        
+                    </table>
+
                     <div id="accordion" class="title">
                         {% for measurement  in streamwatch.CAT_measurements%}
                             <h6>{{measurement.name}}</h6>
@@ -340,14 +378,12 @@
                                         <tr><td class = "mdl-data-table__cell--non-numeric">{{par.parName}}</td>
                                             <td>{{par.measurement}}</td><td>{{par.unit}}</td></tr>
                                         {%endfor%}
-
                                     </tbody>
                                 </table>
-
-
                             </div>
                         {%endfor%}
                     </div>
+                    
                     <br><br>
                 </div>
                 
