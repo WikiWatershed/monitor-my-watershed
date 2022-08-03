@@ -33,8 +33,6 @@
                     </div>
                 </div>
             </div>
-            <p>Step {{ wizard.steps.step1 }} of {{ wizard.steps.count }}</p>
-            <p>Form name - {{ wizard.form.prefix }}</p>
             <form class="form-leafpack form-streamwatch" id="form-container" method="POST" 
                     {% if request.resolver_match.view_name == "streamwatch:create" %}
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
