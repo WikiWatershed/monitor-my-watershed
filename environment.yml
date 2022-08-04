@@ -40,3 +40,4 @@ dependencies:
         #used for unicode_compatiblity 
         #should confirm if this is still a dependency
         - django-utils-six
+        - django-formtools
