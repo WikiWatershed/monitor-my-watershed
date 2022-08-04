@@ -110,8 +110,8 @@ class _BaseFieldAdapter():
 
     @classmethod
     def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[Dict[str,Any]]:
-        query = (sqlalchemy.Select(odm2_models.Result)
-            .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureaction==odm2_models.Results.featureactionid)
+        query = (sqlalchemy.select(odm2_models.Results)
+            .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureactionid==odm2_models.Results.featureactionid)
             .join(odm2_models.Variables, odm2_models.Variables.variableid==odm2_models.Results.variableid)
             .where(odm2_models.FeatureActions.actionid==action_id)
             )
@@ -140,7 +140,7 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
     
     @classmethod
     def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        result_records = cls.get_result_records(action_id, variable_type_cv=config.variable_identifier)
         if not result_records: 
             raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
@@ -169,7 +169,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, config.variable_identifier)
+        result_records = cls.get_result_records(action_id, variable_type_cv=config.variable_identifier)
         if not result_records: 
             raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
         
@@ -181,8 +181,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
         # if variable only in value argument create record new record
         #       probably need mechanism to fetch parent action datetime and utc_offset
         # if variable only in result_records: delete record
-
-        raise NotImplementedError   
+        pass
 
 
 class _FloatFieldAdapter(_BaseFieldAdapter):
@@ -266,7 +265,7 @@ class StreamWatchODM2Adapter():
 
     ROOT_METHOD_ID = 1
     PARENT_ACTION_TYPE_CV = 'Field activity'
-    VARIABLE_CODE = 'variablecode'
+    VARIABLE_CODE = 'variableid'
     VARIABLE_TYPE = 'variabletypecv'
 
     #This is intended be more flexible way to map form field ODM2 data
@@ -278,7 +277,7 @@ class StreamWatchODM2Adapter():
         'algae_amount' : FieldConfig('algaeAmount',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'algae_type' : FieldConfig('algaeType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
-        'aquatic_veg_typ' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
+        'aquatic_veg_type' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'site_observation' : FieldConfig(499,_TextFieldAdapter,394,'Not applicable'),
         'simple_air_temperature' : FieldConfig(507,_FloatFieldAdapter,362,'Air'),
         'simple_dissolved_oxygen' : FieldConfig(510,_FloatFieldAdapter,404,'Liquid aqueous'),
@@ -292,16 +291,16 @@ class StreamWatchODM2Adapter():
         'simple_turbidity_reagent_amt' : FieldConfig(514,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_water_temperature' : FieldConfig(508,_FloatFieldAdapter,362,'Liquid aqueous'),
-        #'simple_woody_debris_amt' : FieldConfig('????',_ChoiceFieldAdapter,394,''),
-        #'simple_woody_debris_type' : FieldConfig('????',_MultiChoiceFieldAdapter,394,''),
-        #'simple_land_use' : FieldConfig('????',_MultiChoiceFieldAdapter,394,''),
+        'simple_woody_debris_amt' : FieldConfig('woodyDebris',_ChoiceFieldAdapter,394,'Other'),
+        'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_MultiChoiceFieldAdapter,394,'Other'),
+        'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
         'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_color' : FieldConfig('waterColor',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_movement' : FieldConfig('waterMovement',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_odor' : FieldConfig('waterOdor',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
-        'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,395,'Air'),
+        'weather_cond' : FieldConfig('weather',_MultiChoiceFieldAdapter,394,'Air'),
     }
 
     def __init__(self, action_id:int) -> None:
@@ -387,7 +386,7 @@ class StreamWatchODM2Adapter():
             sqlalchemy.select(
                 odm2_models.Actions, odm2_models.FeatureActions, odm2_models.Results, odm2_models.Variables,
                 odm2_models.MeasurementResultValues.datavalue.label('measurement_datavalue'), 
-                odm2_models.CategoricalResultValues.datavalue.label('categorical_datavalue')
+                odm2_models.CategoricalResultValues.datavalue.label('categorical_datavalue'),
                 )
             .join(odm2_models.FeatureActions, odm2_models.FeatureActions.actionid==odm2_models.Actions.actionid)
             .join(odm2_models.Results, odm2_models.Results.featureactionid==odm2_models.FeatureActions.featureactionid)
@@ -434,6 +433,9 @@ class StreamWatchODM2Adapter():
             .where(odm2_models.ActionBy.actionid == self.action_id)
             )
         investigators = odm2_engine.read_query(query, output_format='dict') 
+        self._attributes['investigator1'] = None
+        self._attributes['investigator2'] = None
+        
         for investigator in investigators:
             if investigator['isactionlead']: 
                 self._attributes['investigator1'] = investigator['affiliationid']
@@ -482,18 +484,34 @@ class StreamWatchODM2Adapter():
                 None
         """
         self._update_special_cases(form_data)
+        
+        parent_action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
+        query = (sqlalchemy.select(odm2_models.FeatureActions)
+            .where(odm2_models.FeatureActions.actionid==parent_action['actionid'])
+        )
+        feature_action = odm2_engine.read_query(query,output_format='dict')
         for key, value in form_data.items():
             if key not in self.PARAMETER_CROSSWALK: continue
             config = self.PARAMETER_CROSSWALK[key]
             if key in self._attributes:
-                config.adapter_class.update(value, self.action_id, config)
+                config.adapter_class.update(
+                    value, 
+                    parent_action['actionid'], 
+                    config,
+                )
                 continue
-            config.adapter_class.create(value, self.action_id, config)
+            config.adapter_class.create(
+                value, 
+                parent_action['begindatetime'],
+                parent_action['begindatetimeutcoffset'],
+                feature_action[0]['featureactionid'], 
+                config,
+            )
         
     def _update_special_cases(self, form_data:Dict[str,Any]) -> None:
         """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""
         if (form_data['collect_date'] != self._attributes['collect_date'] 
-            | form_data['collect_time'] != self._attributes['collect_time']
+            or form_data['collect_time'] != self._attributes['collect_time']
         ):
             #TODO update begindatetime and begindatetimeutcoffset
             pass
