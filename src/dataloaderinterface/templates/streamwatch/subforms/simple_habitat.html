@@ -16,11 +16,10 @@
                     <label for="{{ wizard.form.simple_woody_debris_amt.id_for_label }}">{{ wizard.form.simple_woody_debris_amt.label }}</label>
                     {{ wizard.form.simple_woody_debris_amt|add_class:"form-control" }}
                 </div> 
-                <div class="form-field indent-left">
+                <div class="form-field col-6">
                     <label for="{{ wizard.form.simple_woody_debris_type.id_for_label }}">{{ wizard.form.simple_woody_debris_type.label }}</label>
-                    {{ wizard.form.simple_woody_debris_type.errors }}
-                    {{ wizard.form.simple_woody_debris_type }}
-                </div>
+                    {{ wizard.form.simple_woody_debris_type|add_class:"form-control" }}
+                </div> 
             </div>
         </div>
         <br><br>
@@ -29,11 +28,10 @@
         <div class="mdl-card mdl-shadow--2dp full-width">
 
             <div class="mdl-card__supporting-text default-font">
-                <div class="form-field indent-left">
+                <div class="form-field col-6">
                     <label for="{{ wizard.form.simple_land_use.id_for_label }}">{{ wizard.form.simple_land_use.label }}</label>
-                    {{ wizard.form.simple_land_use.errors }}
-                    {{ wizard.form.simple_land_use }}
-                </div>
+                    {{ wizard.form.simple_land_use|add_class:"form-control" }}
+                </div> 
             </div>
         </div>
         <br><br>

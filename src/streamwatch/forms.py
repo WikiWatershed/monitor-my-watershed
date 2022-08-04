@@ -160,17 +160,19 @@ class SimpleHabitatAssessmentForm(forms.Form):
         choices= models.variable_choice_options('woodyDebris'),
         initial='1'
     )
-    simple_woody_debris_type = forms.MultipleChoiceField(
-        widget=MDLCheckboxSelectMultiple,
+    simple_woody_debris_type = forms.ChoiceField(
         required=False,
+        widget=forms.Select,
         label='Woody Debris Type',
         choices= models.variable_choice_options('woodyDebrisType'),
+        initial='1'
     )
-    simple_land_use = forms.MultipleChoiceField(
-        widget=MDLCheckboxSelectMultiple,
+    simple_land_use = forms.ChoiceField(
         required=False,
+        widget=forms.Select,
         label='Land Use Characteristics',
         choices= models.variable_choice_options('landUse'),
+        initial='1'
     )
 
 class StreamHabitatAssessmentForm(forms.Form):
