@@ -27,13 +27,13 @@
 
             <div class="buttons-toolbar row">
                 <div class="col-12 text-right">
-                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code streamwatch.action_id %}"
+                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code action_id %}"
                        class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         <i class="material-icons center-icon">cloud_download</i> Download CSV
                     </a>
 
                     {% if can_administer_site %}
-                        <a href="{% url 'streamwatch:update' sampling_feature_code streamwatch.action_id %}"
+                        <a href="{% url 'streamwatch:update' sampling_feature_code action_id %}"
                            id="btn-edit-StreamWatch-exp"
                            class="button-link mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
                             <i class="material-icons center-icon">mode_edit</i> Edit

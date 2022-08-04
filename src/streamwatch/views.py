@@ -143,6 +143,7 @@ class StreamWatchDetailView(DetailView):
         context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
         context['is_site_owner'] = self.request.user == registration.django_user
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
+        context['action_id'] = int(self.kwargs['pk'])
         return context
         
 
