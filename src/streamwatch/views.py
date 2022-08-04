@@ -36,8 +36,8 @@ class StreamWatchListUpdateView(LoginRequiredMixin, django.views.generic.detail.
         context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
 
         sampling_feature_code = self.kwargs[self.slug_field]
-        surveys = models.samplingfeature_assessments(sampling_feature_code)
-        context['streamwatchsurveys'] = surveys
+        assessments = models.samplingfeature_assessments(sampling_feature_code)
+        context['streamwatchsurveys'] = assessments
         return context
 
 
@@ -84,7 +84,7 @@ class CreateView(SessionWizardView):
                 form_data['cat_methods'].append(form.clean_data())    
                 continue
             form_data.update(form.cleaned_data)
-        adapter = models.StreamWatchODM3Adapter.from_dict(form_data)
+        adapter = models.StreamWatchODM2Adapter.from_dict(form_data)
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
