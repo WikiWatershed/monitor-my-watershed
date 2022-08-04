@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
     'hydroshare',
     'leafpack',
+    'streamwatch',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,7 +61,9 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'requests',
     'reset_migrations',
-    'timeseries_visualization'
+    'timeseries_visualization',
+    'formtools',
+    
 ]
 
 MIDDLEWARE = [

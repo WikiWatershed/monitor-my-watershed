@@ -24,7 +24,7 @@ from .models import results
 from .models import samplingfeatures
 from .models import simulation
 
-OUTPUT_FORMATS = ('json', 'dataframe', 'dict')
+OUTPUT_FORMATS = ('json', 'dataframe', 'dict','records')
 
 class Base():
     
@@ -93,7 +93,9 @@ class ODM2Engine:
             elif output_format == 'dataframe':
                 return df
             elif output_format == 'dict':
-                return df.to_dict()
+                return df.to_dict(orient=orient)
+            elif output_format == 'records':
+                return df.to_records(index=False)
             raise TypeError("Unknown output format")
 
     def insert_query(self, objs:List[object]) -> None:
@@ -101,7 +103,7 @@ class ODM2Engine:
             session.add_all(objs)
             session.commit()
 
-    def create_object(self, obj:object, perserve_pkey:bool=False) -> Union[int, str]:
+    def create_object(self, obj:object, preserve_pkey:bool=False) -> Union[int, str]:
         """ Accepts an ORM mapped model and created a corresponding database record
 
         Accepts on one of the ORM mapped models and creates the corresponding database 
@@ -119,8 +121,8 @@ class ODM2Engine:
 
         """
         
-        if not perserve_pkey:
-            pkey_name = obj.get_pkey_name()
+        pkey_name = obj.get_pkey_name()
+        if not preserve_pkey:
             setattr(obj, pkey_name, None)
 
         with self.session_maker() as session:
@@ -249,12 +251,3 @@ class ODM2DataModels():
                 pickle.dump(self._model_base.metadata, file)
         except FileNotFoundError:
             warnings.warn('Unable to cache models which may lead to degraded performance.', RuntimeWarning)
-
-try:
-    with open(cache_path, 'rb') as file:
-        metadata = pickle.load(file=file)
-        _model_base = declarative_base(cls=Base, bind=engine, metadata=metadata)
-        cached = True
-except: 
-    metadata = sqlalchemy.MetaData(schema='odm2')
-    _model_base = automap_base(cls=Base, metadata=metadata)

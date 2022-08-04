@@ -137,6 +137,26 @@ a:hover {
     color: rgb(23, 190, 207);
 }
 
+.icon-dark-blue {
+    color: rgb(0, 53, 71);
+}
+
+.icon-medium-orange {
+    color: rgb(237, 139, 22);;
+}
+
+.icon-teal {
+    color: rgb(0, 94, 84);
+}
+
+.icon-brown-green {
+    color: rgb(133, 128, 1);
+}
+
+.icon-bright-red {
+    color: rgb(225, 82, 60);
+}
+
 .map-container {
     height: 410px;
 }
@@ -980,7 +1000,7 @@ i.material-icons.site-card-icon {
     margin-bottom: 30px;
 }
 
-#new-result-button, #new-leaf-pack-btn {
+#new-result-button, #new-leaf-pack-btn, #new-streamwatch-btn {
     margin-left: 10px;
     margin-bottom: -10px;
     vertical-align: sub;
@@ -1226,6 +1246,21 @@ div#followedSites .mdl-card__menu {
     width: 100px;
 }
 
+.form-streamwatch .field-table input[type="number"] {
+    width: 100%;
+}
+
+.form-streamwatch .num-input .num-field label {
+    width: 100%;
+}
+
+.field-table div.form-field {
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+
+}
+
 .form-leafpack .fa {
     margin-right: 4px;
 }
@@ -1236,6 +1271,12 @@ div#followedSites .mdl-card__menu {
 
 .form-leafpack .step-row {
     border-left: 3px solid #66CCCC;
+    margin-left: 20px;
+    padding-left: 20px;
+    padding-bottom: 40px;
+}
+
+.form-leafpack .std-row {
     margin-left: 20px;
     padding-left: 20px;
     padding-bottom: 40px;
@@ -1292,6 +1333,13 @@ td.indent-left {
 td.label, p.label {
     color: rgba(0, 0, 0, .54);
     font-weight: 700;
+}
+
+td.block-label {
+    color: #66CCCC;
+    /* font-weight: 700; */
+    font-style: italic;
+    font-size: 15px
 }
 
 .form-leafpack .step-number {
@@ -1475,4 +1523,9 @@ i.file-icon {
     box-shadow: none !important;
     pointer-events: none !important;
     cursor: default !important;
+}
+
+/* Detail Page Styling */
+.block-label {
+    color: #66CCCC
 }

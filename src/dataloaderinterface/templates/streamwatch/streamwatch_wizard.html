@@ -1,0 +1,100 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load static %}
+{% load site %}
+{% load widget_tweaks %}
+{% load i18n %}
+
+{% block page_title %}
+    <title>
+    {% if request.resolver_match.view_name == "streamwatch:create" %}
+        Create StreamWatch Assessment at {{ sampling_feature_code }}
+    {% else %}
+        Edit StreamWatch Assessment at {{ streamwatch.site_registration.sampling_feature_name }}
+    {% endif %}
+    </title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-lightblue"></div>
+
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title text-center">
+                        {% if request.resolver_match.view_name == "streamwatch:create" %}
+                            <h3>StreamWatch Assessment</h3>
+                            <h6>Site ID: {{ sampling_feature_code }}</h6>
+                            
+                        {% else %}
+                            <h3>StreamWatch Assessment Form</h3>
+                            <h6>Site ID: {{ sampling_feature_code }} (Edit Form)</h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <form class="form-leafpack form-streamwatch" id="form-container" method="POST" 
+                    {% if request.resolver_match.view_name == "streamwatch:create" %}
+                  action="{% url 'streamwatch:create' sampling_feature_code %}"
+                    {% else %}
+                  action="{% url 'streamwatch:update' sampling_feature_code action_id %}"
+                    {% endif %}>
+                {% csrf_token %}
+
+                <table>
+                    {{ wizard.management_form }}
+                    {% if wizard.form.prefix == 'setup' %}
+                        {% include 'streamwatch/subforms/setup.html' with wizard=wizard %} 
+                    {% elif wizard.form.prefix == 'conditions' %}
+                        {% include 'streamwatch/subforms/conditions.html' with wizard=wizard %} 
+                    {% elif wizard.form.prefix == 'cat' %}
+                        {% include 'streamwatch/subforms/cat.html' with wizard=wizard %}
+                    {% elif wizard.form.prefix == 'simplecat' %}
+                        {% include 'streamwatch/subforms/simple_waterquality.html' with wizard=wizard %}
+                    {% elif wizard.form.prefix == 'school' %}
+                        {% include 'streamwatch/subforms/simple_habitat.html' with wizard=wizard %}  
+                    {% else %}
+                        {{wizard.form.as_p}}
+                    {% endif %}
+                </table>
+
+                <br><br>
+                <div class="row">
+                    <div class="col">
+                        <div class="d-flex justify-content-end">
+                        <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                {% if streamwatch.pk is None %}
+                                    href="{% url 'streamwatches' sampling_feature_code %}"
+                                {% else %}
+                                    href="{% url 'streamwatch:view' sampling_feature_code streamwatch.id %}"
+                                {% endif %}
+                        >Cancel</a>
+
+                        {% if wizard.steps.prev %}
+                        <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.first }}">{% trans "first step" %}</button>
+                        <button name="wizard_goto_step" type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after" value="{{ wizard.steps.prev }}">{% trans "prev step" %}</button>
+                        {% endif %}
+                        <button type="submit" class="mdl-button mdl-button--raised mdl-button--colored button--disable-after">
+                            {% comment %} {% if streamwatch.pk is None %}Next{% else %}Save Edits{% endif %} {% endcomment %}
+                            {% if wizard.steps.step1 < wizard.steps.count %}Next{% else %}Save Edits{% endif %}
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    {# comment <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script> endcomment #}
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/streamwatch-create.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,444 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load static %}
+{% load site %}
+{% load widget_tweaks %}
+
+{% block page_title %}
+    <title>StreamWatch Assessment Details at {{ streamwatch.site_registration.sampling_feature_name }}</title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-lightblue"></div>
+
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-title">
+                        StreamWatch Assessment Details at 
+                        <a href="{% url 'site_detail' sampling_feature_code %}"
+                           style="color: inherit;">
+                            {% comment %} {{ streamwatch.site_registration.sampling_feature_name }} {% endcomment %}
+                            {{ streamwatch.sampling_feature_name }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="buttons-toolbar row">
+                <div class="col-12 text-right">
+                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code streamwatch.action_id %}"
+                       class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                        <i class="material-icons center-icon">cloud_download</i> Download CSV
+                    </a>
+
+                    {% if can_administer_site %}
+                        {% comment %} <a href="{% url 'streamwatch:update' sampling_feature_code streamwatch.id %}"
+                           id="btn-edit-leaf-exp"
+                           class="button-link mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
+                            <i class="material-icons center-icon">mode_edit</i> Edit
+                        </a> {% endcomment %}
+
+                        <button id="btn-del-leaf-exp" type="button"
+                                data-toggle="modal" data-target="#experiment-delete-dialog"
+                                class="mdl-button mdl-js-ripple-effect mdl-button--raised mdl-button--colored">
+                            <i class="material-icons center-icon">delete_forever</i> Delete
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    {# <code>{{ leafpack.uuid }}</code> #}
+                    <h6 class="title">General Information</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-user-o icon-medium-orange" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Investigator #1</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.investigator1 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-user-o icon-teal" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Investigator #2</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.investigator2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-calendar-plus-o icon-brown-green" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Assessment Date</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.collect_date }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-clock-o icon-bright-red" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Assessment Time</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.collect_time }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--icon"><i class="fa fa-file-o icon-blue" aria-hidden="true"></i></td>
+                            <td class="mdl-data-table__cell--non-numeric label">Assessment Type(s)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.collect_time }}</td>
+                        </tr>
+                    </table>
+                    <br>
+                </div>
+            </div>
+
+                
+            <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Weather Condition and Visual Assessment</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Current Weather</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.weather_cond|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Time Since Last Rain or Snowmelt</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.time_since_last_precip|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Color</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_color|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Odor</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor|default:"Unknown"}}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Turbidity</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.turbidity_obs|default:"Unknown"  }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Movement</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_movement|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Surface Coating</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.surface_coating|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Aquatic Vegetation Amount</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_amount|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Aquatic Vegetation Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.aquatic_veg_type|default:"Unknown"  }}</td>
+                        </tr>                        
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Algae Amount</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.algae_amount|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Algae Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.algae_type|default:"Unknown"  }}</td>
+                        </tr>
+                    </table>
+                    <br>
+                    <h6 class="title">Simple Habitat Assessment</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Woody Debris Amount</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_woody_debris_amt|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Woody Debris Type</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_woody_debris_type|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Land Use Characteristics</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_land_use|default:"Unknown" }}</td>
+                        </tr>
+                    </table>
+                    <br>
+                    <h6 class="title">Flow Measurements</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Wetted Width</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_wetted_width|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 1</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth1|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 2</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth2|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 3</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth3|default:"Unknown"  }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 4</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth4|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Representative Depth Profile 5</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.rep_depth5|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Average Depth</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.avg_depth|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Average Float Time</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.avg_float_time|default:"Unknown"  }}</td>
+                        </tr>                        
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Average Velocity</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.avg_velocity|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Physical Assessment Conducted</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.physical_assessment|default:"Unknown"  }}</td>
+                        </tr>
+                    </table>                    
+                    <br>
+                </div>
+
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Detailed Habitat Assessment</h6>
+                    <hr class="dotted">
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric block-label">Stream Habitat Assessment</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Approximate Reach Length</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.reach_length|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">In-Stream Structures</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.instream_structure|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Stream Flow</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.stream_flow|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Riffle Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_riffle|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Run Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_run|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Pool Morphology</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_pool|default:"Unknown" }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Woody Debris Amount</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.woody_debris_amt|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Macroinvertebrate Habitat Types</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.macroinvert_habitat_type|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Silt and Clay Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_silt_clay|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Sand Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_sand|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Gravel Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_gravel|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Cobble Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_cobble|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Boulder Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_boulder|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Percent Bedrock Substrate</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_bedrock|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric block-label">Riparian Habitat Assessment</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Bank Vegetation Types</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_silt_clay|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Tree Canopy Coverage</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_sand|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Land Uses in 1/4 Mile Radius</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_gravel|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Litter Concentration</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_cobble|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Wildlife Observations</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_boulder|default:"Unknown"  }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Macroinvertebrate Sample Collected?</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.percent_bedrock|default:"Unknown"  }}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Chemical Assessment Measurement(s)</h6>
+                    <hr class="dotted">
+
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Air Temperature (°C)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_air_temperature|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Temperature (°C)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_water_temperature|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Nitrate Nitrogen (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_nitrate|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Phosphates (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_phosphate|default:"Unknown"}}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">pH</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_ph|default:"Unknown" }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Turbidity Sample Size (mL)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_sample_size|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Amount of Turbidity Reagent Added (mL)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_reagent_amt|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Turbidity (JTU)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Dissolved Oxygen (ppm)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_dissolved_oxygen|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Salinity (ppt)</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_salinity|default:"Unknown" }}</td>
+                        </tr>                        
+                    </table>
+
+                    <div id="accordion" class="title">
+                        {% for measurement  in streamwatch.CAT_measurements%}
+                            <h6>{{measurement.name}}</h6>
+                            <div>
+                                <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Test method</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.name}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Meter</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.id}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mdl-data-table__cell--non-numeric label">Calibration date</td>
+                                        <td class="mdl-data-table__cell--non-numeric">{{measurement.cal_date}}</td>
+                                    </tr>
+                                </table>
+
+                                <table class = "mdl-data-table mdl-js-data-table mdl-shadow--2dp">
+                                    <thead>
+                                    <tr><th class = "mdl-data-table__cell--non-numeric">Parameter</th>
+                                        <th>Measurement</th><th>Unit</th></tr>
+                                    </thead>
+                                    
+                                    <tbody>
+                                        {% for par  in measurement.pars%}
+                                        <tr><td class = "mdl-data-table__cell--non-numeric">{{par.parName}}</td>
+                                            <td>{{par.measurement}}</td><td>{{par.unit}}</td></tr>
+                                        {%endfor%}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {%endfor%}
+                    </div>
+                    
+                    <br><br>
+                </div>
+                
+            </div>
+
+            <div class="row">
+
+                {% if streamwatch.site_observation %}
+                    <div class="col-12">
+                        <h6 class="title">General Comments and Site Observations</h6>
+                        <hr class="dotted">
+                        <p><em>{{ streamwatch.site_observation }}</em></p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="experiment-delete-dialog" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content mdl-modal-content mdl-shadow--4dp">
+                <h4 class="mdl-dialog__title">Delete StreamWatch Assessment?</h4>
+
+                <div class="mdl-dialog__content">
+                    <p>
+                        <strong>WARNING:</strong> All data associated with this experiment will be deleted.<br><br>
+                        <strong>Are you really really really sure you want to do this?</strong>
+                    </p>
+                </div>
+                <div class="mdl-dialog__actions text-right">
+                    <form method="POST"
+                          action="{% autoescape off %}{% url 'streamwatch:delete' sampling_feature_code %}{% endautoescape %}">
+                        {% csrf_token %}
+                        <button type="submit" class="mdl-button mdl-button--raised"
+                                style="background: #d9534f; color:#FFF;" id="btn-confirm-delete">Delete
+                        </button>
+                    </form>
+                    <button type="button" class="mdl-button mdl-button--raised" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="{% static 'dataloaderinterface/css/barchart.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
+    <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/streamwatch-detail.js' %}"></script>
+
+{% endblock %}

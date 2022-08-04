@@ -1,0 +1,56 @@
+{% load widget_tweaks %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter information to setup the form. The activity type(s) selected will determine the form questions on subsequent pages.</h5>
+    </div>
+</div>
+
+<div class="row std-row">
+    {{ wizard.form.site_registration }}
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">
+                <div class="form-group">
+                    <div class="form-field">
+                        <label for="{{ wizard.form.investigator1.id_for_label }}">{{ wizard.form.investigator1.label }}</label>
+                        {{ wizard.form.investigator1|add_class:"form-control" }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-field" >
+                        <label for="{{ wizard.form.investigator2.id_for_label }}">{{ wizard.form.investigator2.label }}</label>
+                        {{ wizard.form.investigator2|add_class:"form-control" }}
+                    </div>
+                </div>
+                    
+                <div class="row">
+                    <div class="form-field col-6">
+                        {{ wizard.form.collect_date.errors }}
+                        <label for="{{ wizard.form.collect_date.id_for_label }}">{{ wizard.form.collect_date.label }}</label>                                               </label>
+                        {{ wizard.form.collect_date|add_class:"form-control datepicker" }}
+                    </div>
+
+                    <div class="form-field col-6" >
+                        <label for="{{ wizard.form.collect_time.id_for_label }}">{{ wizard.form.collect_time.label }}</label>
+                        {{ wizard.form.collect_time|add_class:"form-control" }}
+                    </div>
+                </div>   
+            </div>
+        </div>
+        <br><br>
+    </div>
+
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+            <div class="mdl-card__supporting-text default-font">
+                <div class="form-field">
+                    <label for="{{ wizard.form.assessment_type.id_for_label }}">{{ wizard.form.assessment_type.label }}</label>
+                    {{ wizard.form.assessment_type.errors }}
+                    {{ wizard.form.assessment_type }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
