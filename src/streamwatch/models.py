@@ -285,8 +285,6 @@ class StreamWatchODM2Adapter():
         'simple_phosphate' : FieldConfig(513,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_ph' : FieldConfig(509,_FloatFieldAdapter,385,'Liquid aqueous'),
         #'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,0,'Liquid aqueous'),
-        #'simple_specific_conductivity' : FieldConfig(0,_FloatFieldAdapter,0,'Liquid aqueous'),
-        #'simple_total_dissolved_solids' : FieldConfig(0,_FloatFieldAdapter,0,'Liquid aqueous'),
         'simple_turbidity' : FieldConfig(516,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_reagent_amt' : FieldConfig(514,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),

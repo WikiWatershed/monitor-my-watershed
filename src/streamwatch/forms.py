@@ -320,8 +320,6 @@ class SimpleWaterQualityForm(forms.Form):
         ('simple_phosphate', 'Phosphate'),
         ('simple_ph', 'pH'),
         ('simple_salinity','Salinity'),
-        ('simple_specific_conductivity', 'Specific Conductivity'),
-        ('simple_total_dissolved_solids', 'Total Dissolved Solids'),
         ('simple_turbidity', 'Turbidity'),
         ('simple_turbidity_reagent_amt', 'Amount of Turbidity Reagent Added'),
         ('simple_turbidity_sample_size', 'Turbidity Sample Size'),
