@@ -147,7 +147,8 @@ class VisualAssessmentForm(forms.Form):
     site_observation = forms.CharField(
         widget=forms.Textarea(),
         required=False,
-        label='General Comments and Site Observations'
+        label='General Comments and Site Observations (maximum 255 characters)',
+        max_length=255
     )
 
 class SimpleHabitatAssessmentForm(forms.Form):
