@@ -1,8 +1,5 @@
-from re import I
-from attr import field
 from django import forms
 from django.contrib.auth import get_user_model
-#from .models import LeafPack, LeafPackType, Macroinvertebrate, LeafPackBug, LeafPackSensitivityGroup
 from django.forms import formset_factory
 from streamwatch import models
 
