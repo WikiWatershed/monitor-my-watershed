@@ -350,8 +350,8 @@ class StreamWatchODM2Adapter():
             action.methodid = cls.ROOT_METHOD_ID
             action.begindatetime = datetime.datetime.now()
             action.begindatetimeutcoffset = -5
-            action.actionid = odm2_engine.create_object(action)
             action.actiondescription = ','.join(form_data['assessment_type'])
+            action.actionid = odm2_engine.create_object(action)
             return action
 
         def create_investigator(action_id:int, afflication_id:int, is_lead=False) -> None:
