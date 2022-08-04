@@ -343,14 +343,13 @@ class StreamWatchODM2Adapter():
         
         def create_parent_action(form_data:Dict[str,Any]) -> None:
             """Helper method to create a parent a new action StreamWatch parent action"""
-            #TODO - check with Anthony on efficiently adding user information
-            #TODO - check with Anthony on how to best store selected activity information
             action = odm2_models.Actions()
             action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
             action.methodid = cls.ROOT_METHOD_ID
             action.begindatetime = datetime.datetime.now()
             action.begindatetimeutcoffset = -5
             action.actiondescription = ','.join(form_data['assessment_type'])
+
             action.actionid = odm2_engine.create_object(action)
             return action
 
@@ -426,7 +425,7 @@ class StreamWatchODM2Adapter():
         action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
         self._attributes['assessment_type'] = [] 
         if action['actiondescription']:
-            action['actiondescription'].split(',')
+            self._attributes['assessment_type'] = action['actiondescription'].split(',')
         #TODO: update based on AKA datetime logic
         self._attributes['collect_date'] = datetime.datetime.now().date()
         self._attributes['collect_time'] = datetime.datetime.now().time()
