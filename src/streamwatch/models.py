@@ -68,6 +68,14 @@ def get_odm2_variables() -> Dict[int, Dict[str,Any]]:
     return df.to_dict(orient='index')
 
 
+def affiliation_to_person(afflication_id:int) -> str:
+    """Returns the person name and organization for a given afflication"""
+    affiliation = odm2_engine.read_object(odm2_models.Affiliations, afflication_id)
+    organization = odm2_engine.read_object(odm2_models.Organizations, affiliation['organizationid'])
+    person = odm2_engine.read_object(odm2_models.People, affiliation['personid'])
+    return f"{person['personfirstname']} {person['personlastname']} ({organization['organizationname']})"
+
+
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
 
@@ -488,6 +496,12 @@ class StreamWatchODM2Adapter():
             config = self.PARAMETER_CROSSWALK[key] 
             if config.adapter_class is _ChoiceFieldAdapter: data[key] = variables[value]['variabledefinition']
             elif config.adapter_class is _MultiChoiceFieldAdapter: data[key] = [variables[x]['variabledefinition'] for x in value]
+
+        if data['investigator1']: 
+            data['investigator1'] = affiliation_to_person(data['investigator1'])
+        if data['investigator2']: 
+            data['investigator2'] = affiliation_to_person(data['investigator2'])
+
         return data
 
     def update_from_dict(self, form_data:Dict[str,Any]) -> None:
