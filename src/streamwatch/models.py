@@ -164,6 +164,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not isinstance(value,list): value = [value] 
         for selected in value:
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
@@ -302,7 +303,7 @@ class StreamWatchODM2Adapter():
         'simple_nitrate' : FieldConfig(512,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_phosphate' : FieldConfig(513,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_ph' : FieldConfig(509,_FloatFieldAdapter,385,'Liquid aqueous'),
-        #'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,0,'Liquid aqueous'),
+        'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,428,'Liquid aqueous'),
         'simple_turbidity' : FieldConfig(516,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_reagent_amt' : FieldConfig(514,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),
@@ -535,7 +536,7 @@ class StreamWatchODM2Adapter():
 
         if form_data['assessment_type'] != self._attributes['assessment_type']:
             odm2_engine.update_object(
-                odm2_models.Action, 
+                odm2_models.Actions, 
                 self.action_id, 
                 {'actiondescription': ','.join(form_data['assessment_type'])}
             )      
