@@ -44,7 +44,6 @@ def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
         #.order_by(odm2_models.Actions.begindatetime)
         )
     result = odm2_engine.read_query(query, output_format='dict')
-    result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
     return result
 
 
