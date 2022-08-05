@@ -178,6 +178,14 @@ class SimpleHabitatAssessmentForm(forms.Form):
         choices= models.variable_choice_options('woodyDebrisType'),
         initial='1'
     )
+    simple_tree_canopy = forms.TypedChoiceField(
+        required=False,
+        widget=forms.Select,
+        label='Tree Canopy',
+        coerce=int,
+        choices= models.variable_choice_options('treeCanopy'),
+        initial='1'
+    )
     simple_land_use = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
