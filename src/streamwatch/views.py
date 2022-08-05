@@ -59,8 +59,8 @@ class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.VisualAssessmentForm),
-        ('simplewaterquality',forms.SimpleWaterQualityForm),
         ('simplehabitat',forms.SimpleHabitatAssessmentForm),
+        ('simplewaterquality',forms.SimpleWaterQualityForm),        
     ]
     condition_dict = {
         'simplewaterquality': condition_school,
