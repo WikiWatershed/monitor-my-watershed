@@ -538,21 +538,24 @@ class StreamWatchODM2Adapter():
         feature_action_id = feature_action[0]['featureactionid']
         for key, value in form_data.items():
             if key not in self.PARAMETER_CROSSWALK: continue
+            
             config = self.PARAMETER_CROSSWALK[key]
-            if key in self._attributes and value != self._attributes[key]:
+            if key not in self._attributes:
+                config.adapter_class.create(
+                    value, 
+                    parent_action['begindatetime'],
+                    parent_action['begindatetimeutcoffset'],
+                    feature_action_id, 
+                    config,
+                )
+                continue
+            if value != self._attributes[key]:
                 config.adapter_class.update(
                     value, 
                     feature_action_id, 
                     config,
                 )
                 continue
-            config.adapter_class.create(
-                value, 
-                parent_action['begindatetime'],
-                parent_action['begindatetimeutcoffset'],
-                feature_action_id, 
-                config,
-            )
         
     def _update_special_cases(self, form_data:Dict[str,Any]) -> None:
         """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""

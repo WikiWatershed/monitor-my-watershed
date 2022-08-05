@@ -67,78 +67,89 @@ class SetupForm(forms.Form):
 class VisualAssessmentForm(forms.Form):
 
     # Weather Current Conditions
-    weather_cond = forms.MultipleChoiceField(
+    weather_cond = forms.TypedMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Current Weather Conditions',
+        coerce=int,
         choices= models.variable_choice_options('weather', False),
     )
-    time_since_last_precip = forms.ChoiceField(
+    time_since_last_precip = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Time Since Last Rain or Snowmelt',
+        coerce=int,
         choices= models.variable_choice_options('precipitation'),
         initial='1'
     )
 
     # Water Conditions    
-    water_color = forms.ChoiceField(
+    water_color = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Water Color:',
+        coerce=int,
         choices= models.variable_choice_options('waterColor'),
         initial='1'
     )
-    water_odor = forms.MultipleChoiceField(
+    water_odor = forms.TypedMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Water Odor',
+        coerce=int,
         choices= models.variable_choice_options('waterOdor', False),
     )
-    turbidity_obs = forms.ChoiceField(
+    turbidity_obs = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Turbidity',
+        coerce=int,
         choices= models.variable_choice_options('turbidity'),
         initial='1'
     )
-    water_movement = forms.ChoiceField(
+    water_movement = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Water Movement',
+        coerce=int,
         choices= models.variable_choice_options('waterMovement'),
         initial='1'
     )
-    surface_coating = forms.MultipleChoiceField(
+    surface_coating = forms.TypedMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Surface Coating',
+        coerce=int,
         choices= models.variable_choice_options('surfaceCoating', False),
     )
-    aquatic_veg_amount = forms.ChoiceField(
+    aquatic_veg_amount = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Aquatic Vegetation Amount',
+        coerce=int,
         choices= models.variable_choice_options('aquaticVegetation'),
         initial='1'
     )
-    aquatic_veg_type = forms.MultipleChoiceField(
+    aquatic_veg_type = forms.TypedMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Aquatic Vegetation Type',
+        coerce=int,
         choices= models.variable_choice_options('aquaticVegetationType', False),
     )    
-    algae_amount = forms.ChoiceField(
+    algae_amount = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Algae Amount',
+        coerce=int,
         choices= models.variable_choice_options('algaeAmount'),
         initial='1'
     )
-    algae_type = forms.MultipleChoiceField(
+    algae_type = forms.TypedMultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Algae Type',
+        coerce=int,
         choices= models.variable_choice_options('algaeType', False),
     )
     site_observation = forms.CharField(
@@ -151,24 +162,27 @@ class VisualAssessmentForm(forms.Form):
 class SimpleHabitatAssessmentForm(forms.Form):
 
     # Simple Habitat Assesment (School form)
-    simple_woody_debris_amt = forms.ChoiceField(
+    simple_woody_debris_amt = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Woody Debris Amount',
+        coerce=int,
         choices= models.variable_choice_options('woodyDebris'),
         initial='1'
     )
-    simple_woody_debris_type = forms.ChoiceField(
+    simple_woody_debris_type = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Woody Debris Type',
+        coerce=int,
         choices= models.variable_choice_options('woodyDebrisType'),
         initial='1'
     )
-    simple_land_use = forms.ChoiceField(
+    simple_land_use = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
         label='Land Use Characteristics',
+        coerce=int,
         choices= models.variable_choice_options('landUse'),
         initial='1'
     )
