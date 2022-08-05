@@ -1,12 +1,13 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.forms import formset_factory
-from streamwatch import models
 
 from typing import Dict
 from typing import Any
 
 from dataloaderinterface.models import Affiliation
+from streamwatch import models
+from streamwatch import timeutils
 
 place_holder_choices = (
         (1, 'Choice #1'), 
@@ -37,7 +38,7 @@ class SetupForm(forms.Form):
     
     investigator1 = forms.ModelChoiceField(
         queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
-        required=False,
+        required=True,
         help_text='Select a user as the main investigator',
         label='Investigator #1'
     )  
@@ -54,6 +55,12 @@ class SetupForm(forms.Form):
     collect_time = forms.TimeField(
         required=False,
         label='Time'
+    )
+    collect_tz = forms.ChoiceField(
+        required=False,
+        label='Timezone',
+        choices=[(None,'')] + timeutils.make_tz_tuple_list(),   
+        initial='US/Eastern',
     )
     assessment_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,

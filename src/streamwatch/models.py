@@ -6,7 +6,7 @@ from typing import Dict, Any, Iterable, Tuple, Union, List
 import sqlalchemy
 
 from odm2 import odm2datamodels
-
+from streamwatch import timeutils
 
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
@@ -45,8 +45,13 @@ def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
         .where(odm2_models.Actions.methodid == 1)
         #.order_by(odm2_models.Actions.begindatetime)
         )
-    result = odm2_engine.read_query(query, output_format='dict')
-    return result
+    results = odm2_engine.read_query(query, output_format='dict')
+
+    #convert UTC time to local time
+    for result in results:
+        result['begindatetime'] = result['begindatetime'] - datetime.timedelta(hours=result['begindatetimeutcoffset'])
+
+    return results
 
 
 def delete_streamwatch_assessment(action_id:int) -> None:
@@ -333,7 +338,7 @@ class StreamWatchODM2Adapter():
         'simple_water_temperature' : FieldConfig(508,_FloatFieldAdapter,362,'Liquid aqueous'),
         'simple_woody_debris_amt' : FieldConfig('woodyDebris',_ChoiceFieldAdapter,394,'Other'),
         'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_ChoiceFieldAdapter,394,'Other'),
-        'simple_land_use' : FieldConfig('landUse',_ChoiceFieldAdapter,394,'Other'),
+        'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
         'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
@@ -382,11 +387,13 @@ class StreamWatchODM2Adapter():
         
         def create_parent_action(form_data:Dict[str,Any]) -> None:
             """Helper method to create a parent a new action StreamWatch parent action"""
+            datetime_info = cls._get_datetime_and_utcoffset(form_data)            
+
             action = odm2_models.Actions()
             action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
             action.methodid = cls.ROOT_METHOD_ID
-            action.begindatetime = datetime.datetime.now()
-            action.begindatetimeutcoffset = -5
+            action.begindatetime = datetime_info[0]
+            action.begindatetimeutcoffset = datetime_info[1] 
             action.actiondescription = ','.join(form_data['assessment_type'])
 
             action.actionid = odm2_engine.create_object(action)
@@ -398,6 +405,7 @@ class StreamWatchODM2Adapter():
             actionby.affiliationid = afflication_id
             actionby.isactionlead = is_lead
             odm2_engine.create_object(actionby)
+
 
         parent_action = create_parent_action(form_data)
         instance = StreamWatchODM2Adapter(parent_action.actionid)
@@ -464,9 +472,10 @@ class StreamWatchODM2Adapter():
         self._attributes['assessment_type'] = [] 
         if action['actiondescription']:
             self._attributes['assessment_type'] = action['actiondescription'].split(',')
-        #TODO: update based on AKA datetime logic
-        self._attributes['collect_date'] = datetime.datetime.now().date()
-        self._attributes['collect_time'] = datetime.datetime.now().time()
+        
+        action_datetime_local = action['begindatetime'] - datetime.timedelta(hours=action['begindatetimeutcoffset'])
+        self._attributes['collect_date'] = action_datetime_local.date()
+        self._attributes['collect_time'] = action_datetime_local.time() 
 
         query = (sqlalchemy.select(odm2_models.ActionBy)
             .where(odm2_models.ActionBy.actionid == self.action_id)
@@ -488,6 +497,21 @@ class StreamWatchODM2Adapter():
             'actionid':actionid
             })
         return odm2_engine.create_object(featureaction)
+
+    @classmethod
+    def _get_datetime_and_utcoffset(cls, form_data:Dict[str,Any]) -> Tuple[datetime.datetime, int]:
+        """Helper function to format datatime and utcoffset based on form provided values"""
+        date = form_data['collect_date']
+        time = form_data['collect_time']
+        timezone = form_data['collect_tz']
+
+        if date is None: date = datetime.datetime.now().date()
+        if time is None: time = datetime.time(0,0)
+        utc_offset = timeutils.get_utcoffset(timezone)
+        datetime_combined = datetime.datetime.combine(date, time)
+        datetime_combined = datetime_combined + datetime.timedelta(hours=utc_offset[0])
+        return datetime_combined, utc_offset[0]
+
 
     def to_dict(self, string_format:bool=False) -> Dict[str,Any]:
         """Return attributes as dictionary with form fields mapped as keys and user inputs as values
@@ -562,8 +586,15 @@ class StreamWatchODM2Adapter():
         if (form_data['collect_date'] != self._attributes['collect_date'] 
             or form_data['collect_time'] != self._attributes['collect_time']
         ):
-            #TODO update begindatetime and begindatetimeutcoffset
-            pass
+            datetime_info = self._get_datetime_and_utcoffset(form_data)
+            odm2_engine.update_object(
+                odm2_models.Actions, 
+                self.action_id, 
+                {
+                    'begindatetime': datetime_info[0],
+                    'begindatetimeutcoffset': datetime_info[1],
+                }
+            )
 
         if form_data['assessment_type'] != self._attributes['assessment_type']:
             odm2_engine.update_object(
