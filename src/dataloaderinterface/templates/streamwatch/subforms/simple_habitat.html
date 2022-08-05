@@ -28,10 +28,11 @@
         <div class="mdl-card mdl-shadow--2dp full-width">
 
             <div class="mdl-card__supporting-text default-font">
-                <div class="form-field col-6">
+                <div class="form-field indent-left">
                     <label for="{{ wizard.form.simple_land_use.id_for_label }}">{{ wizard.form.simple_land_use.label }}</label>
-                    {{ wizard.form.simple_land_use|add_class:"form-control" }}
-                </div> 
+                    {{ wizard.form.simple_land_use.errors }}
+                    {{ wizard.form.simple_land_use }}
+                </div>
             </div>
         </div>
         <br><br>

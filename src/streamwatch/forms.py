@@ -178,13 +178,11 @@ class SimpleHabitatAssessmentForm(forms.Form):
         choices= models.variable_choice_options('woodyDebrisType'),
         initial='1'
     )
-    simple_land_use = forms.TypedChoiceField(
+    simple_land_use = forms.MultipleChoiceField(
+        widget=MDLCheckboxSelectMultiple,
         required=False,
-        widget=forms.Select,
         label='Land Use Characteristics',
-        coerce=int,
-        choices= models.variable_choice_options('landUse'),
-        initial='1'
+        choices= models.variable_choice_options('landUse', False),
     )
 
 class StreamHabitatAssessmentForm(forms.Form):
