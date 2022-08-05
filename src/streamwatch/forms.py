@@ -54,7 +54,15 @@ class SetupForm(forms.Form):
     )
     collect_time = forms.TimeField(
         required=False,
-        label='Time'
+        label='Time',
+        input_formats=[
+            #see for acceptable formats https://docs.djangoproject.com/en/4.0/ref/templates/builtins/#date
+            '%H:%M',        # 14:30
+            '%H:%M:%S',     # 14:30:59
+            '%H:%M:%S.%f',  # 14:30:59.000200
+            '%I:%M %p',     # 02:30p.m.
+            '%I:%M%p',      # 02:30PM
+        ]
     )
     collect_tz = forms.ChoiceField(
         required=False,
