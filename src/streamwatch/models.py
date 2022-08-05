@@ -12,13 +12,15 @@ odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
 
-def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
+def variable_choice_options(variable_domain_cv:str, include_blank:bool=True) -> Iterable[Tuple]:
     """Get categorical options from the variables table of the ODM2 database"""
     query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
             .order_by(odm2_models.Variables.variableid)
         )
-    records = odm2_engine.read_query(query, output_format='records')
+    records = odm2_engine.read_query(query, output_format='records').tolist()
+    if include_blank:
+        records = [(None,'')] + records
     return records
 
 
@@ -144,6 +146,7 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, value)
     
     @classmethod
@@ -152,6 +155,9 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
         if not result_records: 
             raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
+        if not value and result_records:
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
         odm2_engine.update_object(odm2_models.Results, result_id, {'variableid':value})   
 
 
@@ -172,6 +178,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         if not isinstance(value,list): value = [value] 
         for selected in value:
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
@@ -184,7 +191,7 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
         saved_results = {r['variableid']:r['resultid'] for r in result_records  }
         
-        if not isinstance(value, list): value = [value]
+        if not isinstance(value, list) and value: value = [value]
         for selected in value:
             if int(selected) in saved_results: 
                 saved_results.pop(int(selected))
@@ -210,6 +217,7 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         measurementresult = odm2_models.MeasurementResults()
@@ -235,13 +243,16 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
             raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
 
+        if not value: 
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
+
         #TODO: we should implemented an update_query method in ODM2Engine
         query = (sqlalchemy.select(odm2_models.MeasurementResultValues)
             .where(odm2_models.MeasurementResultValues.resultid==result_id)
         )
-        categorical_result_value = odm2_engine.read_query(query, output_format='dict')
-        value_id = categorical_result_value[0]['valueid']
-
+        measurement_result_value = odm2_engine.read_query(query, output_format='dict')
+        value_id = measurement_result_value[0]['valueid']
         odm2_engine.update_object(odm2_models.MeasurementResultValues, value_id, {'datavalue':value})
 
 
@@ -256,6 +267,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         categoricalresult = odm2_models.CategoricalResults()
@@ -277,15 +289,18 @@ class _TextFieldAdapter(_BaseFieldAdapter):
             raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
 
+        if not value: 
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
+
         #TODO: we should implemented an update_query method in ODM2Engine
         query = (sqlalchemy.select(odm2_models.CategoricalResultValues)
             .where(odm2_models.CategoricalResultValues.resultid==result_id)
         )
         categorical_result_value = odm2_engine.read_query(query, output_format='dict')
         value_id = categorical_result_value[0]['valueid']
-
         odm2_engine.update_object(odm2_models.CategoricalResultValues, value_id, {'datavalue':value})   
-
+        
 
 class StreamWatchODM2Adapter():
     """Adapter class for translating stream watch form data in and out of ODM2"""
@@ -317,8 +332,8 @@ class StreamWatchODM2Adapter():
         'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_water_temperature' : FieldConfig(508,_FloatFieldAdapter,362,'Liquid aqueous'),
         'simple_woody_debris_amt' : FieldConfig('woodyDebris',_ChoiceFieldAdapter,394,'Other'),
-        'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_MultiChoiceFieldAdapter,394,'Other'),
-        'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
+        'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_ChoiceFieldAdapter,394,'Other'),
+        'simple_land_use' : FieldConfig('landUse',_ChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
         'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
@@ -388,7 +403,6 @@ class StreamWatchODM2Adapter():
         instance = StreamWatchODM2Adapter(parent_action.actionid)
         instance._attributes = form_data    
         feature_action_id = instance._create_feature_action(instance.action_id, form_data['sampling_feature_id']) 
-        #TODO - fix investigator fields. They need to return affiliation_id not an affliation object
         create_investigator(instance.action_id, form_data['investigator1'].affiliation_id, True)
         if form_data['investigator2'] is not None:
             create_investigator(instance.action_id, form_data['investigator2'].affiliation_id, False)
@@ -525,7 +539,7 @@ class StreamWatchODM2Adapter():
         for key, value in form_data.items():
             if key not in self.PARAMETER_CROSSWALK: continue
             config = self.PARAMETER_CROSSWALK[key]
-            if key in self._attributes:
+            if key in self._attributes and value != self._attributes[key]:
                 config.adapter_class.update(
                     value, 
                     feature_action_id, 

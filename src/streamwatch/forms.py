@@ -71,7 +71,7 @@ class VisualAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Current Weather Conditions',
-        choices= models.variable_choice_options('weather'),
+        choices= models.variable_choice_options('weather', False),
     )
     time_since_last_precip = forms.ChoiceField(
         required=False,
@@ -93,7 +93,7 @@ class VisualAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Water Odor',
-        choices= models.variable_choice_options('waterOdor'),
+        choices= models.variable_choice_options('waterOdor', False),
     )
     turbidity_obs = forms.ChoiceField(
         required=False,
@@ -113,7 +113,7 @@ class VisualAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Surface Coating',
-        choices= models.variable_choice_options('surfaceCoating'),
+        choices= models.variable_choice_options('surfaceCoating', False),
     )
     aquatic_veg_amount = forms.ChoiceField(
         required=False,
@@ -126,7 +126,7 @@ class VisualAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Aquatic Vegetation Type',
-        choices= models.variable_choice_options('aquaticVegetationType'),
+        choices= models.variable_choice_options('aquaticVegetationType', False),
     )    
     algae_amount = forms.ChoiceField(
         required=False,
@@ -139,7 +139,7 @@ class VisualAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Algae Type',
-        choices= models.variable_choice_options('algaeType'),
+        choices= models.variable_choice_options('algaeType', False),
     )
     site_observation = forms.CharField(
         widget=forms.Textarea(),
@@ -184,7 +184,7 @@ class StreamHabitatAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='In-Stream Structures',
-        choices= models.variable_choice_options('instreamStructures'),
+        choices= models.variable_choice_options('instreamStructures', False),
     )
     stream_flow = forms.ChoiceField(
         required=False,
@@ -225,7 +225,7 @@ class StreamHabitatAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Macroinvertebrate Habitat Types',
-        choices= models.variable_choice_options('macroinvertHabitat'),
+        choices= models.variable_choice_options('macroinvertHabitat', False),
     )
     percent_silt_clay = forms.ChoiceField(
         required=False,
@@ -275,7 +275,7 @@ class StreamHabitatAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Bank Vegetation Type',
-        choices= models.variable_choice_options('bankVegetation'),
+        choices= models.variable_choice_options('bankVegetation', False),
     )
     tree_canopy = forms.ChoiceField(
         required=False,
@@ -288,7 +288,7 @@ class StreamHabitatAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Land Uses in 1/4 Mile Radius',
-        choices= models.variable_choice_options('landuseQuarterMile'),
+        choices= models.variable_choice_options('landuseQuarterMile', False),
     )
     litter_amt = forms.ChoiceField(
         required=False,
@@ -301,7 +301,7 @@ class StreamHabitatAssessmentForm(forms.Form):
         widget=MDLCheckboxSelectMultiple,
         required=False,
         label='Wildlife Observations',
-        choices= models.variable_choice_options('wildlife'),
+        choices= models.variable_choice_options('wildlife', False),
     )
     macroinvert_sample_collect = forms.ChoiceField(
         required=False,
