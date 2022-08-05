@@ -59,12 +59,12 @@ class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.VisualAssessmentForm),
-        ('simplecat',forms.SimpleWaterQualityForm),
-        ('school',forms.SimpleHabitatAssessmentForm),
+        ('simplewaterquality',forms.SimpleWaterQualityForm),
+        ('simplehabitat',forms.SimpleHabitatAssessmentForm),
     ]
     condition_dict = {
-        'simplecat': condition_school,
-        'school': condition_school
+        'simplewaterquality': condition_school,
+        'simplehabitat': condition_school
     }
     
     template_name = 'streamwatch/streamwatch_wizard.html'
@@ -98,9 +98,10 @@ class UpdateView(CreateView):
             action_id = int(kwargs[self.PRIMARY_KEY_FIELD])
             adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
             form_data = adapter.to_dict()
-            self.initial_dict['simplecat'] = form_data
             self.initial_dict['setup'] = form_data
             self.initial_dict['conditions'] = form_data
+            self.initial_dict['simplewaterquality'] = form_data
+            self.initial_dict['simplehabitat'] = form_data
         
         return super().get(request, *args, **kwargs)
 
