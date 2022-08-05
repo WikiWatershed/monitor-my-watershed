@@ -4,6 +4,7 @@ from django.forms import formset_factory
 
 from typing import Dict
 from typing import Any
+import datetime
 
 from dataloaderinterface.models import Affiliation
 from streamwatch import models
@@ -50,7 +51,8 @@ class SetupForm(forms.Form):
     )   
     collect_date = forms.DateField(
         required=False,
-        label='Date'
+        label='Date',
+        initial=datetime.datetime.now().date(),
     )
     collect_time = forms.TimeField(
         required=False,
@@ -62,7 +64,9 @@ class SetupForm(forms.Form):
             '%H:%M:%S.%f',  # 14:30:59.000200
             '%I:%M %p',     # 02:30p.m.
             '%I:%M%p',      # 02:30PM
-        ]
+        ],
+        initial='00:00',
+
     )
     collect_tz = forms.ChoiceField(
         required=False,
