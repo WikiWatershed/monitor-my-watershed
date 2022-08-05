@@ -20,7 +20,7 @@ class LoginRequiredMixin(object):
         return login_required(super(LoginRequiredMixin, cls).as_view())
 
 
-class StreamWatchListUpdateView(LoginRequiredMixin, django.views.generic.detail.DetailView):
+class ListUpdateView(LoginRequiredMixin, django.views.generic.detail.DetailView):
     template_name = 'dataloaderinterface/manage_streamwatch.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
@@ -30,10 +30,10 @@ class StreamWatchListUpdateView(LoginRequiredMixin, django.views.generic.detail.
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise response.Http404
-        return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         sampling_feature_code = self.kwargs[self.slug_field]
         assessments = models.samplingfeature_assessments(sampling_feature_code)
