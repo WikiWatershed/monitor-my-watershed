@@ -18,8 +18,7 @@
                         StreamWatch Assessment Details at 
                         <a href="{% url 'site_detail' sampling_feature_code %}"
                            style="color: inherit;">
-                            {% comment %} {{ streamwatch.site_registration.sampling_feature_name }} {% endcomment %}
-                            {{ streamwatch.sampling_feature_name }}
+                            {{ sampling_feature_code }}
                         </a>
                     </div>
                 </div>
@@ -27,13 +26,13 @@
 
             <div class="buttons-toolbar row">
                 <div class="col-12 text-right">
-                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code streamwatch.action_id %}"
+                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code action_id %}"
                        class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         <i class="material-icons center-icon">cloud_download</i> Download CSV
                     </a>
 
                     {% if can_administer_site %}
-                        <a href="{% url 'streamwatch:update' sampling_feature_code streamwatch.action_id %}"
+                        <a href="{% url 'streamwatch:update' sampling_feature_code action_id %}"
                            id="btn-edit-StreamWatch-exp"
                            class="button-link mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
                             <i class="material-icons center-icon">mode_edit</i> Edit
@@ -77,7 +76,7 @@
                         <tr>
                             <td class="mdl-data-table__cell--icon"><i class="fa fa-file-o icon-blue" aria-hidden="true"></i></td>
                             <td class="mdl-data-table__cell--non-numeric label">Assessment Type(s)</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.collect_time }}</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.assessment_type }}</td>
                         </tr>
                     </table>
                     <br>

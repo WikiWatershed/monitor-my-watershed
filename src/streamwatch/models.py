@@ -6,19 +6,21 @@ from typing import Dict, Any, Iterable, Tuple, Union, List
 import sqlalchemy
 
 from odm2 import odm2datamodels
-
+from streamwatch import timeutils
 
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
 
-def variable_choice_options(variable_domain_cv:str) -> Iterable[Tuple]:
+def variable_choice_options(variable_domain_cv:str, include_blank:bool=True) -> Iterable[Tuple]:
     """Get categorical options from the variables table of the ODM2 database"""
     query = (sqlalchemy.select(odm2_models.Variables.variableid, odm2_models.Variables.variabledefinition)
             .where(odm2_models.Variables.variabletypecv == variable_domain_cv)
             .order_by(odm2_models.Variables.variableid)
         )
-    records = odm2_engine.read_query(query, output_format='records')
+    records = odm2_engine.read_query(query, output_format='records').tolist()
+    if include_blank:
+        records = [(None,'')] + records
     return records
 
 
@@ -43,9 +45,13 @@ def samplingfeature_assessments(sampling_feature_code:str) -> Dict[str,Any]:
         .where(odm2_models.Actions.methodid == 1)
         #.order_by(odm2_models.Actions.begindatetime)
         )
-    result = odm2_engine.read_query(query, output_format='dict')
-    result.append({"actionid":-999, "begindatetime": "7/27/2022"}) #add a bogus survey
-    return result
+    results = odm2_engine.read_query(query, output_format='dict')
+
+    #convert UTC time to local time
+    for result in results:
+        result['begindatetime'] = result['begindatetime'] - datetime.timedelta(hours=result['begindatetimeutcoffset'])
+
+    return results
 
 
 def delete_streamwatch_assessment(action_id:int) -> None:
@@ -68,6 +74,15 @@ def get_odm2_variables() -> Dict[int, Dict[str,Any]]:
     df = df.set_index('variableid')
     return df.to_dict(orient='index')
 
+
+def affiliation_to_person(afflication_id:int) -> str:
+    """Returns the person name and organization for a given afflication"""
+    affiliation = odm2_engine.read_object(odm2_models.Affiliations, afflication_id)
+    organization = odm2_engine.read_object(odm2_models.Organizations, affiliation['organizationid'])
+    person = odm2_engine.read_object(odm2_models.People, affiliation['personid'])
+    return f"{person['personfirstname']} {person['personlastname']} ({organization['organizationname']})"
+
+
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
 
 
@@ -88,8 +103,8 @@ class CATMeasurement:
 class _BaseFieldAdapter():
     
     QUALITY_CODE_CV =  'None'
-    PROCESSING_LEVEL = 1 #indicating raw results
-    VALUE_FIELD_NAME = '' #database field to return from read method
+    PROCESSING_LEVEL = 1 #Indicating raw results.
+    VALUE_FIELD_NAME = '' #The database field to return from read method, subclasses should implement this as class attribute.
 
     @classmethod
     def create_result(cls, feature_action_id:int, config:FieldConfig, result_type:str, variable_id:int=None) -> int:
@@ -109,11 +124,11 @@ class _BaseFieldAdapter():
         return database_record[cls.VALUE_FIELD_NAME]
 
     @classmethod
-    def get_result_records(cls, action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[Dict[str,Any]]:
+    def get_result_records(cls, feature_action_id:int, variable_id:int=None, variable_type_cv:str=None) -> List[Dict[str,Any]]:
         query = (sqlalchemy.select(odm2_models.Results)
             .join(odm2_models.FeatureActions, odm2_models.FeatureActions.featureactionid==odm2_models.Results.featureactionid)
             .join(odm2_models.Variables, odm2_models.Variables.variableid==odm2_models.Results.variableid)
-            .where(odm2_models.FeatureActions.actionid==action_id)
+            .where(odm2_models.FeatureActions.featureactionid==feature_action_id)
             )
         if variable_id: 
             query = query.where(odm2_models.Results.variableid == variable_id)
@@ -136,14 +151,18 @@ class _ChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, value)
     
     @classmethod
-    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, variable_type_cv=config.variable_identifier)
+    def update(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(feature_action_id, variable_type_cv=config.variable_identifier)
         if not result_records: 
-            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+            raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
+        if not value and result_records:
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
         odm2_engine.update_object(odm2_models.Results, result_id, {'variableid':value})   
 
 
@@ -164,24 +183,28 @@ class _MultiChoiceFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
+        if not isinstance(value,list): value = [value] 
         for selected in value:
             cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected) 
 
     @classmethod
-    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, variable_type_cv=config.variable_identifier)
+    def update(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(feature_action_id, variable_type_cv=config.variable_identifier)
         if not result_records: 
-            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+            raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
+
+        saved_results = {r['variableid']:r['resultid'] for r in result_records  }
         
-        #TODO - finish implementation
-        # general approach - two list/hashmap 
-        #   variables in result_records
-        #   variables in value argument
-        # if variable in both: do nothing
-        # if variable only in value argument create record new record
-        #       probably need mechanism to fetch parent action datetime and utc_offset
-        # if variable only in result_records: delete record
-        pass
+        if not isinstance(value, list) and value: value = [value]
+        for selected in value:
+            if int(selected) in saved_results: 
+                saved_results.pop(int(selected))
+            elif int(selected) not in saved_results:
+                cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV, selected)
+        
+        if saved_results:
+            for resultid in saved_results.values(): odm2_engine.delete_object(odm2_models.Results, resultid) 
 
 
 class _FloatFieldAdapter(_BaseFieldAdapter):
@@ -199,6 +222,7 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         measurementresult = odm2_models.MeasurementResults()
@@ -218,12 +242,23 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
         odm2_engine.create_object(measurementresultvalue)    
     
     @classmethod
-    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, config.variable_identifier)
+    def update(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(feature_action_id, config.variable_identifier)
         if not result_records: 
-            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+            raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
-        odm2_engine.update_object(odm2_models.MeasurementResultValues, result_id, {'datavalue':value})
+
+        if not value: 
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
+
+        #TODO: we should implemented an update_query method in ODM2Engine
+        query = (sqlalchemy.select(odm2_models.MeasurementResultValues)
+            .where(odm2_models.MeasurementResultValues.resultid==result_id)
+        )
+        measurement_result_value = odm2_engine.read_query(query, output_format='dict')
+        value_id = measurement_result_value[0]['valueid']
+        odm2_engine.update_object(odm2_models.MeasurementResultValues, value_id, {'datavalue':value})
 
 
 class _TextFieldAdapter(_BaseFieldAdapter):
@@ -237,6 +272,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def create(cls, value:Any, datetime:datetime.datetime, utc_offset:int, feature_action_id:int, config:FieldConfig) -> None:
+        if not value: return 
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
         
         categoricalresult = odm2_models.CategoricalResults()
@@ -252,13 +288,24 @@ class _TextFieldAdapter(_BaseFieldAdapter):
         odm2_engine.create_object(categoricalresultvalue)
     
     @classmethod
-    def update(cls, value:Any, action_id:int, config:FieldConfig) -> None:
-        result_records = cls.get_result_records(action_id, config.variable_identifier)
+    def update(cls, value:Any, feature_action_id:int, config:FieldConfig) -> None:
+        result_records = cls.get_result_records(feature_action_id, config.variable_identifier)
         if not result_records: 
-            raise KeyError(f"No result records for action_id:{action_id} and variableid:{config.variable_identifier}")
+            raise KeyError(f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}")
         result_id = result_records[0]['resultid']
-        odm2_engine.update_object(odm2_models.CategoricalResultValues, result_id, {'datavalue':value})   
 
+        if not value: 
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
+
+        #TODO: we should implemented an update_query method in ODM2Engine
+        query = (sqlalchemy.select(odm2_models.CategoricalResultValues)
+            .where(odm2_models.CategoricalResultValues.resultid==result_id)
+        )
+        categorical_result_value = odm2_engine.read_query(query, output_format='dict')
+        value_id = categorical_result_value[0]['valueid']
+        odm2_engine.update_object(odm2_models.CategoricalResultValues, value_id, {'datavalue':value})   
+        
 
 class StreamWatchODM2Adapter():
     """Adapter class for translating stream watch form data in and out of ODM2"""
@@ -284,13 +331,13 @@ class StreamWatchODM2Adapter():
         'simple_nitrate' : FieldConfig(512,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_phosphate' : FieldConfig(513,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_ph' : FieldConfig(509,_FloatFieldAdapter,385,'Liquid aqueous'),
-        #'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,0,'Liquid aqueous'),
+        'simple_salinity' : FieldConfig(511,_FloatFieldAdapter,428,'Liquid aqueous'),
         'simple_turbidity' : FieldConfig(516,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_reagent_amt' : FieldConfig(514,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_turbidity_sample_size' : FieldConfig(515,_FloatFieldAdapter,364,'Liquid aqueous'),
         'simple_water_temperature' : FieldConfig(508,_FloatFieldAdapter,362,'Liquid aqueous'),
         'simple_woody_debris_amt' : FieldConfig('woodyDebris',_ChoiceFieldAdapter,394,'Other'),
-        'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_MultiChoiceFieldAdapter,394,'Other'),
+        'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_ChoiceFieldAdapter,394,'Other'),
         'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
@@ -340,11 +387,13 @@ class StreamWatchODM2Adapter():
         
         def create_parent_action(form_data:Dict[str,Any]) -> None:
             """Helper method to create a parent a new action StreamWatch parent action"""
+            datetime_info = cls._get_datetime_and_utcoffset(form_data)            
+
             action = odm2_models.Actions()
             action.actiontypecv = cls.PARENT_ACTION_TYPE_CV
             action.methodid = cls.ROOT_METHOD_ID
-            action.begindatetime = datetime.datetime.now()
-            action.begindatetimeutcoffset = -5
+            action.begindatetime = datetime_info[0]
+            action.begindatetimeutcoffset = datetime_info[1] 
             action.actiondescription = ','.join(form_data['assessment_type'])
 
             action.actionid = odm2_engine.create_object(action)
@@ -357,11 +406,11 @@ class StreamWatchODM2Adapter():
             actionby.isactionlead = is_lead
             odm2_engine.create_object(actionby)
 
+
         parent_action = create_parent_action(form_data)
         instance = StreamWatchODM2Adapter(parent_action.actionid)
         instance._attributes = form_data    
         feature_action_id = instance._create_feature_action(instance.action_id, form_data['sampling_feature_id']) 
-        #TODO - fix investigator fields. They need to return affiliation_id not an affliation object
         create_investigator(instance.action_id, form_data['investigator1'].affiliation_id, True)
         if form_data['investigator2'] is not None:
             create_investigator(instance.action_id, form_data['investigator2'].affiliation_id, False)
@@ -423,9 +472,10 @@ class StreamWatchODM2Adapter():
         self._attributes['assessment_type'] = [] 
         if action['actiondescription']:
             self._attributes['assessment_type'] = action['actiondescription'].split(',')
-        #TODO: update based on AKA datetime logic
-        self._attributes['collect_date'] = datetime.datetime.now().date()
-        self._attributes['collect_time'] = datetime.datetime.now().time()
+        
+        action_datetime_local = action['begindatetime'] - datetime.timedelta(hours=action['begindatetimeutcoffset'])
+        self._attributes['collect_date'] = action_datetime_local.date()
+        self._attributes['collect_time'] = action_datetime_local.time() 
 
         query = (sqlalchemy.select(odm2_models.ActionBy)
             .where(odm2_models.ActionBy.actionid == self.action_id)
@@ -448,6 +498,21 @@ class StreamWatchODM2Adapter():
             })
         return odm2_engine.create_object(featureaction)
 
+    @classmethod
+    def _get_datetime_and_utcoffset(cls, form_data:Dict[str,Any]) -> Tuple[datetime.datetime, int]:
+        """Helper function to format datatime and utcoffset based on form provided values"""
+        date = form_data['collect_date']
+        time = form_data['collect_time']
+        timezone = form_data['collect_tz']
+
+        if date is None: date = datetime.datetime.now().date()
+        if time is None: time = datetime.time(0,0)
+        utc_offset = timeutils.get_utcoffset(timezone)
+        datetime_combined = datetime.datetime.combine(date, time)
+        datetime_combined = datetime_combined + datetime.timedelta(hours=utc_offset[0])
+        return datetime_combined, utc_offset[0]
+
+
     def to_dict(self, string_format:bool=False) -> Dict[str,Any]:
         """Return attributes as dictionary with form fields mapped as keys and user inputs as values
         
@@ -469,6 +534,12 @@ class StreamWatchODM2Adapter():
             config = self.PARAMETER_CROSSWALK[key] 
             if config.adapter_class is _ChoiceFieldAdapter: data[key] = variables[value]['variabledefinition']
             elif config.adapter_class is _MultiChoiceFieldAdapter: data[key] = [variables[x]['variabledefinition'] for x in value]
+
+        if data['investigator1']: 
+            data['investigator1'] = affiliation_to_person(data['investigator1'])
+        if data['investigator2']: 
+            data['investigator2'] = affiliation_to_person(data['investigator2'])
+
         return data
 
     def update_from_dict(self, form_data:Dict[str,Any]) -> None:
@@ -488,46 +559,73 @@ class StreamWatchODM2Adapter():
             .where(odm2_models.FeatureActions.actionid==parent_action['actionid'])
         )
         feature_action = odm2_engine.read_query(query,output_format='dict')
+        feature_action_id = feature_action[0]['featureactionid']
         for key, value in form_data.items():
             if key not in self.PARAMETER_CROSSWALK: continue
+            
             config = self.PARAMETER_CROSSWALK[key]
-            if key in self._attributes:
-                config.adapter_class.update(
+            if key not in self._attributes:
+                config.adapter_class.create(
                     value, 
-                    parent_action['actionid'], 
+                    parent_action['begindatetime'],
+                    parent_action['begindatetimeutcoffset'],
+                    feature_action_id, 
                     config,
                 )
                 continue
-            config.adapter_class.create(
-                value, 
-                parent_action['begindatetime'],
-                parent_action['begindatetimeutcoffset'],
-                feature_action[0]['featureactionid'], 
-                config,
-            )
+            if value != self._attributes[key]:
+                config.adapter_class.update(
+                    value, 
+                    feature_action_id, 
+                    config,
+                )
+                continue
         
     def _update_special_cases(self, form_data:Dict[str,Any]) -> None:
         """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""
         if (form_data['collect_date'] != self._attributes['collect_date'] 
             or form_data['collect_time'] != self._attributes['collect_time']
         ):
-            #TODO update begindatetime and begindatetimeutcoffset
-            pass
+            datetime_info = self._get_datetime_and_utcoffset(form_data)
+            odm2_engine.update_object(
+                odm2_models.Actions, 
+                self.action_id, 
+                {
+                    'begindatetime': datetime_info[0],
+                    'begindatetimeutcoffset': datetime_info[1],
+                }
+            )
 
         if form_data['assessment_type'] != self._attributes['assessment_type']:
             odm2_engine.update_object(
-                odm2_models.Action, 
+                odm2_models.Actions, 
                 self.action_id, 
                 {'actiondescription': ','.join(form_data['assessment_type'])}
             )      
 
+        def get_actionby_bridgeid(action_id:int, lead:bool=True) -> List[Dict[str,Any]]:
+            query = (sqlalchemy.select(odm2_models.ActionBy.bridgeid)
+                .where(odm2_models.ActionBy.actionid == action_id)
+                .where(odm2_models.ActionBy.isactionlead == lead)
+                )
+            records = odm2_engine.read_query(query, output_format='dict')
+            return records[0]['bridgeid']
+
         if form_data['investigator1'] != self._attributes['investigator1']:
-            #TODO method to update actionby
-            pass
+            bridge_id = get_actionby_bridgeid(self.action_id, True)
+            odm2_engine.update_object(odm2_models.ActionBy, bridge_id, {'affiliationid':form_data['investigator1'].affiliation_id})
 
         if form_data['investigator2'] != self._attributes['investigator2']:
-            #TODO method to update actionby
-            #note need to check if this is blank
-            #and possibly issue delete query
-            pass
+            if form_data['investigator2'] and self._attributes['investigator2']:
+                bridge_id = get_actionby_bridgeid(self.action_id, False)
+                odm2_engine.update_object(odm2_models.ActionBy, bridge_id, {'affiliationid':form_data['investigator2'].affiliation_id})
+            elif form_data['investigator2'] and not self._attributes['investigator2']:
+                action_by = odm2_models.ActionBy()
+                action_by.actionid = self.action_id
+                action_by.affiliationid = form_data['investigator2'].affiliation_id 
+                action_by.isactionlead = False
+                odm2_engine.create_object(action_by)
+            elif not form_data['investigator2'] and self._attributes['investigator2']:
+                bridge_id = get_actionby_bridgeid(self.action_id, False)
+                odm2_engine.delete_object(odm2_models.ActionBy, bridge_id)
 

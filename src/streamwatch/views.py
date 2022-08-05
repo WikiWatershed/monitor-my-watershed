@@ -1,20 +1,18 @@
-from multiprocessing import context
-from dataloaderinterface.models import SiteRegistration
-from django.views.generic.edit import UpdateView, CreateView, DeleteView, FormView, BaseDetailView
-from django.views.generic.detail import DetailView
+import django
 from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
 from django.http import response
 from django.contrib.auth.decorators import login_required
-import django
-
 from formtools.wizard.views import SessionWizardView
-from streamwatch import forms 
-from streamwatch import models
 
-from typing import List
-import csv
 import datetime
+import csv
+from typing import List
+
+from dataloaderinterface.models import SiteRegistration
+from streamwatch import models
+from streamwatch import forms
+
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -22,7 +20,7 @@ class LoginRequiredMixin(object):
         return login_required(super(LoginRequiredMixin, cls).as_view())
 
 
-class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
+class ListUpdateView(LoginRequiredMixin, django.views.generic.detail.DetailView):
     template_name = 'dataloaderinterface/manage_streamwatch.html'
     model = SiteRegistration
     slug_field = 'sampling_feature_code'
@@ -32,15 +30,16 @@ class StreamWatchListUpdateView(LoginRequiredMixin, DetailView):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         if request.user.is_authenticated and not request.user.can_administer_site(site):
             raise response.Http404
-        return super(StreamWatchListUpdateView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        context = super(StreamWatchListUpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         sampling_feature_code = self.kwargs[self.slug_field]
-        surveys = models.samplingfeature_assessments(sampling_feature_code)
-        context['streamwatchsurveys'] = surveys
+        assessments = models.samplingfeature_assessments(sampling_feature_code)
+        context['streamwatchsurveys'] = assessments
         return context
+
 
 def condition_cat(wizard):
     setup_data = wizard.get_cleaned_data_for_step('setup')
@@ -48,22 +47,24 @@ def condition_cat(wizard):
         return 'chemical' in setup_data['assessment_type']
     return True
 
+
 def condition_school(wizard):
     setup_data = wizard.get_cleaned_data_for_step('setup')
     if setup_data is not None:
         return 'school' in setup_data['assessment_type']
     return True
 
+
 class CreateView(SessionWizardView):
     form_list = [
         ('setup',forms.SetupForm), 
         ('conditions',forms.VisualAssessmentForm),
-        ('simplecat',forms.SimpleWaterQualityForm),
-        ('school',forms.SimpleHabitatAssessmentForm),
+        ('simplehabitat',forms.SimpleHabitatAssessmentForm),
+        ('simplewaterquality',forms.SimpleWaterQualityForm),        
     ]
     condition_dict = {
-        'simplecat': condition_school,
-        'school': condition_school
+        'simplewaterquality': condition_school,
+        'simplehabitat': condition_school
     }
     
     template_name = 'streamwatch/streamwatch_wizard.html'
@@ -87,6 +88,7 @@ class CreateView(SessionWizardView):
 
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
+
 class UpdateView(CreateView):
 
     PRIMARY_KEY_FIELD = 'action_id'
@@ -96,9 +98,10 @@ class UpdateView(CreateView):
             action_id = int(kwargs[self.PRIMARY_KEY_FIELD])
             adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
             form_data = adapter.to_dict()
-            self.initial_dict['simplecat'] = form_data
             self.initial_dict['setup'] = form_data
             self.initial_dict['conditions'] = form_data
+            self.initial_dict['simplewaterquality'] = form_data
+            self.initial_dict['simplehabitat'] = form_data
         
         return super().get(request, *args, **kwargs)
 
@@ -124,7 +127,7 @@ class UpdateView(CreateView):
         return redirect(reverse('streamwatches', kwargs={self.slug_field: self.kwargs[self.slug_field]}))
 
     
-class StreamWatchDetailView(DetailView):
+class DetailView(django.views.generic.detail.DetailView):
     template_name = 'streamwatch/streamwatch_detail.html'
     slug_field = 'sampling_feature_code'
     context_object_name ='streamwatch'
@@ -136,17 +139,18 @@ class StreamWatchDetailView(DetailView):
         return data
     
     def get_context_data(self, **kwargs):
-        context = super(StreamWatchDetailView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
 
         registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         user = self.request.user
         context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
         context['is_site_owner'] = self.request.user == registration.django_user
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
+        context['action_id'] = int(self.kwargs['pk'])
         return context
         
 
-class DeleteView(LoginRequiredMixin, DeleteView):
+class DeleteView(LoginRequiredMixin, django.views.generic.edit.DeleteView):
     slug_field = 'sampling_feature_code'
 
     def post(self, request, *args, **kwargs):
@@ -154,10 +158,9 @@ class DeleteView(LoginRequiredMixin, DeleteView):
         models.delete_streamwatch_assessment(feature_action_id) 
         return HttpResponse('Assessment deleted successfully', status=202)
 
-# add a streamwatch meas to CAT assessment
 
 parameter_formset=django.forms.formset_factory(forms.WaterQualityParametersForm, extra=4)
-class StreamWatchCreateMeasurementView(FormView):
+class StreamWatchCreateMeasurementView(django.views.generic.edit.FormView):
     form_class = forms.WaterQualityForm
     template_name = 'streamwatch/streamwatch_sensor.html'
     slug_field = 'sampling_feature_code'
@@ -199,6 +202,7 @@ class StreamWatchCreateMeasurementView(FormView):
         else:
             
             return self.form_invalid(form, parameter_forms)
+
 
 def download_StreamWatch_csv(request, sampling_feature_code, pk):
     """
