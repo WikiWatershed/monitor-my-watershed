@@ -71,7 +71,7 @@ class SetupForm(forms.Form):
     collect_tz = forms.ChoiceField(
         required=False,
         label='Timezone',
-        choices=[(None,'')] + timeutils.make_tz_tuple_list(timeutils.tz_key_shortlist, datetime(2022,1,1)),   
+        choices=[(None,'')] + timeutils.make_tz_tuple_list(timeutils.tz_key_shortlist, datetime.datetime(2022,1,1)),   
         initial='US/Eastern',
     )
     assessment_type = forms.MultipleChoiceField(
