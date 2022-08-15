@@ -11,6 +11,8 @@ from streamwatch import timeutils
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
+STREAMWATCH_METHOD_ID = 1
+
 
 def variable_choice_options(variable_domain_cv:str, include_blank:bool=True) -> Iterable[Tuple]:
     """Get categorical options from the variables table of the ODM2 database"""
@@ -81,6 +83,32 @@ def affiliation_to_person(afflication_id:int) -> str:
     organization = odm2_engine.read_object(odm2_models.Organizations, affiliation['organizationid'])
     person = odm2_engine.read_object(odm2_models.People, affiliation['personid'])
     return f"{person['personfirstname']} {person['personlastname']} ({organization['organizationname']})"
+
+
+def get_assessment_summary_information(sampling_feature_code:str) -> dict[str,Any]:
+    """Returns StreamWatch assessment information for a given sampling feature code"""
+    ASSESSMENT_TYPES = ['school','chemical','biological','baterial']
+    
+    summary = {t:0 for t in ASSESSMENT_TYPES}
+    summary['most_recent'] = None
+    
+    sampling_feature_id = sampling_feature_code_to_id(sampling_feature_code)
+    query = (sqlalchemy.select(odm2_models.Actions)
+        .join(odm2_models.FeatureActions, odm2_models.FeatureActions.actionid==odm2_models.Actions.actionid)
+        .where(odm2_models.FeatureActions.samplingfeatureid==sampling_feature_id)
+        .where(odm2_models.Actions.methodid==STREAMWATCH_METHOD_ID)
+        .order_by(odm2_models.Actions.begindatetime)
+        )
+    assessments = odm2_engine.read_query(query, output_format='dict', orient='records')
+    
+    if not assessments: return summary 
+    assessment_datetime = assessments[0]['begindatetime'] + datetime.timedelta(hours=assessments[0]['begindatetimeutcoffset'])
+    summary['most_recent'] = assessment_datetime 
+    for assessment in assessments:
+        for assessment_type in ASSESSMENT_TYPES:
+            if assessment_type in str(assessment['actiondescription']): 
+                summary[assessment_type] += 1
+    return summary
 
 
 FieldConfig = namedtuple('FieldConfig', ['variable_identifier','adapter_class','units','medium'])
@@ -310,7 +338,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 class StreamWatchODM2Adapter():
     """Adapter class for translating stream watch form data in and out of ODM2"""
 
-    ROOT_METHOD_ID = 1
+    ROOT_METHOD_ID = STREAMWATCH_METHOD_ID
     PARENT_ACTION_TYPE_CV = 'Field activity'
     VARIABLE_CODE = 'variableid'
     VARIABLE_TYPE = 'variabletypecv'
