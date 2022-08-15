@@ -1529,3 +1529,13 @@ i.file-icon {
 .block-label {
     color: #66CCCC
 }
+
+/* StreamWatch Site Detail Summary Table */
+.streamwatch-site-summary .mdl-data-table th{
+    text-align: center;
+}
+
+.streamwatch-site-summary .mdl-data-table td{
+    text-align: center;
+}
+

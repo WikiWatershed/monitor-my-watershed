@@ -87,7 +87,7 @@ def affiliation_to_person(afflication_id:int) -> str:
 
 def get_assessment_summary_information(sampling_feature_code:str) -> dict[str,Any]:
     """Returns StreamWatch assessment information for a given sampling feature code"""
-    ASSESSMENT_TYPES = ['school','chemical','biological','baterial']
+    ASSESSMENT_TYPES = ['school','chemical','biological','bacterial']
     
     summary = {t:0 for t in ASSESSMENT_TYPES}
     summary['most_recent'] = None

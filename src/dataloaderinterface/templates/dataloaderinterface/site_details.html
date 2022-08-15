@@ -557,34 +557,26 @@
                     {% endif %}
                 </div>
 
-                <div class="col-12">
-                    {% if leafpacks %}
-                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover">
+                <div class="col-12 streamwatch-site-summary">
+                    {% if streamwatch %}
+                        <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover" id="streamwatch-site-summary">
                             <thead>
-                            <tr>                               
-                                <th class="mdl-data-table__cell--non-numeric">Number of StreamWatch Schools Assessments</th>
-                                <th class="mdl-data-table__cell--non-numeric">Number of CAT Assessments</th>
-                                <th class="mdl-data-table__cell--non-numeric">Number of BAT Assessments</th>
-                                <th class="mdl-data-table__cell--non-numeric">Number of BACT Assessments</th>
-                                <th class="mdl-data-table__cell--non-numeric">Most Recent Assessment</th>
-                            </tr>
+                                <tr>                               
+                                    <th>Number of StreamWatch Schools Assessments</th>
+                                    <th>Number of CAT Assessments</th>
+                                    <th>Number of BAT Assessments</th>
+                                    <th>Number of BACT Assessments</th>
+                                    <th>Most Recent Assessment</th>
+                                </tr>
                             </thead>
                             <tbody>
-                            {% comment %} {% for leafpack in leafpacks %}
-                                <tr>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ leafpack.placement_date }}</td>
-                                    <td>{{ leafpack.taxon_count }}</td>
-                                    <td>{{ leafpack.PTI_score|floatformat:0 }}</td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ leafpack.PollutionToleranceIndexRating }}</td>
-                                    <td>{{ leafpack.percent_EPT|floatformat:2 }}%</td>
-                                    <td class="mdl-data-table__cell--non-numeric">
-                                        <a class="mdl-button mdl-js-button button-link mdl-button--primary"
-                                           href="{% url 'leafpack:view' site.sampling_feature.sampling_feature_code leafpack.id %}">
-                                            View Details
-                                        </a>
-                                    </td>
+                                <tr>                               
+                                    <td class="streamwatch-site-summary">{{ streamwatch.school }}</td>
+                                    <td >{{ streamwatch.chemical }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.biological }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.bacterial }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.most_recent }}</td>
                                 </tr>
-                            {% endfor %} {% endcomment %}
                             </tbody>
                         </table>
                     {% else %}
