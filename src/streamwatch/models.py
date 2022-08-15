@@ -97,7 +97,7 @@ def get_assessment_summary_information(sampling_feature_code:str) -> dict[str,An
         .join(odm2_models.FeatureActions, odm2_models.FeatureActions.actionid==odm2_models.Actions.actionid)
         .where(odm2_models.FeatureActions.samplingfeatureid==sampling_feature_id)
         .where(odm2_models.Actions.methodid==STREAMWATCH_METHOD_ID)
-        .order_by(odm2_models.Actions.begindatetime)
+        .order_by(sqlalchemy.desc(odm2_models.Actions.begindatetime))
         )
     assessments = odm2_engine.read_query(query, output_format='dict', orient='records')
     
