@@ -154,6 +154,7 @@
                         </tr>
                     </table>
                     <br>
+                    {% if 'biological' in streamwatch.assessment_type %}
                     <h6 class="title">Flow Measurements</h6>
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
@@ -200,8 +201,10 @@
                         </tr>
                     </table>                    
                     <br>
+                    {% endif%}
                 </div>
 
+                {% if 'biological' in streamwatch.assessment_type %}
                 <div class="col-sm-12 col-md-6">
                     <h6 class="title">Detailed Habitat Assessment</h6>
                     <hr class="dotted">
@@ -295,6 +298,7 @@
                         </tr>
                     </table>
                 </div>
+                {% endif %}
                 
             </div>
 
