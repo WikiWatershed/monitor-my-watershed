@@ -13,7 +13,7 @@
     <div class="ribbon-container">
         <div class="container main-content ribbon-content mdl-color--white mdl-shadow--4dp">
             <div class="page-title">Manage StreamWatch Assessments at  
-                <a id="sampling_feature_code" sampling_feature_code="{{ siteregistration.sampling_feature_code }}"  style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
+                <a id="sampling_feature_code" sampling_feature_code="{{ siteregistration.sampling_feature_code|urlencode }}"  style="color: rgb(4, 138, 138);" href="{% autoescape on %}{% url 'site_detail' siteregistration.sampling_feature_code %}{% endautoescape %}">
                 {{ siteregistration.sampling_feature_code }}
                 </a>
             </div>
@@ -75,7 +75,7 @@
                                 {% else %}
                                 <tr class="no-experiments-row bg-white">
                                     <td colspan="6" class="text-center">
-                                        No macroinvertebrate data have been added to this site.
+                                        No assessments have been recorded at this site.
                                     </td>
                                 </tr>
                                 {% endif %}

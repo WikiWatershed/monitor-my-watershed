@@ -149,11 +149,16 @@
                             <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_woody_debris_type|default:"Unknown" }}</td>
                         </tr>
                         <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Tree Canopy</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_tree_canopy|default:"Unknown" }}</td>
+                        </tr>
+                        <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Land Use Characteristics</td>
                             <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_land_use|default:"Unknown" }}</td>
                         </tr>
                     </table>
                     <br>
+                    {% if 'biological' in streamwatch.assessment_type %}
                     <h6 class="title">Flow Measurements</h6>
                     <hr class="dotted">
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
@@ -200,8 +205,10 @@
                         </tr>
                     </table>                    
                     <br>
+                    {% endif%}
                 </div>
 
+                {% if 'biological' in streamwatch.assessment_type %}
                 <div class="col-sm-12 col-md-6">
                     <h6 class="title">Detailed Habitat Assessment</h6>
                     <hr class="dotted">
@@ -295,6 +302,7 @@
                         </tr>
                     </table>
                 </div>
+                {% endif %}
                 
             </div>
 

@@ -28,6 +28,7 @@ from django.core.handlers.wsgi import WSGIRequest
 import json
 from django.http import HttpResponse, JsonResponse
 from typing import Union
+import streamwatch
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -128,6 +129,7 @@ class SiteDetailView(DetailView):
         context['is_site_owner'] = self.request.user == self.object.django_user
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
+        context['streamwatch'] = streamwatch.models.get_assessment_summary_information(self.kwargs[self.slug_field])
 
         try:
             context["hydroshare_account"] = self.request.user.hydroshare_account
