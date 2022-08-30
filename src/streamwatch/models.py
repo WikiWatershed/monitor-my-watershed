@@ -354,7 +354,7 @@ class StreamWatchODM2Adapter():
         'aquatic_veg_amount' : FieldConfig('aquaticVegetation',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'aquatic_veg_type' : FieldConfig('aquaticVegetationType',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'site_observation' : FieldConfig(540,_TextFieldAdapter,394,'Not applicable'),
-        'simple_air_temperature' : FieldConfig(542,_FloatFieldAdapter,362,'Air'),
+        'simple_air_temperature' : FieldConfig(541,_FloatFieldAdapter,362,'Air'),
         'simple_dissolved_oxygen' : FieldConfig(544,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_nitrate' : FieldConfig(546,_FloatFieldAdapter,404,'Liquid aqueous'),
         'simple_phosphate' : FieldConfig(547,_FloatFieldAdapter,404,'Liquid aqueous'),
