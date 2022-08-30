@@ -366,6 +366,7 @@ class StreamWatchODM2Adapter():
         'simple_water_temperature' : FieldConfig(542,_FloatFieldAdapter,362,'Liquid aqueous'),
         'simple_woody_debris_amt' : FieldConfig('woodyDebris',_ChoiceFieldAdapter,394,'Other'),
         'simple_woody_debris_type' : FieldConfig('woodyDebrisType',_ChoiceFieldAdapter,394,'Other'),
+        'simple_tree_canopy' : FieldConfig('treeCanopy',_ChoiceFieldAdapter,394,'Other'),
         'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
