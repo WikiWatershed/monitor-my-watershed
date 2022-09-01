@@ -36,9 +36,10 @@ class SetupForm(forms.Form):
     
     ASSESSMENT_TYPE_CHOICES = (
             ('school', 'StreamWatch Schools'),
-            ('chemical', 'Chemical Action Team'), 
-            ('biological', 'Biological Action Team'), 
-            ('baterial', 'Baterial Action Team'),
+            #PRT - disabled for the time being until these forms are fully implemented
+            #('chemical', 'Chemical Action Team'), 
+            #('biological', 'Biological Action Team'), 
+            #('baterial', 'Baterial Action Team'),
         )
 
     
@@ -81,7 +82,7 @@ class SetupForm(forms.Form):
     )
     assessment_type = forms.MultipleChoiceField(
         widget=MDLCheckboxSelectMultiple,
-        label='Activity type(s)',
+        label='Assessment type(s)',
         required=True,
         choices = ASSESSMENT_TYPE_CHOICES)    
 
@@ -123,12 +124,12 @@ class VisualAssessmentForm(forms.Form):
         coerce=int,
         choices= models.variable_choice_options('waterOdor', False),
     )
-    turbidity_obs = forms.TypedChoiceField(
+    clarity = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,
-        label='Turbidity',
+        label='Clarity',
         coerce=int,
-        choices= models.variable_choice_options('turbidity'),
+        choices= models.variable_choice_options('clarity'),
         initial='1'
     )
     water_movement = forms.TypedChoiceField(
