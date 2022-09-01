@@ -370,7 +370,7 @@ class StreamWatchODM2Adapter():
         'simple_land_use' : FieldConfig('landUse',_MultiChoiceFieldAdapter,394,'Other'),
         'surface_coating' : FieldConfig('surfaceCoating',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
         'time_since_last_precip' : FieldConfig('precipitation',_ChoiceFieldAdapter,394,'Other'),
-        'turbidity_obs' : FieldConfig('turbidity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
+        'clarity' : FieldConfig('clarity',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_color' : FieldConfig('waterColor',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_movement' : FieldConfig('waterMovement',_ChoiceFieldAdapter,394,'Liquid aqueous'),
         'water_odor' : FieldConfig('waterOdor',_MultiChoiceFieldAdapter,394,'Liquid aqueous'),
@@ -562,12 +562,21 @@ class StreamWatchODM2Adapter():
             if key not in self.PARAMETER_CROSSWALK: continue
             config = self.PARAMETER_CROSSWALK[key] 
             if config.adapter_class is _ChoiceFieldAdapter: data[key] = variables[value]['variabledefinition']
-            elif config.adapter_class is _MultiChoiceFieldAdapter: data[key] = [variables[x]['variabledefinition'] for x in value]
+            elif config.adapter_class is _MultiChoiceFieldAdapter: data[key] = ', '.join([variables[x]['variabledefinition'] for x in value])
 
         if data['investigator1']: 
             data['investigator1'] = affiliation_to_person(data['investigator1'])
         if data['investigator2']: 
             data['investigator2'] = affiliation_to_person(data['investigator2'])
+
+        if data['assessment_type']:
+            assessment_types = []
+            for a_type in data['assessment_type']:
+                if a_type == 'school': assessment_types.append('StreamWatch Schools')  
+                elif a_type == 'chemical': assessment_types.append('Chemical Action Team')  
+                elif a_type == 'biological': assessment_types.append('Biological Action Team')  
+                elif a_type == 'baterial': assessment_types.append('Baterial Action Team')  
+            data['assessment_type'] = ', '.join(assessment_types)
 
         return data
 
