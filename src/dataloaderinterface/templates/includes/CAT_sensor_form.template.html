@@ -1,0 +1,66 @@
+
+{% load widget_tweaks %}
+<div class="col-sm-12 col-md-6 sensor-form">
+    <div class="mdl-card mdl-shadow--2dp full-width">                                    
+        <div class="mdl-card__supporting-text default-font">
+
+            <div class="form-field col-6">
+                <label for="{{ form.test_method.id_for_label }}">{{ form.test_method.label }}</label>
+                {{ form.test_method|add_class:"form-control" }}
+            </div>
+
+            <div class="row">
+                <div class="form-field col-6">
+                    <label for="{{ form.meter.id_for_label }}">{{ form.meter.label }}</label>
+                    {{ form.meter|add_class:"form-control" }}
+                </div> 
+                <div class="form-field col-6">
+                    {{ form.calibration_date.errors }}
+                    <label for="{{ form.calibration_date.id_for_label }}">{{ form.calibration_date.label }}</label>                                               </label>
+                    {{ form.calibration_date|add_class:"form-control datepicker" }}
+                </div>
+            </div>
+            <br><br>
+
+            <div class="measurement-table">                                        
+                <div class="row">
+                    <div class="form-field col"><label>Parameter</label></div> 
+                    <div class="form-field col-3"><label>Measurement</label></div> 
+                    <div class="form-field col-4"><label>Unit</label></div> 
+                </div>
+
+                <div class="row">
+                    <div class="form-field col-5">
+                        {{ form.parameter_1|add_class:"form-control" }}
+                    </div> 
+
+                    <div class="form-field col-3">
+                        {{ form.measurement_1|add_class:"form-control" }}
+                    </div> 
+
+                    <div class="form-field col-4">
+                        {{ form.unit_1|add_class:"form-control" }}
+                    </div> 
+                </div>
+                <div class="row">
+                    <div class="form-field col-5">
+                        {{ form.parameter_2|add_class:"form-control" }}
+                    </div> 
+
+                    <div class="form-field col-3">
+                        {{ form.measurement_2|add_class:"form-control" }}
+                    </div> 
+
+                    <div class="form-field col-4">
+                        {{ form.unit_2|add_class:"form-control" }}
+                    </div> 
+                </div>
+
+            </div>
+            <br>
+
+            <button type="button" class="mdl-button mdl-button--raised mdl-button--colored">Add Parameter</button>
+
+        </div>
+    </div>
+</div>

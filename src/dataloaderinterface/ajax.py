@@ -1,18 +1,10 @@
-import json
-from tkinter import E
 from typing import List, Dict, Any
 
-#PRT - temporarily avoiding the Django models because there appears to be a mismatch for the foreign key
-#from dataloaderinterface.models import SensorMeasurement, SiteSensor 
-#SiteSensor -> odm2.results
-#SensorMeasurement -> odm2.resulttimeseries
+from odm2 import odm2datamodels
+odm2_engine = odm2datamodels.odm2_engine
+models = odm2datamodels.models
 
-from odm2 import Session
-from odm2 import engine as _db_engine
-from odm2.models.core import SamplingFeatures, Variables, FeatureActions, Units, Results
-from odm2.models.results import TimeSeriesResultValues
-
-import sqlalchemy as sqla
+import sqlalchemy
 from sqlalchemy.sql import func
 import pandas as pd
 import datetime 
@@ -26,35 +18,33 @@ def get_result_timeseries(request_data:Dict[str,Any]) -> str:
 	end_date = request_data['end_date'] if 'end_date' in request_data.keys() else None
 	if end_date: end_date = datetime.datetime.fromisoformat(end_date.rstrip('Z')) 
 
+	query = sqlalchemy.select(models.TimeSeriesResultValues.valueid, 
+				models.TimeSeriesResultValues.datavalue,
+				models.TimeSeriesResultValues.valuedatetime,
+				models.TimeSeriesResultValues.valuedatetimeutcoffset).\
+			filter(models.TimeSeriesResultValues.resultid == resultid)
+	if interval is not None:
+		filter_args = [models.TimeSeriesResultValues.resultid == resultid]
+		subquery = sqlalchemy.select(func.max(models.TimeSeriesResultValues.valuedatetime) 
+				- datetime.timedelta(days=interval)).\
+			filter(models.TimeSeriesResultValues.resultid == resultid).scalar_subquery()
+		filter_args.append(models.TimeSeriesResultValues.valuedatetime >= subquery)
+		query = query.filter(*filter_args).\
+			order_by(models.TimeSeriesResultValues.valuedatetime.asc())
+	elif start_date is not None and end_date is not None:
+		query = query.filter(models.TimeSeriesResultValues.valuedatetime >= start_date) \
+			.filter(models.TimeSeriesResultValues.valuedatetime <= end_date) \
+			.order_by(models.TimeSeriesResultValues.valuedatetime.asc())
 
-	with Session() as session:
-		filter_args = [TimeSeriesResultValues.resultid == resultid]
-		query = session.query(TimeSeriesResultValues.valueid, 
-					TimeSeriesResultValues.datavalue,
-					TimeSeriesResultValues.valuedatetime,
-					TimeSeriesResultValues.valuedatetimeutcoffset).\
-				filter(TimeSeriesResultValues.resultid == resultid)
-		if interval is not None:
-			subquery = session.query(func.max(TimeSeriesResultValues.valuedatetime) 
-					- datetime.timedelta(days=interval)).\
-				filter(TimeSeriesResultValues.resultid == resultid).scalar_subquery()
-			filter_args.append(TimeSeriesResultValues.valuedatetime >= subquery)
-			query = query.filter(*filter_args).\
-				order_by(TimeSeriesResultValues.valuedatetime.asc())
-		elif start_date is not None and end_date is not None:
-			query = query.filter(TimeSeriesResultValues.valuedatetime >= start_date) \
-				.filter(TimeSeriesResultValues.valuedatetime <= end_date) \
-				.order_by(TimeSeriesResultValues.valuedatetime.asc())
-
-		df = pd.read_sql(query.statement, session.bind)
-		df['valuedatetime'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
-		
-		return df.to_json(orient=orient, default_handler=str)
+	df = odm2_engine.read_query(query, output_format='dataframe') 
+	df['valuedatetime'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
+	return df.to_json(orient=orient, default_handler=str)
 
 def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 	sampling_feature_code = str(request_data['sampling_feature_code'])
 
-	with _db_engine.connect() as connection:
+	#TODO - we should convert this to models instead of raw SQL
+	with odm2_engine.session_maker() as session:
 		query = f"SELECT  rs.resultid, rs.resultuuid, samplingfeaturecode, "\
 			"samplingfeaturename, sampledmediumcv, un.unitsabbreviation, "\
 			"un.unitsname, variablenamecv, variablecode, zlocation, " \
@@ -67,14 +57,12 @@ def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 			f"LEFT JOIN odm2.timeseriesresults AS tsr ON tsr.resultid = rs.resultid " \
 			f"LEFT JOIN odm2.units AS untrs ON untrs.unitsid = tsr.zlocationunitsid "\
 			f"WHERE sf.samplingfeaturecode = '{sampling_feature_code}'; " 
-		df = pd.read_sql(query, connection)
+		df = pd.read_sql(query, session.bind)
 		return df.to_json(orient='records', default_handler=str)
 
 def get_sampling_features(request_data:Dict[str,Any]) -> str:
-	with Session() as session:
-		query = session.query(SamplingFeatures.samplingfeatureuuid, 
-			SamplingFeatures.samplingfeaturecode,
-			SamplingFeatures.samplingfeaturename).\
-			order_by(SamplingFeatures.samplingfeaturecode)
-		df = pd.read_sql(query.statement, session.bind)
-		return df.to_json(orient='records', default_handler=str)	
+	query = sqlalchemy.select(models.SamplingFeatures.samplingfeatureuuid, 
+		models.SamplingFeatures.samplingfeaturecode,
+		models.SamplingFeatures.samplingfeaturename).\
+		order_by(models.SamplingFeatures.samplingfeaturecode)
+	return odm2_engine.read_query(query)

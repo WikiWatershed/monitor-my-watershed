@@ -1,0 +1,46 @@
+{% load widget_tweaks %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter information about the site habitat</h5>
+    </div>
+</div>
+
+<div class="row">
+    {{ wizard.form.site_registration }}
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">
+                <div class="form-field col-6">
+                    <label for="{{ wizard.form.simple_woody_debris_amt.id_for_label }}">{{ wizard.form.simple_woody_debris_amt.label }}</label>
+                    {{ wizard.form.simple_woody_debris_amt|add_class:"form-control" }}
+                </div> 
+                <div class="form-field col-6">
+                    <label for="{{ wizard.form.simple_woody_debris_type.id_for_label }}">{{ wizard.form.simple_woody_debris_type.label }}</label>
+                    {{ wizard.form.simple_woody_debris_type|add_class:"form-control" }}
+                </div> 
+                <div class="form-field col-6">
+                    <label for="{{ wizard.form.simple_tree_canopy.id_for_label }}">{{ wizard.form.simple_tree_canopy.label }}</label>
+                    {{ wizard.form.simple_tree_canopy|add_class:"form-control" }}
+                </div>   
+            </div>
+        </div>
+        <br><br>
+    </div>
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">                              
+                <div class="form-field indent-left">
+                    <label for="{{ wizard.form.simple_land_use.id_for_label }}">{{ wizard.form.simple_land_use.label }}</label>
+                    {{ wizard.form.simple_land_use.errors }}
+                    {{ wizard.form.simple_land_use }}
+                </div>
+            </div>
+        </div>
+        <br><br>
+    </div>
+</div>
+    
+</div>

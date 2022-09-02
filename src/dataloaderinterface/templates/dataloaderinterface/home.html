@@ -168,6 +168,66 @@
                             </div>
                         </div>
                     </div>
+
+                    
+                    <br><br><br>
+
+                    <div class="row">
+                        <div class="col-sm-8 offset-sm-2 col-md-4 offset-md-2 col-8 offset-2">
+                            <br><br>
+                            <span class="img-row">
+                                <img class="img-fluid"
+                                     src="{% static 'dataloaderinterface/images/WSI_logo_blue_no_circle.png' %}"
+                                     alt="Watershed Institute logo">
+                            </span>
+                        </div>
+                        <div class="col-sm-12 col-md-4">
+                            <div class="mdl-card card-border-left" style="min-height: initial;">
+                                <div class="mdl-card__title">
+                                    Share and Explore Stream Watch Datasets
+                                </div>
+                                <div class="mdl-card__supporting-text">
+                                    <p class="lead"><a href="https://thewatershed.org/" target="_blank">The Watershed Institute</a> is a team focused on keeping water clean, safe and healthy through conservation, advocacy, science and education.
+                                    </p>
+                                </div>
+                            </div>
+                            <br><br><br>
+                        </div>
+                        <div class="col-sm-12 col-lg-8 offset-lg-2">
+                            <div class="row text-center">
+                            
+                                <div class="col-sm-12 col-md-4 text-center row-eq-height">
+                                    <div class="card">
+                                        <h3 class="step-number bg-light-teal">1</h3>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        {% if user.is_authenticated %}
+                                            <h4><a href="{% url 'site_registration' %}">Register</a>
+                                        {% else %}
+                                            <h4><a href="{% url 'login' %}">Register</a>
+                                        {% endif %}
+                                            or find your site.</h4>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 col-md-4 text-center row-eq-height">
+                                    <div class="card">
+                                        <h3 class="step-number bg-light-teal">2</h3>
+                                        <i class="fa fa-search step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4>Conduct your <a href="https://thewatershed.org/streamwatchers-gather-water-quality-data/"
+                                                            target="_blank">Stream Watch Assessment</a> and enter your data.</h4>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 col-md-4 text-center row-eq-height">
+                                    <div class="card">
+                                        <h3 class="step-number bg-light-teal">3</h3>
+                                        <i class="fa fa-map step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4><a href="{% url 'browse_sites' %}">Explore</a> your data and those contributed by others.</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </section>
             </div>
         </div>
