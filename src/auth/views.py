@@ -11,13 +11,6 @@ _SESSION_KEY = settings.SESSION_KEY
 _BACKEND_SESSION_KEY = settings.BACKEND_SESSION_KEY
 _HASH_SESSION_KEY = settings.HASH_SESSION_KEY
 
-#def login_required(view, *args, **kwargs):
-#    def authenicated(request, *args, **kwargs):
-#        user = request.user
-#        if user.is_authenticated: return view(request, *args, **kwargs)
-#        else: return redirect(login)
-#    return authenicated
-
 def login(request):
     return (redirect (settings.COGNITO_SIGNIN_URL))
 
@@ -32,7 +25,7 @@ def login_failed(request):
     """Placeholder authorization failed endpoint"""
     return render(
         request,
-        'dms_ui/login_failed.html',
+        'auth/login_failed.html',
         {
             'title':'Login Failed',
             'year':datetime.now().year,
