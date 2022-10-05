@@ -3,6 +3,7 @@ from typing import Any, Union
 from collections.abc import Mapping
 from sqlalchemy.orm import Query
 
+import odm2
 from odm2 import odm2datamodels
 models = odm2datamodels.models
 odm2_engine = odm2datamodels.odm2_engine
@@ -16,6 +17,7 @@ class ODM2User(User):
         
         # define ODM2User properties using the mapping
         instance._user_id = int(mapping['accountid'])
+        instance._cognitoid = str(mapping['cognitoid'])
         instance._username = str(mapping['username'])
         instance._isactive = bool(mapping['active'])
         instance._email = str(mapping['accountemail'])
@@ -27,7 +29,8 @@ class ODM2User(User):
     def create_new_user(cls, mapping:Mapping[str,Any]) -> "User":
         """Creates a new user in the ODM2 Accounts table using Amazon Cognito fields as the mapping"""
         user = models.Accounts()
-        user.username = mapping['sub']
+        user.cognitoid = mapping['sub']
+        user.username = mapping['preferred_username']
         user.accountfirstname = mapping['given_name']
         user.accountlastname = mapping['family_name']
         user.accountemail = mapping['email']
@@ -41,8 +44,11 @@ class ODM2User(User):
     def from_cognitoid(cls, cognitoid:str) -> Union["ODM2User", None]:
         # take cognitoid (username field) and query for account record in the ODM2 database
         accounts = models.Accounts
-        query = Query(accounts).filter(accounts.username==cognitoid)
-        user_dict = odm2_engine.read_query(query, output_format='dict', orient='records')
+        query = Query(accounts).filter(accounts.cognitoid == cognitoid)
+        try:
+            user_dict = odm2_engine.read_query(query, output_format='dict', orient='records')
+        except odm2.exceptions.ObjectNotFound as e:
+            return None
 
         # if the account exists, instantiate an ODM2User object
         if len(user_dict) > 0:
@@ -54,7 +60,10 @@ class ODM2User(User):
         """Takes a userid (accountid in ODM2) and queries for user record then returns a User instance"""
         # takes pkey for account record query accounts database table 
         accounts_model = models.Accounts
-        user_dict = odm2_engine.read_object(accounts_model, userid)
+        try:
+            user_dict = odm2_engine.read_object(accounts_model, userid)
+        except odm2.exceptions.ObjectNotFound as e:
+            return None
 
         # if user does not exist in the database, return none
         if len(user_dict) == 0:
@@ -71,9 +80,9 @@ class ODM2User(User):
     def user_id(self):
         return self._user_id
     
-    @user_id.setter
-    def user_id(self, value):
-        self._user_id = value
+    @property
+    def congitoid(self):
+        return self._congitoid
 
     @property
     def username(self):

@@ -39,6 +39,10 @@ class User(ABC):
         """Returns the user's userid (primarykey/ unique identifier used by the application)"""
 
     @property
+    def cognitoid(self):
+        """Stores the cognito unique identifier for the user account"""
+
+    @property
     def username(self):
         """Username as it should appear on application frontend"""
     
@@ -87,22 +91,33 @@ class AnonymousUser(User):
         """Returns if the user is authenticated, Always from for AnonymousUsers"""
         return False
 
+    @property
     def user_id(self):
         """Returns the user's userid (primarykey/ unique identifier used by the application)"""
         return ''
+    
+    @property
+    def cognitoid(self):
+        """Stores the cognito unique identifier for the user account"""
+        return 'Anonymous User'
 
+    @property
     def username(self):
         return "Anonymous User"
 
+    @property
     def first_name(self):
         return 'Anonymous'
 
+    @property
     def last_name(self):
         return 'User'
 
+    @property
     def email(self):
         return ''
 
+    @property
     def is_active(self):
         return False
 
