@@ -48,15 +48,16 @@ urlpatterns = [
     url(r'^' + BASE_URL + 'password-reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.PasswordResetConfirmView.as_view(), password_done_configuration, name='password_reset_confirm'),
     url(r'^' + BASE_URL + 'password-reset/completed/$', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     url(r'^' + BASE_URL + 'admin/', admin.site.urls),
-    url(r'^' + BASE_URL + 'login/$', auth_views.LoginView.as_view(), login_configuration, name='login'),
-    url(r'^' + BASE_URL + 'logout/$', logout_view, name='logout'),
+    ##url(r'^' + BASE_URL + 'login/$', auth_views.LoginView.as_view(), login_configuration, name='login'),
+    ##url(r'^' + BASE_URL + 'logout/$', logout_view, name='logout'),
     url(r'^' + BASE_URL + 'register/$', UserRegistrationView.as_view(), name='user_registration'),
     url(r'^' + BASE_URL + 'account/$', UserUpdateView.as_view(), name='user_account'),
     url(r'^' + BASE_URL + 'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^' + BASE_URL + 'hydroshare/', include('hydroshare.urls', namespace='hydroshare')),
     url(BASE_URL, include('dataloaderinterface.urls')),
     url(BASE_URL, include('dataloaderservices.urls')),
-    url(BASE_URL, include('timeseries_visualization.urls'))
+    url(BASE_URL, include('timeseries_visualization.urls')),
+    url(BASE_URL, include('auth.urls')),
 ] + static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 # if settings.DEBUG:

@@ -23,6 +23,7 @@ from .models import provenance
 from .models import results
 from .models import samplingfeatures
 from .models import simulation
+from .models import auth
 
 OUTPUT_FORMATS = ('json', 'dataframe', 'dict','records')
 
@@ -202,6 +203,7 @@ class Models:
         self._process_schema(results)        
         self._process_schema(samplingfeatures)        
         self._process_schema(simulation)         
+        self._process_schema(auth)         
 
     def _process_schema(self, schema:str) -> None:
         classes = [c for c in dir(schema) if not c.startswith('__')]
