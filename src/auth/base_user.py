@@ -1,7 +1,13 @@
 from abc import ABC
+from abc import abstractmethod
 
 from typing import Union, Any
 from collections.abc import Mapping
+
+from warnings import warn
+
+import dataloaderinterface 
+import dataloader
 
 class User(ABC):
     """Abstract Base Class for custom user implementations """
@@ -35,36 +41,77 @@ class User(ABC):
             Should be True for user's that are authenticated and False for anonymous users"""
 
     @property
-    def user_id(self):
+    def user_id(self) -> int:
         """Returns the user's userid (primarykey/ unique identifier used by the application)"""
 
     @property
-    def cognitoid(self):
+    def cognitoid(self) -> str:
         """Stores the cognito unique identifier for the user account"""
 
     @property
-    def username(self):
+    def username(self) -> str:
         """Username as it should appear on application frontend"""
     
     @property
-    def first_name(self):
+    def first_name(self) -> str:
         """User first name"""
 
     @property
-    def last_name(self):
+    def last_name(self) -> str:
         """User last name"""
 
     @property
-    def email(self):
+    def email(self) -> str:
         """User email address"""
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         """Flag to indicate if user's account is active"""
-
 
     def has_permission(self, permissions:str) -> bool:
         """Check if user has permission based on applications permissions implementation"""
+
+    #TODO: Eventually we would like to deprecate this method and remove the dataloader
+    #models, however until the rest of the codebase is refactored we should continue to support
+    #this method. Carried over from accounts.User class.
+    @abstractmethod
+    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the registration belows to the user"""
+
+    @abstractmethod
+    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
+
+    #TODO: These are legacy properties that are carried over from the django user implementation.
+    # the team should evaluate which properties need to remain and which should be gradually refactored 
+    # out and replaced.
+
+    #Hold over method to allow access to user_id through old signature
+    @property
+    def id(self) -> int:
+        warn("`id` will be deprecated, use `User.user_id`", DeprecationWarning, stacklevel=2)
+        return self.user_id 
+
+    @property
+    def affiliation_id(self) -> Union[int,None]:    
+        """"""
+
+    @property
+    def organization_code(self) -> str:
+        """"""
+
+    @property
+    def organization_name(self) -> str:
+        """"""
+
+    @property
+    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+        """"""
+    
+    @property
+    def is_staff(self) -> bool:
+        """"""
+
 
 class AnonymousUser(User):
 
@@ -125,5 +172,31 @@ class AnonymousUser(User):
         """Check if user has permission based on applications permissions implementation"""
         return False
 
+    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the registration belows to the user"""
+        return False
 
+    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
+        return False
+
+    @property
+    def affiliation_id(self) -> Union[int,None]:    
+        None
+
+    @property
+    def organization_code(self) -> str:
+        return ""
+
+    @property
+    def organization_name(self) -> str:
+        return ""
+
+    @property
+    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+        None
+    
+    @property
+    def is_staff(self) -> bool:
+        return False
 

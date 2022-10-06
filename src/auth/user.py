@@ -1,7 +1,15 @@
 from auth.base_user import User
-from typing import Any, Union
+from typing import Any
+from typing import Union
+from typing import Dict
+
 from collections.abc import Mapping
 from sqlalchemy.orm import Query
+
+import dataloaderinterface
+import dataloader
+
+from warnings import warn
 
 import odm2
 from odm2 import odm2datamodels
@@ -79,7 +87,7 @@ class ODM2User(User):
     @property
     def user_id(self):
         return self._user_id
-    
+
     @property
     def congitoid(self):
         return self._congitoid
@@ -135,6 +143,60 @@ class ODM2User(User):
         """Check if user has permission based on applications permissions implementation"""
         # return false for now
         # need to further think through permissions implementation
+        return False
+
+    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the registration belows to the user"""
+        #TODO - these are placeholder implementation. We need to add logic to actually check
+        # if the registration belongs to the user.
+        return False
+
+    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+        """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
+        #TODO - these are placeholder implementation. We need to add logic to actually check
+        # if the user can administrate the registration.
+        return False    
+
+    def _get_affiliation(self) -> Union[None,Dict]:
+        query = Query(models.Affiliations).filter(models.Affiliations.accountid == self.user_id)
+        try:
+            affiliations = odm2_engine.read_query(query, output_format='dict', orient='records')
+            first_affiliation = affiliations.values()[0]
+            return first_affiliation
+        except odm2.exceptions.ObjectNotFound as e:
+            return None
+        except IndexError as e:       
+            return None
+
+    @property
+    def affiliation_id(self) -> Union[int,None]:    
+        affiliation = self._get_affiliation()
+        if affiliation is None: return None
+        return affiliation.affiliationid
+
+    @property
+    def organization_code(self) -> str:
+        affiliation = self._get_affiliation()
+        if affiliation is None: return ""
+        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
+        return organization.organizationcode
+
+    @property
+    def organization_name(self) -> str:
+        affiliation = self._get_affiliation()
+        if affiliation is None: return ""
+        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
+        return organization.organizationname
+
+    @property
+    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+        affiliation_id = self.affiliation_id
+        if not affiliation_id: return None
+        return dataloader.models.Affiliation.objects.get(pk=self.affiliation_id)
+    
+    @property
+    def is_staff(self) -> bool:
+        #TODO: Add database field to support this check
         return False
 
 
