@@ -24,7 +24,7 @@ AWS_CLIENT_ID = settings.COGNITO_CLIENT_ID
 AWS_CLIENT_SECRET = settings.COGNITO_CLIENT_SECRET
 AWS_OAUTH_URL = settings.COGNITO_OAUTH_URL
 AWS_REDIRECT_URL = settings.COGNITO_REDIRECT_URL
-AWS_USERFIELD = 'Username'
+AWS_USERFIELD = 'sub'
 
 USER_MODEL = ODM2User
 ANONYMOUS_USER_MODEL = AnonymousUser
@@ -132,10 +132,11 @@ class CognitoBackend(BaseBackend):
         indicating no user record exists, the _create_user method will be invoked. 
 
         """
-        user = USER_MODEL.from_cognitoid(response[AWS_USERFIELD])
+        user_attributes = {list(item.values())[0]:list(item.values())[1] for item in response['UserAttributes']}
+        
+        user = USER_MODEL.from_cognitoid(user_attributes[AWS_USERFIELD])
         if user is not None: return user
 
-        user_attributes = {list(item.values())[0]:list(item.values())[1] for item in response['UserAttributes']}
         user = USER_MODEL.create_new_user(user_attributes)
         return user
 

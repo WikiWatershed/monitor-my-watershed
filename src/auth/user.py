@@ -31,6 +31,7 @@ class ODM2User(User):
         instance._email = str(mapping['accountemail'])
         instance._first_name = str(mapping['accountfirstname'])
         instance._last_name = str(mapping['accountlastname'])
+        instance._is_admin = bool(mapping['issiteadmin'])
         return instance
 
     @classmethod
@@ -44,8 +45,13 @@ class ODM2User(User):
         user.accountemail = mapping['email']
         user.active = True
         user.issiteadmin = False
-        pkey = odm2_engine.create_object(user)
-        
+
+        preserve_pkey = False
+        if 'custom:legacy_id' in mapping:
+            preserve_pkey = True
+            user.accountid = mapping['custom:legacy_id']
+
+        pkey = odm2_engine.create_object(user, preserve_pkey)
         return cls.from_userid(userid=pkey)
 
     @classmethod
@@ -161,7 +167,7 @@ class ODM2User(User):
         query = Query(models.Affiliations).filter(models.Affiliations.accountid == self.user_id)
         try:
             affiliations = odm2_engine.read_query(query, output_format='dict', orient='records')
-            first_affiliation = affiliations.values()[0]
+            first_affiliation = affiliations[0]
             return first_affiliation
         except odm2.exceptions.ObjectNotFound as e:
             return None
@@ -172,7 +178,7 @@ class ODM2User(User):
     def affiliation_id(self) -> Union[int,None]:    
         affiliation = self._get_affiliation()
         if affiliation is None: return None
-        return affiliation.affiliationid
+        return affiliation['affiliationid']
 
     @property
     def organization_code(self) -> str:
@@ -196,7 +202,6 @@ class ODM2User(User):
     
     @property
     def is_staff(self) -> bool:
-        #TODO: Add database field to support this check
-        return False
+        return self._is_admin
 
 
