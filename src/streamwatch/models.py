@@ -336,7 +336,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
         
 
 class StreamWatchODM2Adapter():
-    """Adapter class for translating stream watch form data in and out of ODM2"""
+    """Adapter class for translating streamwatch form data in and out of ODM2"""
 
     ROOT_METHOD_ID = STREAMWATCH_METHOD_ID
     PARENT_ACTION_TYPE_CV = 'Field activity'
