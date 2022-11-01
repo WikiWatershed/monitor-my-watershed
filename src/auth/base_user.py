@@ -61,6 +61,10 @@ class User(ABC):
         """User last name"""
 
     @property
+    def full_name(self) -> str:
+        return f'{self.first_name} {self.last_name}'
+
+    @property
     def email(self) -> str:
         """User email address"""
 
@@ -141,7 +145,7 @@ class AnonymousUser(User):
     @property
     def user_id(self):
         """Returns the user's userid (primarykey/ unique identifier used by the application)"""
-        return ''
+        return None
     
     @property
     def cognitoid(self):

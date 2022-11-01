@@ -327,7 +327,7 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
 
         if form.is_valid() and notify_form.is_valid():
             form.instance.affiliation_id = form.cleaned_data['affiliation_id'] or request.user.affiliation_id
-            form.instance.django_user = request.user
+            form.instance.user = request.user
             form.instance.save()
             self.object = form.save()
 
