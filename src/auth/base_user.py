@@ -79,11 +79,11 @@ class User(ABC):
     #models, however until the rest of the codebase is refactored we should continue to support
     #this method. Carried over from accounts.User class.
     @abstractmethod
-    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def owns_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
 
     @abstractmethod
-    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def can_administer_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
 
     #TODO: These are legacy properties that are carried over from the django user implementation.
@@ -176,11 +176,11 @@ class AnonymousUser(User):
         """Check if user has permission based on applications permissions implementation"""
         return False
 
-    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def owns_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
         return False
 
-    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def can_administer_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
         return False
 

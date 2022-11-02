@@ -140,7 +140,8 @@ class CognitoBackend(BaseBackend):
         user = USER_MODEL.create_new_user(user_attributes)
         return user
 
-    def init_user_from_id(self, userid:Union[None,str,int] ) -> User:
+    @classmethod
+    def init_user_from_id(cls, userid:Union[None,str,int] ) -> User:
         if not userid: return ANONYMOUS_USER_MODEL() 
         user = USER_MODEL.from_userid(userid)
         if user is not None: return(user)

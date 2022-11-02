@@ -151,13 +151,13 @@ class ODM2User(User):
         # need to further think through permissions implementation
         return False
 
-    def owns_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def owns_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
         #TODO - these are placeholder implementation. We need to add logic to actually check
         # if the registration belongs to the user.
         return False
 
-    def can_administer_site(self, registration:dataloaderinterface.models.SiteRegistration) -> bool:
+    def can_administer_site(self, registration) -> bool:
         """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
         #TODO - these are placeholder implementation. We need to add logic to actually check
         # if the user can administrate the registration.
@@ -203,5 +203,3 @@ class ODM2User(User):
     @property
     def is_staff(self) -> bool:
         return self._is_admin
-
-
