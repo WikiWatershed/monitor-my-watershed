@@ -9,6 +9,8 @@ from operator import __or__ as OR
 
 from functools import reduce
 
+import auth
+
 class Macroinvertebrate(models.Model):
     """
     :var: scientific_name: The scientific name for the macroinvertebrate (i.e. 'Ephemeroptera')

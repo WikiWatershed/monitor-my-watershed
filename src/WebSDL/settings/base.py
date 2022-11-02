@@ -45,7 +45,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
-    'accounts.apps.AccountsConfig',
+    #'accounts.apps.AccountsConfig',
     'dataloader.apps.DataloaderConfig',
     'dataloaderservices.apps.DataloaderservicesConfig',
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
@@ -197,7 +197,7 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'auth.User'
 
 #AWS Congnito
 
