@@ -13,6 +13,11 @@ from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesRe
     Unit, Medium, Organization
 from dataloaderinterface.querysets import SiteRegistrationQuerySet, SensorOutputQuerySet
 
+
+
+#TODO: replace with a different model approach as this has been deprecated
+import auth
+
 class SiteRegistration(models.Model):
     registration_id = models.AutoField(primary_key=True, db_column='RegistrationID')
     registration_token = models.CharField(max_length=64, editable=False, db_column='RegistrationToken', unique=True, default=uuid4)
@@ -21,6 +26,7 @@ class SiteRegistration(models.Model):
     deployment_date = models.DateTimeField(db_column='DeploymentDate', blank=True, null=True)
 
     django_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
+    django_user = models.ForeignKey(auth.models.Account, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
     affiliation_id = models.IntegerField(db_column='AffiliationID')
 
     person_id = models.IntegerField(db_column='PersonID', null=True)
@@ -48,8 +54,9 @@ class SiteRegistration(models.Model):
 
     site_notes = models.TextField(db_column='SiteNotes', blank=True, null=True)
 
-    followed_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_sites')
-    alert_listeners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='+', through='SiteAlert')
+    #TODO: VERIFY THIS BEHAVIOR
+    followed_by = models.ManyToManyField(auth.models.Accounts, related_name='followed_sites')
+    alert_listeners = models.ManyToManyField(auth.models.Accounts, related_name='+', through='SiteAlert')
 
     objects = SiteRegistrationQuerySet.as_manager()
 
@@ -191,7 +198,7 @@ class SiteSensor(models.Model):
 
 
 class SiteAlert(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, db_column='User', on_delete=models.CASCADE, related_name='site_alerts')
+    user = models.ForeignKey(auth.models.Account ,db_column='User', on_delete=models.CASCADE, related_name='site_alerts')
     site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', on_delete=models.CASCADE, related_name='alerts')
     last_alerted = models.DateTimeField(db_column='LastAlerted', blank=True, null=True)
     hours_threshold = models.DurationField(db_column='HoursThreshold', default=timedelta(hours=1))
