@@ -248,7 +248,8 @@ class LeafPackType(models.Model):
         db_table = 'leafpack_type'
 
     name = models.CharField(max_length=255, unique=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    #TODO: remove auth dependency on django models
+    created_by = models.ForeignKey(auth.models.Account, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.name

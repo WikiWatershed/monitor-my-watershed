@@ -25,7 +25,6 @@ class SiteRegistration(models.Model):
     registration_date = models.DateTimeField(db_column='RegistrationDate', default=datetime.utcnow)
     deployment_date = models.DateTimeField(db_column='DeploymentDate', blank=True, null=True)
 
-    django_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
     django_user = models.ForeignKey(auth.models.Account, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
     affiliation_id = models.IntegerField(db_column='AffiliationID')
 
