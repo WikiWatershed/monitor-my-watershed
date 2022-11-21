@@ -1,5 +1,5 @@
 from django.urls import path
-import auth.views as views
+import cognito.views as views
 
 urlpatterns = [
 

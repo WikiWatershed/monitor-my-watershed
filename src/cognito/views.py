@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.contrib.auth import logout as django_logout
 from django.conf import settings
-from auth.backend import CognitoBackend
+from cognito.backend import CognitoBackend
 from datetime import datetime
 
 _cognitobackend = CognitoBackend()
@@ -25,7 +25,7 @@ def login_failed(request):
     """Placeholder authorization failed endpoint"""
     return render(
         request,
-        'auth/login_failed.html',
+        'cognito/login_failed.html',
         {
             'title':'Login Failed',
             'year':datetime.now().year,

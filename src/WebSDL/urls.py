@@ -20,7 +20,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.conf.urls.static import static
 
-import auth
+import cognito
 
 #BASE_URL = settings.SITE_URL[1:]
 BASE_URL = ''
@@ -57,7 +57,7 @@ urlpatterns = [
     url(BASE_URL, include('dataloaderinterface.urls')),
     url(BASE_URL, include('dataloaderservices.urls')),
     url(BASE_URL, include('timeseries_visualization.urls')),
-    url(BASE_URL, include('auth.urls')),
+    url(BASE_URL, include('cognito.urls')),
 ] + static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
 
 # if settings.DEBUG:

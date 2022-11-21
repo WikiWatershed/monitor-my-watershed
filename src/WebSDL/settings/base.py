@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'reset_migrations',
     'timeseries_visualization',
     'formtools',
-    
+    'cognito.apps.CognitoConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +77,7 @@ MIDDLEWARE = [
     'hydroshare_util.middleware.AuthMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_cprofile_middleware.middleware.ProfilerMiddleware',
-    'auth.user_middleware.UserMiddleware',
+    'cognito.user_middleware.UserMiddleware',
 ]
 
 DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
@@ -197,7 +197,7 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
-AUTH_USER_MODEL = 'auth.User'
+#AUTH_USER_MODEL = 'cognito.User'
 
 #AWS Congnito
 

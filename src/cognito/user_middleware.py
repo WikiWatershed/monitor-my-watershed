@@ -1,4 +1,4 @@
-from auth.backend import CognitoBackend
+from cognito.backend import CognitoBackend
 from django.conf import settings
 
 _cognitobackend = CognitoBackend()

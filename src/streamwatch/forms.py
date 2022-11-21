@@ -16,11 +16,12 @@ place_holder_choices = (
         (3, 'Choice #3')
     )
 
-user_affiliations = [
-    affiliation[0]
-    for affiliation
-    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
-]
+#TODO: need replacement method
+user_affiliations = []
+#    affiliation[0]
+#    for affiliation
+#    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
+#]
 measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):

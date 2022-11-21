@@ -56,10 +56,10 @@ class SiteRegistrationQuerySet(models.QuerySet):
         ))
 
     def deployed_by(self, user_id):
-        return self.filter(django_user_id=user_id)
+        return self.filter(account_id=user_id)
 
     def followed_by(self, user_id):
-        return self.filter(followed_by__id=user_id)
+        return self.filter(followed_by__accountid=user_id)
 
 
 class SiteSensorQuerySet(models.QuerySet):
