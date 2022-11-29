@@ -179,7 +179,7 @@ class LeafPackListUpdateView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
-        if request.user.is_authenticated and not request.user.can_administer_site(site):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sample_feature_id):
             raise Http404
         return super(LeafPackListUpdateView, self).dispatch(request, *args, **kwargs)
 
@@ -198,8 +198,8 @@ class SiteDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('sites_list')
 
     def dispatch(self, request, *args, **kwargs):
-
-        if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
+        registration = self.get_object()
+        if request.user.is_authenticated and not request.user.can_administer_site(registration.sampling_feature_id):
             raise Http404
         return super(SiteDeleteView, self).dispatch(request, *args, **kwargs)
 
@@ -223,7 +223,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     object = None
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
+        registration = self.get_object()
+        if request.user.is_authenticated and not request.user.can_administer_site(registration.sampling_feature_id):
             raise Http404
 
         return super(SiteUpdateView, self).dispatch(request, *args, **kwargs)
@@ -249,7 +250,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         data = self.request.POST or {}
         context = super(SiteUpdateView, self).get_context_data()
 
-        site_alert = self.request.user.site_alerts\
+        account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+        site_alert = account.site_alerts\
             .filter(site_registration__sampling_feature_code=self.get_object().sampling_feature_code)\
             .first()
 
@@ -273,7 +275,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         if form.is_valid() and notify_form.is_valid():
             form.instance.affiliation_id = form.cleaned_data['affiliation_id'] or request.user.affiliation_id
 
-            site_alert = self.request.user.site_alerts.filter(site_registration=site_registration).first()
+            account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+            site_alert = account.site_alerts.filter(site_registration=site_registration).first()
 
             if notify_form.cleaned_data['notify'] and site_alert:
                 site_alert.hours_threshold = timedelta(hours=int(notify_form.data['hours_threshold']))

@@ -26,7 +26,11 @@ def handle_site_registration_pre_save(sender, instance, update_fields=None, **kw
         )
         instance.sampling_feature_id = sampling_feature.sampling_feature_id
 
-    user = instance.user
+    user = None
+    if hasattr(instance, 'user'): 
+        user = instance.user
+    else: 
+        user = cognito.user.ODM2User.from_userid(instance.account_id.accountid)
     affiliation = user.affiliation
     instance.account_id = cognito.models.Account.objects.get(pk=user.user_id)
     instance.person_id = -999 #PRT - deprecated the use of person with Cognito update   
