@@ -70,8 +70,9 @@ class Base():
 
 class ODM2Engine:
 
-    def __init__(self, session_maker:sqlalchemy.orm.sessionmaker) -> None:
+    def __init__(self, session_maker:sqlalchemy.orm.sessionmaker, engine:sqlalchemy.engine.Engine) -> None:
         self.session_maker = session_maker
+        self.engine = engine
 
     def read_query(self, 
             query: Union[Query, Select],
@@ -227,7 +228,7 @@ class ODM2DataModels():
         self._engine = engine
         self._session = sqlalchemy.orm.sessionmaker(self._engine)
         self._cached= False
-        self.odm2_engine: ODM2Engine = ODM2Engine(self._session)
+        self.odm2_engine: ODM2Engine = ODM2Engine(self._session, self._engine)
 
         self._model_base = self._prepare_model_base()
         self.models = Models(self._model_base)

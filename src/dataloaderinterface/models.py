@@ -25,7 +25,7 @@ class SiteRegistration(models.Model):
     registration_date = models.DateTimeField(db_column='RegistrationDate', default=datetime.utcnow)
     deployment_date = models.DateTimeField(db_column='DeploymentDate', blank=True, null=True)
 
-    account_id = models.ForeignKey(cognito.models.Account, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
+    account_id = models.ForeignKey(cognito.models.Account, on_delete=models.CASCADE, db_column='account_id', related_name='deployed_sites')
     affiliation_id = models.IntegerField(db_column='AffiliationID')
 
     person_id = models.IntegerField(db_column='PersonID', null=True)
@@ -197,7 +197,7 @@ class SiteSensor(models.Model):
 
 
 class SiteAlert(models.Model):
-    user = models.ForeignKey(cognito.models.Account ,db_column='User', on_delete=models.CASCADE, related_name='site_alerts')
+    account_id = models.ForeignKey(cognito.models.Account ,db_column='account_id', on_delete=models.CASCADE, related_name='site_alerts')
     site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', on_delete=models.CASCADE, related_name='alerts')
     last_alerted = models.DateTimeField(db_column='LastAlerted', blank=True, null=True)
     hours_threshold = models.DurationField(db_column='HoursThreshold', default=timedelta(hours=1))

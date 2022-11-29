@@ -19,6 +19,10 @@ class Account(models.Model):
         user = CognitoBackend.init_user_from_id(self.accountid)
         return user
 
+    @property
+    def full_name(self):
+        return f'{self.accountfirstname} {self.accountlastname}'
+
     class Meta:
-        db_table=f'odm2.accounts'
+        db_table=f'odm2"."accounts'
 

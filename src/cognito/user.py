@@ -151,17 +151,18 @@ class ODM2User(User):
         # need to further think through permissions implementation
         return False
 
-    def owns_site(self, registration) -> bool:
+    def owns_site(self, sampling_feature_id:int) -> bool:
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
-        #TODO - these are placeholder implementation. We need to add logic to actually check
-        # if the registration belongs to the user.
+        #TODO 
+        query = "SELECT * FROM dataloaderinterface_siteregistration WHERE \"SamplingFeatureID\" = '%s';"
+        with odm2_engine.engine.connect() as connection:
+            site_registration = connection.execute(query, (sampling_feature_id)).fetchall()
+            return site_registration[0]['account_id'] == self.user_id
         return False
 
-    def can_administer_site(self, registration) -> bool:
+    def can_administer_site(self, sampling_feature_id:int) -> bool:
         """Given a dataloader Registration instance, checks if the user is able to administer the registration"""
-        #TODO - these are placeholder implementation. We need to add logic to actually check
-        # if the user can administrate the registration.
-        return False    
+        return self.is_staff or self.owns_site(sampling_feature_id)
 
     def _get_affiliation(self) -> Union[None,Dict]:
         query = Query(models.Affiliations).filter(models.Affiliations.accountid == self.user_id)

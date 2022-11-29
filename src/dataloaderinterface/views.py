@@ -30,6 +30,8 @@ from django.http import HttpResponse, JsonResponse
 from typing import Union
 import streamwatch
 
+import cognito
+
 class LoginRequiredMixin(object):
     @classmethod
     def as_view(cls):
@@ -124,9 +126,9 @@ class SiteDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
         context['data_upload_form'] = SensorDataForm()
-        context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
-        context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
-        context['is_site_owner'] = self.request.user == self.object.django_user
+        context['is_followed'] = self.object.followed_by.filter(accountid=self.request.user.id).exists()
+        context['can_administer_site'] = self.request.user.can_administer_site(self.object.sampling_feature_id)
+        context['is_site_owner'] = self.request.user.owns_site(self.object.sampling_feature_id) 
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
         context['streamwatch'] = streamwatch.models.get_assessment_summary_information(self.kwargs[self.slug_field])
@@ -332,7 +334,8 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
             self.object = form.save()
 
             if notify_form.cleaned_data['notify']:
-                self.request.user.site_alerts.create(
+                account = cognito.models.Account.objects.get(pk=request.user.user_id)
+                account.site_alerts.create(
                     site_registration=form.instance,
                     hours_threshold=timedelta(hours=int(notify_form.data['hours_threshold']))
                 )
