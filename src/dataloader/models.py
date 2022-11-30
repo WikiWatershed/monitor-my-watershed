@@ -469,7 +469,7 @@ class Affiliation(ODM2Model):
         return 'Primary contact' if self.is_primary_organization_contact else 'Secondary contact'
 
     def __str__(self):
-        return '%s - %s' % (self.account_id, self.organization)
+        return '%s - %s' % (self.account_id.full_name, self.organization)
 
     def __repr__(self):
         return "<Affiliation('%s', Organization['%s', '%s'], '%s', '%s', '%s')>" % (

@@ -9,8 +9,6 @@ from sqlalchemy.orm import Query
 import dataloaderinterface
 import dataloader
 
-from warnings import warn
-
 import odm2
 from odm2 import odm2datamodels
 models = odm2datamodels.models
@@ -37,6 +35,15 @@ class ODM2User(User):
     @classmethod
     def create_new_user(cls, mapping:Mapping[str,Any]) -> "User":
         """Creates a new user in the ODM2 Accounts table using Amazon Cognito fields as the mapping"""
+        #If there is a legacy_id in cognito this means that there is an existing account
+        #which will have been carried over to the account table. This means we just need 
+        #to update the record
+        if 'custom:legacy_id' in mapping:
+            user = odm2_engine.read_object(models.Accounts,mapping['custom:legacy_id'])
+            user.cognitoid = mapping['sub']
+            odm2_engine.update_object(user)
+            return cls.from_userid(user.accountid)
+        
         user = models.Accounts()
         user.cognitoid = mapping['sub']
         user.username = mapping['preferred_username']
@@ -45,13 +52,7 @@ class ODM2User(User):
         user.accountemail = mapping['email']
         user.active = True
         user.issiteadmin = False
-
-        preserve_pkey = False
-        if 'custom:legacy_id' in mapping:
-            preserve_pkey = True
-            user.accountid = mapping['custom:legacy_id']
-
-        pkey = odm2_engine.create_object(user, preserve_pkey)
+        pkey = odm2_engine.create_object(user)
         return cls.from_userid(userid=pkey)
 
     @classmethod

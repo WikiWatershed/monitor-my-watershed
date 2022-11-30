@@ -18,7 +18,9 @@ place_holder_choices = (
 user_affiliations = [
     affiliation.affiliation_id
     for affiliation
-    in Affiliation.objects.filter(account_id__isnull=False)
+    in Affiliation.objects\
+        .filter(organization__isnull=False)\
+        .filter(account_id__isnull=False)
 ]
 measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
