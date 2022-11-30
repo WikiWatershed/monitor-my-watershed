@@ -41,4 +41,6 @@ dependencies:
         #used for unicode_compatiblity 
         #should confirm if this is still a dependency
         - django-utils-six
-        - django-formtools
+          #there was an error with recursive depth reintroduce in 2.4
+        - django-formtools==2.3 
+
