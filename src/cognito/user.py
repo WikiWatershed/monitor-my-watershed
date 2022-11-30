@@ -40,9 +40,9 @@ class ODM2User(User):
         #to update the record
         if 'custom:legacy_id' in mapping:
             user = odm2_engine.read_object(models.Accounts,mapping['custom:legacy_id'])
-            user.cognitoid = mapping['sub']
-            odm2_engine.update_object(user)
-            return cls.from_userid(user.accountid)
+            user['cognitoid'] = mapping['sub']
+            odm2_engine.update_object(models.Accounts,user['accountid'],user)
+            return cls.from_userid(user['accountid'])
         
         user = models.Accounts()
         user.cognitoid = mapping['sub']
