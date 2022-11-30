@@ -196,7 +196,7 @@ class ODM2User(User):
         return organization.organizationname
 
     @property
-    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+    def affiliation(self) -> Union["Affiliation", None]: 
         affiliation_id = self.affiliation_id
         if not affiliation_id: return None
         return dataloader.models.Affiliation.objects.get(pk=self.affiliation_id)

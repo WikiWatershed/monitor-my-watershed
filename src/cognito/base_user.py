@@ -109,7 +109,7 @@ class User(ABC):
         """"""
 
     @property
-    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+    def affiliation(self) -> Union["Affiliation",None]: 
         """"""
     
     @property
@@ -197,7 +197,7 @@ class AnonymousUser(User):
         return ""
 
     @property
-    def affiliation(self) -> Union[dataloader.models.Affiliation, None]: 
+    def affiliation(self) -> Union["Affiliation", None]: 
         None
     
     @property
