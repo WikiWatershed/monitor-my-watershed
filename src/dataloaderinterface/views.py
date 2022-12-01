@@ -179,7 +179,7 @@ class LeafPackListUpdateView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
-        if request.user.is_authenticated and not request.user.can_administer_site(site.sample_feature_id):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sampling_feature_id):
             raise Http404
         return super(LeafPackListUpdateView, self).dispatch(request, *args, **kwargs)
 
