@@ -30,6 +30,8 @@ from django.http import HttpResponse, JsonResponse
 from typing import Union
 import streamwatch
 
+import cognito
+
 class LoginRequiredMixin(object):
     @classmethod
     def as_view(cls):
@@ -124,9 +126,9 @@ class SiteDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SiteDetailView, self).get_context_data(**kwargs)
         context['data_upload_form'] = SensorDataForm()
-        context['is_followed'] = self.object.followed_by.filter(id=self.request.user.id).exists()
-        context['can_administer_site'] = self.request.user.is_authenticated and self.request.user.can_administer_site(self.object)
-        context['is_site_owner'] = self.request.user == self.object.django_user
+        context['is_followed'] = self.object.followed_by.filter(accountid=self.request.user.id).exists()
+        context['can_administer_site'] = self.request.user.can_administer_site(self.object.sampling_feature_id)
+        context['is_site_owner'] = self.request.user.owns_site(self.object.sampling_feature_id) 
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
         context['streamwatch'] = streamwatch.models.samplingfeature_assessments(self.kwargs[self.slug_field])
@@ -155,7 +157,7 @@ class SensorListUpdateView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
-        if request.user.is_authenticated and not request.user.can_administer_site(site):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sampling_feature_id):
             raise Http404
         return super(SensorListUpdateView, self).dispatch(request, *args, **kwargs)
 
@@ -177,7 +179,7 @@ class LeafPackListUpdateView(LoginRequiredMixin, DetailView):
 
     def dispatch(self, request, *args, **kwargs):
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs['sampling_feature_code'])
-        if request.user.is_authenticated and not request.user.can_administer_site(site):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sampling_feature_id):
             raise Http404
         return super(LeafPackListUpdateView, self).dispatch(request, *args, **kwargs)
 
@@ -196,8 +198,8 @@ class SiteDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('sites_list')
 
     def dispatch(self, request, *args, **kwargs):
-
-        if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
+        registration = self.get_object()
+        if request.user.is_authenticated and not request.user.can_administer_site(registration.sampling_feature_id):
             raise Http404
         return super(SiteDeleteView, self).dispatch(request, *args, **kwargs)
 
@@ -221,7 +223,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     object = None
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and not request.user.can_administer_site(self.get_object()):
+        registration = self.get_object()
+        if request.user.is_authenticated and not request.user.can_administer_site(registration.sampling_feature_id):
             raise Http404
 
         return super(SiteUpdateView, self).dispatch(request, *args, **kwargs)
@@ -247,7 +250,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         data = self.request.POST or {}
         context = super(SiteUpdateView, self).get_context_data()
 
-        site_alert = self.request.user.site_alerts\
+        account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+        site_alert = account.site_alerts\
             .filter(site_registration__sampling_feature_code=self.get_object().sampling_feature_code)\
             .first()
 
@@ -271,7 +275,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         if form.is_valid() and notify_form.is_valid():
             form.instance.affiliation_id = form.cleaned_data['affiliation_id'] or request.user.affiliation_id
 
-            site_alert = self.request.user.site_alerts.filter(site_registration=site_registration).first()
+            account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+            site_alert = account.site_alerts.filter(site_registration=site_registration).first()
 
             if notify_form.cleaned_data['notify'] and site_alert:
                 site_alert.hours_threshold = timedelta(hours=int(notify_form.data['hours_threshold']))
@@ -327,12 +332,13 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
 
         if form.is_valid() and notify_form.is_valid():
             form.instance.affiliation_id = form.cleaned_data['affiliation_id'] or request.user.affiliation_id
-            form.instance.django_user = request.user
+            form.instance.user = request.user
             form.instance.save()
             self.object = form.save()
 
             if notify_form.cleaned_data['notify']:
-                self.request.user.site_alerts.create(
+                account = cognito.models.Account.objects.get(pk=request.user.user_id)
+                account.site_alerts.create(
                     site_registration=form.instance,
                     hours_threshold=timedelta(hours=int(notify_form.data['hours_threshold']))
                 )

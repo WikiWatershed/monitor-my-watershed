@@ -5,8 +5,9 @@ channels:
     - defaults
 
 dependencies:
-    - python =3.9.* 
+    - python >=3.9.* 
 
+    - boto3
     - coverage >=5.5
     - google-api-python-client >=2.12.0
     - hs_restclient >=1.3.7  # https://github.com/hydroshare/hs_restclient
@@ -40,4 +41,6 @@ dependencies:
         #used for unicode_compatiblity 
         #should confirm if this is still a dependency
         - django-utils-six
-        - django-formtools
+          #there was an error with recursive depth reintroduce in 2.4
+        - django-formtools==2.3 
+

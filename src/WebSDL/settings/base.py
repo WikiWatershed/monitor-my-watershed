@@ -45,7 +45,7 @@ ALLOWED_HOSTS = ['*']
 INSTALLED_APPS = [
     # 'debug_toolbar',
     'rest_framework',
-    'accounts.apps.AccountsConfig',
+    #'accounts.apps.AccountsConfig',
     'dataloader.apps.DataloaderConfig',
     'dataloaderservices.apps.DataloaderservicesConfig',
     'dataloaderinterface.apps.DataloaderinterfaceConfig',
@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'reset_migrations',
     'timeseries_visualization',
     'formtools',
-    
+    'cognito.apps.CognitoConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,6 +77,7 @@ MIDDLEWARE = [
     'hydroshare_util.middleware.AuthMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_cprofile_middleware.middleware.ProfilerMiddleware',
+    'cognito.user_middleware.UserMiddleware',
 ]
 
 DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
@@ -196,7 +197,23 @@ CRONTAB_EXECUTE_DAILY_AT_HOUR = 5
 
 GOOGLE_API_CONF = data.get('google_api_conf', None)
 
-AUTH_USER_MODEL = 'accounts.User'
+#AUTH_USER_MODEL = 'cognito.User'
+
+#AWS Congnito
+
+COGNITO_SIGNUP_URL = data['cognito_signup_url']
+COGNITO_SIGNIN_URL = data['cognito_signin_url']
+COGNITO_REGION = data['cognito_region']
+COGNITO_ACCESS_KEY = data['cognito_access_key']
+COGNITO_SECRET_ACCESS_KEY = data['cognito_secret_access_key']
+COGNITO_USER_POOL_ID = data['cognito_user_pool_id']
+COGNITO_CLIENT_ID = data['cognito_client_id']
+COGNITO_CLIENT_SECRET = data['cognito_client_secret']
+COGNITO_OAUTH_URL = data['cognito_oauth_url']
+COGNITO_REDIRECT_URL = data['cognito_redirect_url']
+SESSION_KEY = '_auth_user_id'
+BACKEND_SESSION_KEY = '_auth_user_backend'
+HASH_SESSION_KEY = '_auth_user_hash'
 
 #Static cache busting
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'

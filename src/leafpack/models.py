@@ -3,11 +3,12 @@ from __future__ import unicode_literals
 
 from django.db import models
 from dataloaderinterface.models import SiteRegistration
-from accounts.models import User
 from django.db.models import Sum, Q
 from operator import __or__ as OR
 
 from functools import reduce
+
+import cognito
 
 class Macroinvertebrate(models.Model):
     """
@@ -248,7 +249,8 @@ class LeafPackType(models.Model):
         db_table = 'leafpack_type'
 
     name = models.CharField(max_length=255, unique=True)
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    #TODO: remove auth dependency on django models
+    created_by = models.ForeignKey(cognito.models.Account, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.name

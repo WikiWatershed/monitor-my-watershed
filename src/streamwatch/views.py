@@ -28,7 +28,7 @@ class ListUpdateView(LoginRequiredMixin, django.views.generic.detail.DetailView)
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-        if request.user.is_authenticated and not request.user.can_administer_site(site):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sampling_feature_id):
             raise response.Http404
         return super().dispatch(request, *args, **kwargs)
 
@@ -143,7 +143,7 @@ class DetailView(django.views.generic.detail.DetailView):
 
         registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         user = self.request.user
-        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
+        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration.sampling_feature_id)
         context['is_site_owner'] = self.request.user == registration.django_user
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
         context['action_id'] = int(self.kwargs['pk'])
