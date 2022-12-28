@@ -230,7 +230,10 @@ class ODM2DataModels():
         self._model_base = self._prepare_model_base()
         self.models = Models(self._model_base)
         if not self._cached:
-            self._prepare_automap_models()
+            try:
+                self._prepare_automap_models()
+            except sqlalchemy.exc.OperationalError:
+                warnings.warn('Unable to prepare models, is database up?', RuntimeWarning)
 
     def _prepare_model_base(self):
         try:
