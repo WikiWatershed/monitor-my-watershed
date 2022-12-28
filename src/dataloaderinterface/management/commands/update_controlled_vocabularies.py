@@ -47,7 +47,7 @@ class Command(BaseCommand):
         api_url = '/api/v1'
         request_uri = '%s%s/{cv}/?format=json' % (base_url, api_url)
 
-        for cv_name in vocabularies_map.iterkeys():
+        for cv_name in vocabularies_map.keys():
             vocabulary_model = vocabularies_map[cv_name]
             print('Getting %s vocabulary' % vocabulary_model._meta.verbose_name)
 
