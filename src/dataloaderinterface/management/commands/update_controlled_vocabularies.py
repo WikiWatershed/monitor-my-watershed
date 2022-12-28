@@ -66,6 +66,16 @@ class Command(BaseCommand):
                 print('- Nothing to add here.')
                 continue
 
+            # remove duplicates to avoid the database insert failing due
+            # to a unique constraint violation
+            seen_names = set()
+            deduplicated_add = []
+            for concept in response['objects']:
+                if concept['name'] not in seen_names:
+                    seen_names.add(concept['name'])
+                    deduplicated_add.append(concept)
+            to_add = deduplicated_add
+
             vocabulary_objects = [vocabulary_model(
                 term=vocabulary['term'],
                 name=vocabulary['name'],
