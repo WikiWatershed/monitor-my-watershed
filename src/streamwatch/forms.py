@@ -16,11 +16,6 @@ place_holder_choices = (
         (3, 'Choice #3')
     )
 
-user_affiliations = [
-    affiliation[0]
-    for affiliation
-    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
-]
 measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
@@ -44,13 +39,13 @@ class SetupForm(forms.Form):
 
     
     investigator1 = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id', flat=True))).for_display(),
         required=True,
         help_text='Select a user as the main investigator',
         label='Investigator #1'
     )  
     investigator2 = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id', flat=True))).for_display(),
         required=False,
         help_text='Select a user as the secondary investigator',
         label='Investigator #2'

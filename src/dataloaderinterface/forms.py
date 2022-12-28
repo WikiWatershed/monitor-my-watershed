@@ -14,19 +14,9 @@ allowed_site_types = [
     'Storm sewer', 'Stream gage', 'Tidal stream', 'Water quality station', 'Weather station', 'Wetland', 'Other'
 ]
 
-user_affiliations = [
-    affiliation[0]
-    for affiliation
-    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
-]
-
 
 class SiteTypeSelect(forms.Select):
-    site_types = {
-        name: definition
-        for (name, definition)
-        in SiteType.objects.filter(name__in=allowed_site_types).values_list('name', 'definition')
-    }
+    site_types = None
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super(SiteTypeSelect, self).create_option(name, value, label, selected, index, subindex, attrs)
@@ -34,7 +24,16 @@ class SiteTypeSelect(forms.Select):
         #TECHDEPT - PRT flagging for likely place code will break in future updates of django 
         if isinstance(value, forms.models.ModelChoiceIteratorValue):
             value = value.value
-        option['attrs']['title'] = self.site_types[value] if value in self.site_types else ''
+
+        # this is thread-safe under CPython
+        if SiteTypeSelect.site_types is None:
+            SiteTypeSelect.site_types = {
+                name: definition
+                for (name, definition)
+                in SiteType.objects.filter(name__in=allowed_site_types).values_list('name', 'definition')
+            }
+
+        option['attrs']['title'] = SiteTypeSelect.site_types.get(value, '')
         return option
 
 
@@ -53,7 +52,7 @@ class SampledMediumField(forms.ModelChoiceField):
 
 class SiteRegistrationForm(forms.ModelForm):
     affiliation_id = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id', flat=True))).for_display(),
         required=False,
         help_text='Select the user that deployed or manages the site',
         label='Deployed By'
