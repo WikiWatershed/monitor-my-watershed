@@ -331,6 +331,7 @@ class SensorDataUploadView(APIView):
         data_value_units = Unit.objects.get(unit_name="hour minute")
         sensors = registration.sensors.all()
 
+        result_values = []
         warnings = []
         for row in csv.reader(self.decode_utf8_sig(data_file)):
             if self.should_skip_row(row):
@@ -358,24 +359,22 @@ class SensorDataUploadView(APIView):
 
                     data_value = row[results_mapping["results"][uuid]["index"]]
                     result_value = TimeseriesResultValueTechDebt(
-                        result_id=sensor.result_id,
-                        result_uuid=uuid,
-                        data_value=data_value,
-                        utc_offset=results_mapping["utc_offset"],
-                        value_datetime=measurement_datetime,
-                        censor_code="Not censored",
-                        quality_code="None",
-                        time_aggregation_interval=1,
-                        time_aggregation_interval_unit=data_value_units.unit_id,
-                    )
-                    try:
-                        result = insert_timeseries_result_values(result_value)
-                    except Exception as e:
-                        warnings.append(
-                            f"Error inserting value '{data_value}'"
-                            f"at datetime '{measurement_datetime}' for result uuid '{uuid}'"
-                        )
-                        continue
+                            result_id=sensor.result_id,
+                            result_uuid=uuid,
+                            data_value=data_value,
+                            utc_offset=results_mapping['utc_offset'],
+                            value_datetime=measurement_datetime,
+                            censor_code='Not censored',
+                            quality_code='None',
+                            time_aggregation_interval=1,
+                            time_aggregation_interval_unit=data_value_units.unit_id,
+                            ) 
+                    result_values.append(result_value)
+
+        try:
+            result = insert_timeseries_result_values(result_values)
+        except Exception as e:
+            warnings.append(f"Error inserting some values")
 
         # block is responsible for keeping separate dataloader database metadata in sync
         # long term plan is to eliminate this, but need to keep for the now
@@ -841,11 +840,8 @@ class TimeseriesResultValueTechDebt:
         self.time_aggregation_interval = time_aggregation_interval
         self.time_aggregation_interval_unit = time_aggregation_interval_unit
 
-
-def process_result_value(
-    result_value: TimeseriesResultValueTechDebt,
-) -> Union[str, None]:
-    result = insert_timeseries_result_values(result_value)
+def process_result_value(result_value:TimeseriesResultValueTechDebt) -> Union[str,None]:
+    result = insert_timeseries_result_values([result_value])
     if result is not None:
         return result
     # PRT - long term we would like to remove dataloader database but for now
@@ -933,48 +929,25 @@ def sync_result_table(result_value: TimeseriesResultValueTechDebt) -> None:
         )
         return result
 
-
-def insert_timeseries_result_values(
-    result_value: TimeseriesResultValueTechDebt,
-) -> None:
+def insert_timeseries_result_values(result_values : TimeseriesResultValueTechDebt) -> None:
     try:
         with _db_engine.connect() as connection:
-            query = text(
-                "INSERT INTO odm2.timeseriesresultvalues "
-                "(valueid, resultid, datavalue, valuedatetime, valuedatetimeutcoffset, "
-                "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) "
-                "VALUES ( "
-                "(SELECT nextval('odm2.\"timeseriesresultvalues_valueid_seq\"')),"
-                ":result_id, "
-                ":data_value, "
-                ":value_datetime, "
-                ":utc_offset, "
-                ":censor_code, "
-                ":quality_code, "
-                ":time_aggregation_interval, "
-                ":time_aggregation_interval_unit);"
-            )
-            result = connection.execute(
-                query,
-                result_id=result_value.result_id,
-                data_value=result_value.data_value,
-                value_datetime=result_value.value_datetime,
-                utc_offset=result_value.utc_offset,
-                censor_code=result_value.censor_code,
-                quality_code=result_value.quality_code,
-                time_aggregation_interval=result_value.time_aggregation_interval,
-                time_aggregation_interval_unit=result_value.time_aggregation_interval_unit,
+            query = text("INSERT INTO odm2.timeseriesresultvalues " \
+                "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, " \
+                "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) " \
+                "VALUES ( " \
+                    ":result_id, " \
+                    ":data_value, " \
+                    ":value_datetime, " \
+                    ":utc_offset, " \
+                    ":censor_code, " \
+                    ":quality_code, " \
+                    ":time_aggregation_interval, " \
+                    ":time_aggregation_interval_unit) on conflict do nothing;")
+            result = connection.execute(query,
+                [vars(v) for v in result_values]
             )
             return None
-    except sqlalchemy.exc.IntegrityError as e:
-        if hasattr(e, "orig"):
-            if isinstance(e.orig, psycopg2.errors.UniqueViolation):
-                # data is already in database
-                return None
-            else:
-                return f"Failed to INSERT data for uuid('{result_value.result_uuid}')"
-        else:
-            return f"Failed to INSERT data for uuid('{result_value.result_uuid}')"
     except Exception as e:
         return f"Failed to INSERT data for uuid('{result_value.result_uuid}')"
 
