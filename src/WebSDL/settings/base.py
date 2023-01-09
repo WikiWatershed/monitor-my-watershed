@@ -129,6 +129,7 @@ for database in data['databases']:
         'TEST': database['test'] if 'test' in database else {},
     }
 DATAMODELCACHE = os.path.join(BASE_DIR, 'odm2', 'modelcache.pkl')
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators

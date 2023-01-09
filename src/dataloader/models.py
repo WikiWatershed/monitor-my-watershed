@@ -454,7 +454,7 @@ class Affiliation(ODM2Model):
     affiliation_id = models.AutoField(db_column='affiliationid', primary_key=True)
     account_id = models.ForeignKey(accounts.models.Account, related_name='affiliations', db_column='accountid', on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', related_name='affiliations', db_column='organizationid', on_delete=models.CASCADE, blank=True, null=True)
-    is_primary_organization_contact = models.NullBooleanField(db_column='isprimaryorganizationcontact', default=None)
+    is_primary_organization_contact = models.BooleanField(db_column='isprimaryorganizationcontact', default=None, null=True)
     affiliation_start_date = models.DateField(db_column='affiliationstartdate')
     affiliation_end_date = models.DateField(db_column='affiliationenddate', blank=True, null=True)
     primary_phone = models.CharField(db_column='primaryphone', blank=True, max_length=50)
