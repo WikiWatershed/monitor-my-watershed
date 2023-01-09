@@ -1,4 +1,4 @@
-from cognito.base_user import User
+from accounts.base_user import User
 from typing import Any
 from typing import Union
 from typing import Dict

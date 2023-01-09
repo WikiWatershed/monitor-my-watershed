@@ -1,6 +1,6 @@
 from django.db import models
-from cognito.base_user import User
-from cognito.backend import CognitoBackend
+from accounts.base_user import User
+from accounts.backend import CognitoBackend
 
 #DEPRECATED: Work on revising code to use cognito.user.ODM2User class
 #TODO: 

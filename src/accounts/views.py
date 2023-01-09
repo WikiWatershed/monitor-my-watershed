@@ -2,7 +2,7 @@ from django.shortcuts import redirect
 from django.shortcuts import render
 from django.contrib.auth import logout as django_logout
 from django.conf import settings
-from cognito.backend import CognitoBackend
+from accounts.backend import CognitoBackend
 from datetime import datetime
 
 _cognitobackend = CognitoBackend()

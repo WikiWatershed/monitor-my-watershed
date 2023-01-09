@@ -12,8 +12,8 @@ import hashlib
 import hmac
 
 from typing import Union
-from cognito.base_user import User, AnonymousUser
-from cognito.user import ODM2User
+from accounts.base_user import User, AnonymousUser
+from accounts.user import ODM2User
 
 # AWS Credential Info which should be specified in the application settings 
 AWS_REGION_NAME = settings.COGNITO_REGION
