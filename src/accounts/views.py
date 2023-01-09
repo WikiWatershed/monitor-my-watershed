@@ -25,7 +25,7 @@ def login_failed(request):
     """Placeholder authorization failed endpoint"""
     return render(
         request,
-        'cognito/login_failed.html',
+        'auth/login_failed.html',
         {
             'title':'Login Failed',
             'year':datetime.now().year,
