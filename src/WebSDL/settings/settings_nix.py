@@ -25,7 +25,7 @@ DATABASES = {
         'OPTIONS': {
             # ensure django can work with the ODM2 schema by adding that
             # to the schema search path
-            'options': '-c search_path=ODM2,public',
+            'options': '-c search_path=public,ODM2',
         }
     }
 }
