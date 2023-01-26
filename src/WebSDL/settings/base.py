@@ -202,3 +202,5 @@ AUTH_USER_MODEL = 'accounts.User'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 DEBUG = True if 'debug_mode' in data and data['debug_mode'] == "True" else False
+
+TIME_ZONE = "UTC"
