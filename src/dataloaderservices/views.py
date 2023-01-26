@@ -699,29 +699,27 @@ def get_site_sensor(resultid:str) -> Union[Dict[str, Any],None]:
         return df.to_dict(orient='records')[0]
 
 #dataloader utility function
-def check_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt) -> None:
+def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt) -> None:
     with _db_engine.connect() as connection:
-        query = text('SELECT COUNT(sensor_id) FROM public.dataloaderinterface_sensormeasurement ' \
-            'WHERE sensor_id=:sensor_id; ')
+        query = text('INSERT INTO public.dataloaderinterface_sensormeasurement as m '
+            'VALUES (:sensor_id, :datetime, :utc_offset, :data_value) '
+            'on conflict (sensor_id) do update set '
+            'value_datetime = excluded.value_datetime, '
+            'value_datetime_utc_offset = excluded.value_datetime_utc_offset, '
+            'data_value = excluded.data_value '
+            'where m.value_datetime < excluded.value_datetime;')
         result = connection.execute(query, 
-            sensor_id=sensor_id
-            ) 
-        for r in result:
-            if r[0] == 1: return None
-            query = text('INSERT INTO public.dataloaderinterface_sensormeasurement ' \
-                "VALUES (:sensor_id, :datetime,:utc_offset,:data_value); ")
-            result = connection.execute(query, 
-                sensor_id=sensor_id,
-                datetime=result_value.value_datetime, 
-                utc_offset=timedelta(hours=result_value.utc_offset),
-                data_value=result_value.data_value
-            )
+            sensor_id=sensor_id,
+            datetime=result_value.value_datetime,
+            utc_offset=timedelta(hours=result_value.utc_offset),
+            data_value=result_value.data_value
+        )
 
 #dataloader utility function
 def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt) -> None:
     site_sensor = get_site_sensor(result_value.result_id)
     if not site_sensor: return None
-    result = check_sensormeasurement(site_sensor['id'], result_value)
+    result = update_sensormeasurement(site_sensor['id'], result_value)
     return None
 
 #dataloader utility function
