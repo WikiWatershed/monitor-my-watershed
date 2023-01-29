@@ -614,8 +614,7 @@ class TimeSeriesValuesApi(APIView):
 
                 error = process_result_value(TimeseriesResultValueTechDebt(
                     result_id=result_id,
-                    result_uuid=key,
-                    data_value=request.data[str(key)],
+                    data_value=request.data[key],
                     value_datetime=measurement_datetime,
                     utc_offset=utc_offset,
                     censor_code='Not censored',
@@ -637,21 +636,17 @@ class TimeSeriesValuesApi(APIView):
 
 def get_result_UUIDs(sampling_feature_id:str, connection) -> Union[Dict[str, str],None]:
     try:
-        query = text("SELECT r.resultid, r.resultuuid FROM odm2.results AS r " \
+        query = text("SELECT r.resultuuid, r.resultid FROM odm2.results AS r " \
                     "JOIN odm2.featureactions AS fa ON r.featureactionid = fa.featureactionid "\
                     "WHERE fa.samplingfeatureid = ':sampling_feature_id';")
-        df = pd.read_sql(query, connection, params={'sampling_feature_id': sampling_feature_id})
-        df['resultuuid'] = df['resultuuid'].astype(str)
-        df = df.set_index('resultuuid')
-        results = df['resultid'].to_dict()
-        return results
+        result = connection.execute(query, sampling_feature_id=sampling_feature_id)
+        return {str(ruuid): rid for ruuid, rid in result}
     except:
         return None
 
 class TimeseriesResultValueTechDebt():
     def __init__(self, 
             result_id:str,
-            result_uuid:str, 
             data_value:float, 
             value_datetime:datetime, 
             utc_offset:int, 
@@ -660,7 +655,6 @@ class TimeseriesResultValueTechDebt():
             time_aggregation_interval:int, 
             time_aggregation_interval_unit:int) -> None:
         self.result_id = result_id
-        self.result_uuid = result_uuid
         self.data_value = data_value
         self.utc_offset = utc_offset
         self.value_datetime = value_datetime 
