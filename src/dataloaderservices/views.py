@@ -818,41 +818,28 @@ def process_result_value(result_value:TimeseriesResultValueTechDebt, connection)
     # PRT - long term we would like to remove dataloader database but for now
     # this block of code keeps dataloaderinterface_sensormeasurement table in sync
     try:
-        query_result = sync_dataloader_tables(result_value, connection)
+        update_sensormeasurement(result_value.result_id, result_value, connection)
         query_result = sync_result_table(result_value, connection)
         return None
     except Exception as e:
         return None
 
 #dataloader utility function
-def get_site_sensor(resultid:str, connection) -> Union[Dict[str, Any],None]:
-    query = text('SELECT id FROM public.dataloaderinterface_sitesensor ' \
-        'WHERE "ResultID"=:resultid;'
-    )
-    result = connection.execute(query, resultid=resultid)
-    return next(result)[0]
-
-#dataloader utility function
-def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt, connection) -> None:
+def update_sensormeasurement(result_id:str, result_value:TimeseriesResultValueTechDebt, connection) -> None:
     query = text('INSERT INTO public.dataloaderinterface_sensormeasurement as m '
-        'VALUES (:sensor_id, :datetime, :utc_offset, :data_value) '
+        'VALUES ((select id from public.dataloaderinterface_sitesensor '
+        'where "ResultID" = :result_id), :datetime, :utc_offset, :data_value) '
         'on conflict (sensor_id) do update set '
         'value_datetime = excluded.value_datetime, '
         'value_datetime_utc_offset = excluded.value_datetime_utc_offset, '
         'data_value = excluded.data_value '
         'where m.value_datetime < excluded.value_datetime;')
     result = connection.execute(query, 
-        sensor_id=sensor_id,
+        result_id=result_id,
         datetime=result_value.value_datetime,
         utc_offset=timedelta(hours=result_value.utc_offset),
         data_value=result_value.data_value
     )
-
-#dataloader utility function
-def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt, connection) -> None:
-    site_sensor = get_site_sensor(result_value.result_id, connection)
-    result = update_sensormeasurement(site_sensor, result_value, connection)
-    return None
 
 #dataloader utility function
 def set_deployment_date(sample_feature_id:int, date_time:datetime, connection) -> None:
