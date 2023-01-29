@@ -580,54 +580,68 @@ class TimeSeriesValuesApi(APIView):
     def post(self, request, format=None):
         if not all(key in request.data for key in ('timestamp', 'sampling_feature')):
             raise exceptions.ParseError("Required data not found in request.")
-        try:
-            measurement_datetime = parse_datetime(request.data['timestamp'])
-        except ValueError:
-            raise exceptions.ParseError('The timestamp value is not valid.')
-        if not measurement_datetime:
-            raise exceptions.ParseError('The timestamp value is not well formatted.')
-        if measurement_datetime.utcoffset() is None:
-            raise exceptions.ParseError('The timestamp value requires timezone information.')
-        utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
-        measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
-
-        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data['sampling_feature']).first()
+        
+        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data.pop("sampling_feature")).first()
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
-
-        futures = {}
+        
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
 
-        errors = []
+        measurement_datetimes = []
+        timestamps = request.data.pop("timestamp")
+        if not isinstance(timestamps, list):
+            timestamps = [timestamps]
+        for timestamp in timestamps:
+            try:
+                measurement_datetime = parse_datetime(timestamp)
+            except ValueError:
+                raise exceptions.ParseError('The timestamp value is not valid.')
+            if not measurement_datetime:
+                raise exceptions.ParseError('The timestamp value is not well formatted.')
+            if measurement_datetime.utcoffset() is None:
+                raise exceptions.ParseError('The timestamp value requires timezone information.')
+            utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
+            measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
+            measurement_datetimes.append((measurement_datetime, utc_offset))
+
+        num_measurements = len(measurement_datetimes)
+        measurement_data = {k: v if isinstance(v, list) else [v]
+            for k, v in request.data.items()}
+
+        if not all(len(m) == num_measurements for m in measurement_data.values()):
+            raise exceptions.ParseError(
+                "unequal number of data points across measurements")
+
         with _db_engine.begin() as connection:
             result_uuids = get_result_UUIDs(sampling_feature.sampling_feature_id, connection)
             if not result_uuids:
-                raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{request.data['sampling_feature']}'")
+                raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{sampling_feature.sampling_feature_uuid}'")
 
-            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetime, connection)
+            # assume the last measurement datetime is the latest
+            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetimes[-1][0], connection)
 
             result_values = []
-            for key in request.data:
+            for key, values in measurement_data.items():
                 try:
                     result_id = result_uuids[key]
                 except KeyError:
                     continue
 
-                result_values.append(TimeseriesResultValueTechDebt(
-                    result_id=result_id,
-                    data_value=request.data[key],
-                    value_datetime=measurement_datetime,
-                    utc_offset=utc_offset,
-                    censor_code='Not censored',
-                    quality_code='None',
-                    time_aggregation_interval=1,
-                    time_aggregation_interval_unit=unit_id
-                ))
+                for vi, value in enumerate(values):
+                    result_values.append(TimeseriesResultValueTechDebt(
+                        result_id=result_id,
+                        data_value=value,
+                        value_datetime=measurement_datetimes[vi][0],
+                        utc_offset=measurement_datetimes[vi][1],
+                        censor_code='Not censored',
+                        quality_code='None',
+                        time_aggregation_interval=1,
+                        time_aggregation_interval_unit=unit_id
+                    ))
             insert_timeseries_result_values(result_values, connection)
             update_sensormeasurements(result_values, connection)
             sync_result_table(result_values, connection)
            
-        if errors: return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({}, status.HTTP_201_CREATED)
 
 #######################################################
