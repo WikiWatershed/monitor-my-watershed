@@ -747,18 +747,15 @@ class TimeSeriesValuesApi(APIView):
             for k, v in request.data.items()}
 
         if not all(len(m) == num_measurements for m in measurement_data.values()):
-            raise exceptions.ParseError(
-                "unequal number of data points across measurements")
+            raise exceptions.ParseError("unequal number of data points")
 
         with _db_engine.begin() as connection:
             result_uuids = get_result_UUIDs(sampling_feature.sampling_feature_id, connection)
             if not result_uuids:
                 raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{sampling_feature.sampling_feature_uuid}'")
 
-            # assume the last measurement datetime is the latest
-            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetimes[-1][0], connection)
-
-            result_values = []
+            result_values = [] # values for all times
+            latest_values = [] # values for only the latest time (i.e. last)
             for key, values in measurement_data.items():
                 try:
                     result_id = result_uuids[key]
@@ -776,9 +773,16 @@ class TimeSeriesValuesApi(APIView):
                         time_aggregation_interval=1,
                         time_aggregation_interval_unit=unit_id
                     ))
+                # nab latest value as that was the one we (by assumption)
+                # generated last in the loop
+                latest_values.append(result_values[-1])
+
+            # assume the last measurement datetime is the latest
+            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetimes[-1][0], connection)
+
             insert_timeseries_result_values(result_values, connection)
-            update_sensormeasurements(result_values, connection)
-            sync_result_table(result_values, connection)
+            update_sensormeasurements(latest_values, connection)
+            sync_result_table(latest_values, num_measurements, connection)
            
         return Response({}, status.HTTP_201_CREATED)
 
@@ -850,14 +854,15 @@ def set_deployment_date(sample_feature_id:int, date_time:datetime, connection) -
     return None
 
 
-def sync_result_table(result_values: TimeseriesResultValueTechDebt, connection) -> None:
-    query = text("UPDATE odm2.results SET valuecount = valuecount + 1, " \
+def sync_result_table(result_values: TimeseriesResultValueTechDebt, num_measurements, connection) -> None:
+    query = text("UPDATE odm2.results SET valuecount = valuecount + :num_measurements, " \
         "resultdatetime = GREATEST(:result_datetime, resultdatetime)" \
         "WHERE resultid=:result_id; ")
     result = connection.execute(query, 
         [{
             "result_id": result_value.result_id,
             "result_datetime": result_value.value_datetime,
+            "num_measurements": num_measurements,
         } for result_value in result_values]
     )
     return result
