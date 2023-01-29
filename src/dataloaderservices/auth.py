@@ -1,6 +1,9 @@
 from rest_framework import authentication
 from rest_framework import exceptions
 
+from django.db.models.expressions import Subquery, OuterRef
+
+from dataloader.models import SamplingFeature
 from dataloaderinterface.models import SiteRegistration
 
 
@@ -20,12 +23,17 @@ class UUIDAuthentication(authentication.BaseAuthentication):
         # verify sampling_feature uuid is registered by this user,
         # be happy.
         token = request.META['HTTP_TOKEN']
-        registration = SiteRegistration.objects.filter(registration_token=token).first()
+        registration = SiteRegistration.objects.filter(registration_token=token
+            ).annotate(sampling_feature_uuid=Subquery(
+                SamplingFeature.objects.filter(
+                    pk=OuterRef("sampling_feature_id")
+                ).values("sampling_feature_uuid")[:1])
+            ).values("sampling_feature_uuid").first()
         if not registration:
             raise exceptions.PermissionDenied('Invalid Security Token')
 
         # request needs to have the sampling feature uuid of the registration -
-        if str(registration.sampling_feature.sampling_feature_uuid) != request.data['sampling_feature']:
+        if str(registration["sampling_feature_uuid"]) != request.data['sampling_feature']:
             raise exceptions.AuthenticationFailed('Site Identifier is not associated with this Token')
 
         return None
