@@ -359,7 +359,6 @@ class SensorDataUploadView(APIView):
                     data_value = row[results_mapping["results"][uuid]["index"]]
                     result_value = TimeseriesResultValueTechDebt(
                             result_id=sensor.result_id,
-                            result_uuid=uuid,
                             data_value=data_value,
                             utc_offset=results_mapping['utc_offset'],
                             value_datetime=measurement_datetime,
@@ -370,11 +369,8 @@ class SensorDataUploadView(APIView):
                             ) 
                     result_values.append(result_value)
 
-        try:
-            with _db_engine.connect() as connection:
-                result = insert_timeseries_result_values(result_values, connection)
-        except Exception as e:
-            warnings.append(f"Error inserting some values")
+        with _db_engine.begin() as connection:
+            insert_timeseries_result_values(result_values, connection)
 
         # block is responsible for keeping separate dataloader database metadata in sync
         # long term plan is to eliminate this, but need to keep for the now
