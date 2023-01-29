@@ -356,7 +356,9 @@ class SensorDataUploadView(APIView):
                         # this would allow us to return warning that result uuid is not recognized.
                         continue
 
-                    data_value = row[results_mapping["results"][uuid]["index"]]
+                    data_value = row[results_mapping['results'][uuid]['index']]
+                    if len(data_value) == 0:
+                        continue
                     result_value = TimeseriesResultValueTechDebt(
                             result_id=sensor.result_id,
                             data_value=data_value,
@@ -369,8 +371,15 @@ class SensorDataUploadView(APIView):
                             ) 
                     result_values.append(result_value)
 
-        with _db_engine.begin() as connection:
-            insert_timeseries_result_values(result_values, connection)
+            if len(result_values) > 100000:
+                with _db_engine.begin() as connection:
+                    insert_timeseries_result_values(result_values, connection)
+                result_values = []
+
+        if len(result_values) > 0:
+            with _db_engine.begin() as connection:
+                insert_timeseries_result_values(result_values, connection)
+            result_values = []
 
         # block is responsible for keeping separate dataloader database metadata in sync
         # long term plan is to eliminate this, but need to keep for the now
