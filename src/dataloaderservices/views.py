@@ -835,11 +835,11 @@ def process_result_value(result_value:TimeseriesResultValueTechDebt, connection)
 
 #dataloader utility function
 def get_site_sensor(resultid:str, connection) -> Union[Dict[str, Any],None]:
-    query = text('SELECT * FROM public.dataloaderinterface_sitesensor ' \
+    query = text('SELECT id FROM public.dataloaderinterface_sitesensor ' \
         'WHERE "ResultID"=:resultid;'
-        )
-    df = pd.read_sql(query, connection, params={'resultid':resultid})
-    return df.to_dict(orient='records')[0]
+    )
+    result = connection.execute(query, resultid=resultid)
+    return next(result)[0]
 
 #dataloader utility function
 def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTechDebt, connection) -> None:
@@ -860,8 +860,7 @@ def update_sensormeasurement(sensor_id:str, result_value:TimeseriesResultValueTe
 #dataloader utility function
 def sync_dataloader_tables(result_value: TimeseriesResultValueTechDebt, connection) -> None:
     site_sensor = get_site_sensor(result_value.result_id, connection)
-    if not site_sensor: return None
-    result = update_sensormeasurement(site_sensor['id'], result_value, connection)
+    result = update_sensormeasurement(site_sensor, result_value, connection)
     return None
 
 #dataloader utility function
