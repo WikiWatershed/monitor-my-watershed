@@ -606,13 +606,14 @@ class TimeSeriesValuesApi(APIView):
 
             set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetime, connection)
 
+            result_values = []
             for key in request.data:
                 try:
                     result_id = result_uuids[key]
                 except KeyError:
                     continue
 
-                error = process_result_value(TimeseriesResultValueTechDebt(
+                result_values.append(TimeseriesResultValueTechDebt(
                     result_id=result_id,
                     data_value=request.data[key],
                     value_datetime=measurement_datetime,
@@ -621,9 +622,10 @@ class TimeSeriesValuesApi(APIView):
                     quality_code='None',
                     time_aggregation_interval=1,
                     time_aggregation_interval_unit=unit_id
-                ), connection)
-                if error is not None:
-                    errors.append(error)
+                ))
+            insert_timeseries_result_values(result_values, connection)
+            update_sensormeasurements(result_values, connection)
+            sync_result_table(result_values, connection)
            
         if errors: return Response(errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({}, status.HTTP_201_CREATED)
@@ -663,34 +665,23 @@ class TimeseriesResultValueTechDebt():
         self.time_aggregation_interval = time_aggregation_interval
         self.time_aggregation_interval_unit = time_aggregation_interval_unit
 
-def process_result_value(result_value:TimeseriesResultValueTechDebt, connection) -> Union[str,None]:
-    result = insert_timeseries_result_values([result_value], connection)
-    if result is not None:
-        return result
-    # PRT - long term we would like to remove dataloader database but for now 
-    # this block of code keeps dataloaderinterface_sensormeasurement table in sync
-    try:
-        update_sensormeasurement(result_value.result_id, result_value, connection)
-        query_result = sync_result_table(result_value, connection)
-        return None
-    except Exception as e:
-        return None
-
 #dataloader utility function
-def update_sensormeasurement(result_id:str, result_value:TimeseriesResultValueTechDebt, connection) -> None:
+def update_sensormeasurements(result_values:TimeseriesResultValueTechDebt, connection) -> None:
     query = text('INSERT INTO public.dataloaderinterface_sensormeasurement as m '
         'VALUES ((select id from public.dataloaderinterface_sitesensor '
-        'where "ResultID" = :result_id), :datetime, :utc_offset, :data_value) '
+        'where "ResultID" = :result_id limit 1), :datetime, :utc_offset, :data_value) '
         'on conflict (sensor_id) do update set '
         'value_datetime = excluded.value_datetime, '
         'value_datetime_utc_offset = excluded.value_datetime_utc_offset, '
         'data_value = excluded.data_value '
         'where m.value_datetime < excluded.value_datetime;')
     result = connection.execute(query, 
-        result_id=result_id,
-        datetime=result_value.value_datetime,
-        utc_offset=timedelta(hours=result_value.utc_offset),
-        data_value=result_value.data_value
+        [{
+            "result_id": result_value.result_id,
+            "datetime": result_value.value_datetime,
+            "utc_offset": timedelta(hours=result_value.utc_offset),
+            "data_value": result_value.data_value,
+        } for result_value in result_values]
     )
 
 #dataloader utility function
@@ -706,13 +697,15 @@ def set_deployment_date(sample_feature_id:int, date_time:datetime, connection) -
     return None
 
 
-def sync_result_table(result_value: TimeseriesResultValueTechDebt, connection) -> None:
+def sync_result_table(result_values: TimeseriesResultValueTechDebt, connection) -> None:
     query = text("UPDATE odm2.results SET valuecount = valuecount + 1, " \
         "resultdatetime = GREATEST(:result_datetime, resultdatetime)" \
         "WHERE resultid=:result_id; ")
     result = connection.execute(query, 
-        result_id=result_value.result_id,
-        result_datetime=result_value.value_datetime,
+        [{
+            "result_id": result_value.result_id,
+            "result_datetime": result_value.value_datetime,
+        } for result_value in result_values]
     )
     return result
 
