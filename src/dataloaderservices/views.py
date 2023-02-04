@@ -373,12 +373,12 @@ class SensorDataUploadView(APIView):
 
             if len(result_values) > 100000:
                 with _db_engine.begin() as connection:
-                    insert_timeseries_result_values(result_values, connection)
+                    insert_timeseries_result_values_bulk(result_values, connection)
                 result_values = []
 
         if len(result_values) > 0:
             with _db_engine.begin() as connection:
-                insert_timeseries_result_values(result_values, connection)
+                insert_timeseries_result_values_bulk(result_values, connection)
             result_values = []
 
         # block is responsible for keeping separate dataloader database metadata in sync
@@ -893,6 +893,38 @@ def insert_timeseries_result_values(result_values : TimeseriesResultValueTechDeb
     except Exception as e:
         return f"Failed to INSERT data for uuid('{result_value.result_uuid}')"
 
+
+
+
+
+def insert_timeseries_result_values_bulk(result_values, connection):
+    connection.execute(text("create temporary table upload "
+        "(resultid bigint  NOT NULL,"
+        "datavalue double precision  NOT NULL,"
+        "valuedatetime timestamp  NOT NULL,"
+        "valuedatetimeutcoffset integer  NOT NULL,"
+        "censorcodecv varchar (255) NOT NULL,"
+        "qualitycodecv varchar (255) NOT NULL,"
+        "timeaggregationinterval double precision  NOT NULL,"
+        "timeaggregationintervalunitsid integer  NOT NULL) on commit drop;"))
+
+    result_data = StringIO()
+    for rv in result_values:
+        result_data.write(f"{rv.result_id}\t{rv.data_value}\t"
+            f"{rv.value_datetime}\t{rv.utc_offset}\t{rv.censor_code}\t"
+            f"{rv.quality_code}\t{rv.time_aggregation_interval}\t"
+            f"{rv.time_aggregation_interval_unit}\n")
+    result_data.seek(0)
+
+    cursor = connection.connection.cursor()
+    cursor.copy_from(result_data, "upload")
+    cursor.close()
+
+    connection.execute(text("insert into odm2.timeseriesresultvalues "
+        "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, "
+        "censorcodecv, qualitycodecv, timeaggregationinterval, "
+        "timeaggregationintervalunitsid) "
+        "(select * from upload) on conflict do nothing;"))
 
 class Organizations(APIView):
     def get(self, request: HttpRequest) -> Response:
