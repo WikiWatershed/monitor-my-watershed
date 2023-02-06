@@ -49,3 +49,8 @@ def oauth2_cognito(request:HttpRequest) -> HttpResponse:
     except Exception as e:
         return redirect(login_failed)
  
+def account(request:HttpRequest) -> HttpResponse:
+    return render(
+        request,
+        "auth/account.html",
+    )

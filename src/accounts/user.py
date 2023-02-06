@@ -186,15 +186,21 @@ class ODM2User(User):
     def organization_code(self) -> str:
         affiliation = self._get_affiliation()
         if affiliation is None: return ""
-        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
-        return organization.organizationcode
+        try:
+            organization = odm2_engine.read_object(models.Organizations, affiliation['organizationid'])
+            return organization['organizationcode']
+        except odm2.exceptions.ObjectNotFound:
+            return ""
 
     @property
     def organization_name(self) -> str:
         affiliation = self._get_affiliation()
         if affiliation is None: return ""
-        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
-        return organization.organizationname
+        try: 
+            organization = odm2_engine.read_object(models.Organizations, affiliation['organizationid'])
+            return organization['organizationname']
+        except odm2.exceptions.ObjectNotFound:
+            return ""
 
     @property
     def affiliation(self) -> Union["Affiliation", None]: 
