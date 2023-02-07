@@ -7,6 +7,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     #FIXME: this should point to a location where user can update page
     path('account/', views.account, name='user_account'),
+    path('update_account/', views.update_account, name='user_account_update'),
     path('login_failed/', views.login_failed, name='login_failed'),
     path('signup/', views.signup, name='signup'),
     #FIXME: this should point to a registration form - possibly how the user gets affiliated with a site

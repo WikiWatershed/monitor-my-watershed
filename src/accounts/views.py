@@ -54,3 +54,28 @@ def account(request:HttpRequest) -> HttpResponse:
         request,
         "auth/account.html",
     )
+
+def update_account(request:HttpRequest) -> HttpResponse:
+    form_data = request.POST.dict()
+    user = request.user
+    try:
+        for key, value in form_data.items():
+            current_value = getattr(user, key)
+            if current_value != value:
+                setattr(user, key, value)       
+        return HttpResponse(
+            content='updates accepted',
+            status=201,
+        )
+    except AttributeError as e:
+        #TODO this needs to return error code, butt I've not implemented organization update yet
+        return HttpResponse(
+            content=f"Unknown attribute: '{e.name}'",
+            status=400,
+        )
+    except Exception as e:
+        return HttpResponse(
+            content='updates failed',
+            status=500,
+        )
+
