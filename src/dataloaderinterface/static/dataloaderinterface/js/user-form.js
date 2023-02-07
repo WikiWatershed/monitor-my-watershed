@@ -60,9 +60,29 @@ function getCookie(name) {
     return cookieValue;
 }
 
+async function initializeOrganizationSelect() {
+    organizations = await $.ajax({
+        url : '/api/organizations/',
+        method : 'GET'
+    });
+    let $organization_select = $('#id_organization_id')
+    let org = $organization_select.attr('org');
+    $organization_select.empty()
+    organizations.forEach(function(organization) {
+        $($organization_select).append(
+            $('<option>', {
+                value : organization.organizationid,
+                text : organization.organizationname,
+            })
+        );
+    });
+    $organization_select.val(org);
+}
+
 $(document).ready(function() {
     
     $("#btn-edit-profile").on("click", function(){
+        initializeOrganizationSelect();
         setMode("edit");
     });
 

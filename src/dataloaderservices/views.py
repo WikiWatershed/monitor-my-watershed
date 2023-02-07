@@ -12,7 +12,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
-from django.http.response import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
@@ -786,3 +786,13 @@ def insert_timeseries_result_values(result_value : TimeseriesResultValueTechDebt
             return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
     except Exception as e:
         return (f"Failed to INSERT data for uuid('{result_value.result_uuid}')")
+
+
+class Organizations(APIView):
+    
+    def get(self,request:HttpRequest) -> Response:
+        query = sqlalchemy.text("SELECT organizationid, organizationcode, organizationname FROM odm2.organizations ORDER BY organizationname;")
+        with _db_engine.connect() as connection:
+            df = pd.read_sql(query, connection)
+            data_dict = df.to_dict(orient='records')
+            return Response(data_dict, status.HTTP_200_OK)

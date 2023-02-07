@@ -114,7 +114,7 @@
                                         <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--right"
                                         data-mdl-for="organization-help">
                                         </div>
-                                        <select id="id_organization_id" class="form-control form-field" placeholder="Choose your affiliated organization"></select>
+                                        <select id="id_organization_id" class="form-control form-field" org="{{user.organization_id}}" placeholder="Choose your affiliated organization">{{user.organization.name}}</select>
                                     </div>
                                 </div>
                             </div>
