@@ -8,6 +8,7 @@ from django.shortcuts import render
 from datetime import datetime
 
 from accounts.backend import CognitoBackend
+from dataloaderinterface.forms import OrganizationForm
 
 _cognitobackend = CognitoBackend()
 
@@ -53,6 +54,9 @@ def account(request:HttpRequest) -> HttpResponse:
     return render(
         request,
         "auth/account.html",
+        {
+            'organization_form': OrganizationForm()
+        },
     )
 
 def update_account(request:HttpRequest) -> HttpResponse:

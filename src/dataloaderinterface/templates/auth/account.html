@@ -1,6 +1,7 @@
 {% extends 'dataloaderinterface/base.html' %}
 {% load static %}
 {% load helpers %}
+{% load widget_tweaks %}
 {% block page_title %}
     <title>Account Details</title>
 {% endblock %}
@@ -134,6 +135,15 @@
                     </div>
                     <div class="modal-body">
                         <div class="form-group col-lg-12 organization-fields">
+                         {% for field in organization_form %}
+                                <div class="form-field col-lg-12 {% if field.field.required %}required-field{% endif %} {% if field.errors %}has-error{% endif %}">
+                                    <label class="control-label"
+                                           for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field.errors }}
+                                    {% with "placeholder:"|add:field.help_text as placeholder %}
+                                        {{ field|add_class:"form-control input-sm"|attr:placeholder }}
+                                    {% endwith %}
+                                </div>
+                        {% endfor %}
                         </div>
                         <div class="clearfix"></div>
                     </div>
@@ -154,11 +164,6 @@
 
 {% endblock %}
 
-{% block services_urls %}
-    {{ block.super }}
-    <input id="new-organization-api" type="hidden" value="{% url 'organization_service' %}">
-{% endblock %}
-
 {% block styles %}
     {{ block.super }}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" />
@@ -175,5 +180,4 @@
     <script src='https://www.google.com/recaptcha/api.js'></script>
     <script src="{% static 'dataloaderinterface/js/vendor/mdl/dialog-polyfill.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/hydroshare/hs-profile-dialog.js' %}"></script>
-    <script src="{% static 'dataloaderinterface/js/user-form.js' %}"></script>
 {% endblock scripts %}
