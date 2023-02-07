@@ -171,20 +171,11 @@ class CognitoBackend(BaseBackend):
             request.session.cycle_key()
 
         request.session[SESSION_KEY] = user.user_id
+        request.session['TOKEN'] = user._get_access_token()
         request.session[BACKEND_SESSION_KEY] = 'CognitoBackend'
         request.session[HASH_SESSION_KEY] = session_auth_hash
         if hasattr(request, 'user'):
             request.user = user
         rotate_token(request)
 
-    def update_user_attribute(self, user:User, attribute_name:str, attribute_value:str):
-        response = self._client.update_user_attribute(
-            UserAttributes=[
-                {
-                    attribute_name:attribute_value
-                }
-            ],
-            AccessToken=user._get_access_token(),
-        )
-        return 'It worked'
 

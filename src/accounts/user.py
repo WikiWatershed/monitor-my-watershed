@@ -1,22 +1,20 @@
-from accounts.base_user import User
-from typing import Any
-from typing import Union
-from typing import Dict
-
 from collections.abc import Mapping
+from typing import Any, Union, Dict
+
 from sqlalchemy.orm import Query
 
+from accounts.base_user import User
 import dataloader
-
+from accounts.cognito_updater import CognitoUpdater
 import odm2
 from odm2 import odm2datamodels
+
 models = odm2datamodels.models
 odm2_engine = odm2datamodels.odm2_engine
 
 class ODM2User(User):
 
-    def __init__(self):
-        self.__access_token = None 
+    __cognito_updater = CognitoUpdater()
 
     @classmethod
     def from_mapping(cls, mapping:Mapping[str, Any]) -> "User":
@@ -104,6 +102,9 @@ class ODM2User(User):
             data={field_name:value},
         )
 
+    def __update_cognito_record(self, attribute_name:str, attribute_value:str) -> None:
+        self.__cognito_updater.update_user_attribute(self, attribute_name, attribute_value)
+
     #PRT - TODO: The setters should also commit changes to the database and probably 
     # back to cognito. Makes me wonder if we even need settings in this context.
     # should evaluate this need and finish implementation or remove setting support.  
@@ -119,49 +120,53 @@ class ODM2User(User):
         return self.__congitoid
 
     @property
-    def username(self):
+    def username(self) -> str:
         return self.__username
     
     @username.setter
-    def username(self, value):
+    def username(self, value:str) -> None:
         self.__update_database_record('username', value)
         self.__username = value
+        self.__update_cognito_record('preferred_username', value)
 
     @property
     def is_active(self):
         return self.__isactive
     
     @is_active.setter
-    def isactive(self, value):
+    def isactive(self, value:bool):
         if isinstance(value, bool):
             self._isactive = value
 
     @property
-    def email(self):
+    def email(self) -> str:
         return self.__email
     
     @email.setter
-    def email(self, value):
-        self.__update_database_record('email', value)
+    def email(self, value:str) -> None:
+        self.__update_database_record('accountemail', value)
         self.__email = value
+        self.__update_cognito_record('email', value)
 
     @property
-    def first_name(self):
+    def first_name(self) -> str:
         return self.__first_name
     
     @first_name.setter
-    def first_name(self, value):
+    def first_name(self, value:str) -> None:
         self.__update_database_record('accountfirstname', value)
         self.__first_name = value
+        self.__update_cognito_record('given_name',value)
 
     @property
-    def last_name(self):
+    def last_name(self) -> str:
         return self.__last_name
     
     @last_name.setter
-    def last_name(self, value):
+    def last_name(self, value:str) -> None:
         self.__update_database_record('accountlastname', value)
         self.__last_name = value
+        self.__update_cognito_record('family_name',value)
 
     @property
     def is_authenticated(self):
@@ -247,9 +252,5 @@ class ODM2User(User):
     def is_staff(self) -> bool:
         return self.__is_admin
     
-    def set_organization(self, organization_id:int) -> None:
-        affiliation_id = self.affiliation_id
-        #TODO: verify that all users get a base affiliation record on account creation
-        odm2_engine.update_object(models.Affilations, affiliation_id, {'organizationid':organization_id})
 
 

@@ -62,6 +62,7 @@ def account(request:HttpRequest) -> HttpResponse:
 def update_account(request:HttpRequest) -> HttpResponse:
     form_data = request.POST.dict()
     user = request.user
+    user._set_access_token(request.session['TOKEN'])
     try:
         for key, value in form_data.items():
             current_value = getattr(user, key)
