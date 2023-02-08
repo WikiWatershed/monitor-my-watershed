@@ -1,30 +1,28 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import models
+from accounts.base_user import User
+from accounts.backend import CognitoBackend
 
-from django.db import models
-from django.contrib.auth.models import AbstractUser
+#DEPRECATED: Work on revising code to use cognito.user.ODM2User class
+#TODO: 
+class Account(models.Model):
+    accountid = models.IntegerField(primary_key=True)   
+    cognitoid = models.CharField(max_length=255)
+    accountemail = models.CharField(max_length=255)
+    accountfirstname = models.CharField(max_length=255)
+    accountmiddlename = models.CharField(max_length=255)
+    accountlastname = models.CharField(max_length=255)
+    active = models.BooleanField()
+    issiteadmin = models.BooleanField()
 
-from dataloader.models import Affiliation
+    def get_user(self) -> User:
+        """Helper method to convert an account record to the corresponding User object"""
+        user = CognitoBackend.init_user_from_id(self.accountid)
+        return user
 
+    @property
+    def full_name(self):
+        return f'{self.accountfirstname} {self.accountlastname}'
 
-#class User(AbstractUser):
-#    affiliation_id = models.IntegerField(null=True)  # Temporarily nullable
-#    email = models.EmailField(max_length=255, unique=True, blank=False)
-#    organization_code = models.CharField(max_length=51, blank=True, null=True)
-#    organization_name = models.CharField(max_length=256, blank=True, null=True)
-#
-#    @property
-#    def affiliation(self):
-#        return Affiliation.objects.get(pk=self.affiliation_id)
-#
-#    def owns_site(self, registration):
-#        return registration.django_user == self
-#
-#    def can_administer_site(self, registration):
-#        return self.is_staff or registration.django_user == self
-#
-#    class Meta:
-#        db_table = 'auth_user'
-#
+    class Meta:
+        db_table=f'odm2"."accounts'
+

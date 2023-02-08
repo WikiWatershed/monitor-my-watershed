@@ -17,7 +17,7 @@ from django.conf import settings
 from django.db import models
 from six import python_2_unicode_compatible
 
-import cognito.models
+import accounts.models
 
 # TODO: function to handle the file upload folder for file fields.
 
@@ -432,7 +432,7 @@ class Organization(ODM2Model):
     organization_link = models.CharField(db_column='organizationlink', blank=True, max_length=255)
     parent_organization = models.ForeignKey('self', db_column='parentorganizationid', blank=True, null=True, on_delete=models.CASCADE)
 
-    accounts = models.ManyToManyField(cognito.models.Account, through='Affiliation')
+    accounts = models.ManyToManyField(accounts.models.Account, through='Affiliation')
 
     objects = OrganizationQuerySet.as_manager()
 
@@ -452,9 +452,9 @@ class Organization(ODM2Model):
 @python_2_unicode_compatible
 class Affiliation(ODM2Model):
     affiliation_id = models.AutoField(db_column='affiliationid', primary_key=True)
-    account_id = models.ForeignKey(cognito.models.Account, related_name='affiliations', db_column='accountid', on_delete=models.CASCADE)
+    account_id = models.ForeignKey(accounts.models.Account, related_name='affiliations', db_column='accountid', on_delete=models.CASCADE)
     organization = models.ForeignKey('Organization', related_name='affiliations', db_column='organizationid', on_delete=models.CASCADE, blank=True, null=True)
-    is_primary_organization_contact = models.NullBooleanField(db_column='isprimaryorganizationcontact', default=None)
+    is_primary_organization_contact = models.BooleanField(db_column='isprimaryorganizationcontact', default=None, null=True)
     affiliation_start_date = models.DateField(db_column='affiliationstartdate')
     affiliation_end_date = models.DateField(db_column='affiliationenddate', blank=True, null=True)
     primary_phone = models.CharField(db_column='primaryphone', blank=True, max_length=50)

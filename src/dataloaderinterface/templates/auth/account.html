@@ -1,0 +1,183 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load static %}
+{% load helpers %}
+{% load widget_tweaks %}
+{% block page_title %}
+    <title>Account Details</title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-dark"></div>
+
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <div id="profile-banner" class="row ribbon-content-close bg-dark-teal">
+                <h3 data-profile-mode="view" class="display-4 profile-name">
+                    <i class="material-icons">person</i>{{ user.first_name }} {{ user.last_name }}</h3>
+
+                <h3 data-profile-mode="edit" class="display-4 hidden">Edit Profile Information</h3>
+            </div>
+
+            <button id="btn-edit-profile"
+                    class="mdl-button--trans fab-trans pull-right mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored mdl-shadow--2dp">
+                <i class="material-icons">mode_edit</i>
+            </button>
+
+            <div data-profile-mode="edit" class="mdl-tooltip" data-mdl-for="btn-edit-profile">
+                Edit Profile Information
+            </div>
+
+            <span id="btn-cancel-profile-edit"
+                  class="pull-right mdl-button--trans mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                                Cancel
+            </span>
+
+            <button id="btn-update-user" type="submit" value="Register User"
+                    class="pull-right mdl-button--trans mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
+                Save Changes
+            </button>
+
+            <div class="row">
+                <section class="page-content user-registration col-lg-12">
+                    <header>
+                        {% include 'includes/messages.template.html' with messages=messages %}
+                    </header>
+                </section>
+            </div>
+
+            <div class="row" data-profile-mode="view">
+                <div class="col-lg-6 col-sm-12">
+                    <table id="profile-details-table">
+                        <tr>
+                            <td><h6 class="title text-muted"><i class="fa fa-user-circle-o" aria-hidden="true"></i> Username:</h6>
+                            </td>
+                            <td><h6>{{ user.username }}</h6></td>
+                        </tr>
+                        <tr>
+                            <td><h6 class="title text-muted"><i class="fa fa-envelope" aria-hidden="true"></i> Email Address:</h6>
+                            </td>
+                            <td><h6>{{ user.email }}</h6></td>
+                        </tr>
+                        <tr>
+                            <td><h6 class="title text-muted"><i class="fa fa-building" aria-hidden="true"></i> Organization:</h6>
+                            </td>
+                            <td><h6>{{ user.organization_name }}</h6></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row hidden" data-profile-mode="edit">
+                <div class="col-sm-12 col-md-6">
+                    <form id="profile-form" action="/update_account/" method="post" enctype="multipart/form-data" role="form">
+                        {% csrf_token %}
+                        <fieldset class="form-fieldset">
+                            <div class="form-group user-fields">
+                                <div class="row">
+                                    <div class="col-sm-12 col-sm-6">
+                                        <label class="control-label" for="id_first_name">
+                                            <i class="fa fa-user" aria-hidden="true"></i>
+                                            Enter a first name
+                                        </label>
+                                        <input id="id_first_name" value="{{ user.first_name }}" class="form-control form-field">
+                                    </div>
+
+                                    <div class="col-sm-12 col-sm-6">
+                                        <label class="control-label" for="id_last_name">
+                                            <i class="fa fa-user" aria-hidden="true"></i>
+                                            Enter a last name
+                                        </label>
+                                        <input id="id_last_name" value="{{ user.last_name }}" class="form-control form-field">
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <label class="control-label" for="id_email_address">
+                                            <i class="fa fa-envelope" aria-hidden="true"></i>
+                                            Enter your email address
+                                        </label>
+                                        <input id="id_email" value="{{ user.email }}" class="form-control form-field">
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <label class="control-label" for="id_username">
+                                            <i class="fa fa-user-circle-o" aria-hidden="true"></i> Choose a
+                                            username
+                                        </label>
+                                        <input id="id_username" value="{{ user.username }}" class="form-control form-field">
+                                    </div>
+
+                                    <div class="col-sm-12">
+                                        <label class="control-label" for="id_organization">
+                                            <i class="fa fa-building" aria-hidden="true"></i>
+                                            Organization
+                                        </label>
+                                        <i id="organization-help" class="material-icons text-muted help-icon">help</i>
+                                        <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--right"
+                                        data-mdl-for="organization-help">
+                                        </div>
+                                        <select id="id_organization_id" class="form-control form-field" org="{{user.organization_id}}" placeholder="Choose your affiliated organization">{{user.organization.name}}</select>
+                                    </div>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="organization-dialog" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog vertical-align-center">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4>New Organization</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group col-lg-12 organization-fields">
+                         {% for field in organization_form %}
+                                <div class="form-field col-lg-12 {% if field.field.required %}required-field{% endif %} {% if field.errors %}has-error{% endif %}">
+                                    <label class="control-label"
+                                           for="{{ field.id_for_label }}">{{ field.label }}</label> {{ field.errors }}
+                                    {% with "placeholder:"|add:field.help_text as placeholder %}
+                                        {{ field|add_class:"form-control input-sm"|attr:placeholder }}
+                                    {% endwith %}
+                                </div>
+                        {% endfor %}
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="organization-modal-close" data-dismiss="modal"
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                            Close
+                        </button>
+                        <button id="new-organization-button" type="button"
+                                class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect">
+                            Add New Organization
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block styles %}
+    {{ block.super }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" />
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/vendor/mdl/dialog-polyfill.css' %}">
+    <link rel="stylesheet" href="{% static 'dataloaderinterface/css/hydroshare-styles.css' %}">
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/user-form.js' %}"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
+    <script src="{% static 'dataloaderinterface/js/vendor/mdl/dialog-polyfill.js' %}"></script>
+    <script src="{% static 'dataloaderinterface/js/hydroshare/hs-profile-dialog.js' %}"></script>
+{% endblock scripts %}

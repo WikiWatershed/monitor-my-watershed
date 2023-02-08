@@ -1,20 +1,21 @@
-from cognito.base_user import User
-from typing import Any
-from typing import Union
-from typing import Dict
-
 from collections.abc import Mapping
+from typing import Any, Union, Dict
+import datetime
+
 from sqlalchemy.orm import Query
 
-import dataloaderinterface
+from accounts.base_user import User
 import dataloader
-
+from accounts.cognito_updater import CognitoUpdater
 import odm2
 from odm2 import odm2datamodels
+
 models = odm2datamodels.models
 odm2_engine = odm2datamodels.odm2_engine
 
 class ODM2User(User):
+
+    __cognito_updater = CognitoUpdater()
 
     @classmethod
     def from_mapping(cls, mapping:Mapping[str, Any]) -> "User":
@@ -22,14 +23,14 @@ class ODM2User(User):
         instance = cls()
         
         # define ODM2User properties using the mapping
-        instance._user_id = int(mapping['accountid'])
-        instance._cognitoid = str(mapping['cognitoid'])
-        instance._username = str(mapping['username'])
-        instance._isactive = bool(mapping['active'])
-        instance._email = str(mapping['accountemail'])
-        instance._first_name = str(mapping['accountfirstname'])
-        instance._last_name = str(mapping['accountlastname'])
-        instance._is_admin = bool(mapping['issiteadmin'])
+        instance.__user_id = int(mapping['accountid'])
+        instance.__cognitoid = str(mapping['cognitoid'])
+        instance.__username = str(mapping['username'])
+        instance.__isactive = bool(mapping['active'])
+        instance.__email = str(mapping['accountemail'])
+        instance.__first_name = str(mapping['accountfirstname'])
+        instance.__last_name = str(mapping['accountlastname'])
+        instance.__is_admin = bool(mapping['issiteadmin'])
         return instance
 
     @classmethod
@@ -53,6 +54,14 @@ class ODM2User(User):
         user.active = True
         user.issiteadmin = False
         pkey = odm2_engine.create_object(user)
+
+        #create affiliation record
+        affiliation = models.Affiliations()
+        affiliation.affiliationstartdate = datetime.datetime.now()
+        affiliation.primaryemail = mapping['email']
+        affiliation.accountid = pkey
+        odm2_engine.create_object(affiliation) 
+
         return cls.from_userid(userid=pkey)
 
     @classmethod
@@ -88,57 +97,85 @@ class ODM2User(User):
         else:
             return cls.from_mapping(user_dict)
 
+    def _set_access_token(self, token:str) -> None:
+        """Protected method for use on backend. Sets Cognito access token"""
+        self.__access_token = token
+
+    def _get_access_token(self) -> str:
+        return self.__access_token
+
+    def __update_database_record(self, field_name:str, value:Any) -> None:
+        odm2_engine.update_object(
+            model=models.Accounts, 
+            pkey=self.user_id,
+            data={field_name:value},
+        )
+
+    def __update_cognito_record(self, attribute_name:str, attribute_value:str) -> None:
+        self.__cognito_updater.update_user_attribute(self, attribute_name, attribute_value)
+
     #PRT - TODO: The setters should also commit changes to the database and probably 
     # back to cognito. Makes me wonder if we even need settings in this context.
     # should evaluate this need and finish implementation or remove setting support.  
+
+    #primary key for postgres database. Keep as ReadOnly.
     @property
     def user_id(self):
-        return self._user_id
+        return self.__user_id
 
+    #primary key for cognito. Keep as ReadOnly.
     @property
     def congitoid(self):
-        return self._congitoid
+        return self.__congitoid
 
     @property
-    def username(self):
-        return self._username
+    def username(self) -> str:
+        return self.__username
     
     @username.setter
-    def username(self, value):
-        self._username = value
+    def username(self, value:str) -> None:
+        self.__update_database_record('username', value)
+        self.__username = value
+        self.__update_cognito_record('preferred_username', value)
 
     @property
     def is_active(self):
-        return self._isactive
+        return self.__isactive
     
     @is_active.setter
-    def isactive(self, value):
+    def isactive(self, value:bool):
         if isinstance(value, bool):
             self._isactive = value
 
     @property
-    def email(self):
-        return self._email
+    def email(self) -> str:
+        return self.__email
     
     @email.setter
-    def email(self, value):
-        self._email = value
+    def email(self, value:str) -> None:
+        self.__update_database_record('accountemail', value)
+        self.__email = value
+        self.__update_cognito_record('email', value)
 
     @property
-    def first_name(self):
-        return self._first_name
+    def first_name(self) -> str:
+        return self.__first_name
     
     @first_name.setter
-    def first_name(self, value):
-        self._first_name = value
+    def first_name(self, value:str) -> None:
+        self.__update_database_record('accountfirstname', value)
+        self.__first_name = value
+        self.__update_cognito_record('given_name',value)
 
     @property
-    def last_name(self):
-        return self._last_name
+    def last_name(self) -> str:
+        return self.__last_name
     
     @last_name.setter
-    def last_name(self, value):
-        self._last_name = value
+    def last_name(self, value:str) -> None:
+        self.__update_database_record('accountlastname', value)
+        self.__last_name = value
+        self.__update_cognito_record('family_name',value)
 
     @property
     def is_authenticated(self):
@@ -186,15 +223,33 @@ class ODM2User(User):
     def organization_code(self) -> str:
         affiliation = self._get_affiliation()
         if affiliation is None: return ""
-        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
-        return organization.organizationcode
+        try:
+            organization = odm2_engine.read_object(models.Organizations, affiliation['organizationid'])
+            return organization['organizationcode']
+        except odm2.exceptions.ObjectNotFound:
+            return ""
 
     @property
     def organization_name(self) -> str:
         affiliation = self._get_affiliation()
         if affiliation is None: return ""
-        organization = odm2_engine.read_object(models.Organization, affiliation.affiliationid)
-        return organization.organizationname
+        try: 
+            organization = odm2_engine.read_object(models.Organizations, affiliation['organizationid'])
+            return organization['organizationname']
+        except odm2.exceptions.ObjectNotFound:
+            return ""
+
+    @property 
+    def organization_id(self) -> int|None:
+        affiliation = self._get_affiliation()
+        if affiliation is None: return None
+        return affiliation['organizationid']
+        
+    @organization_id.setter
+    def organization_id(self, value:int) -> None:
+        #TODO: verify that all users get a base affiliation record on account creation
+        affiliation_id = self.affiliation_id
+        odm2_engine.update_object(models.Affiliations, affiliation_id, {'organizationid':value})
 
     @property
     def affiliation(self) -> Union["Affiliation", None]: 
@@ -204,4 +259,7 @@ class ODM2User(User):
     
     @property
     def is_staff(self) -> bool:
-        return self._is_admin
+        return self.__is_admin
+    
+
+

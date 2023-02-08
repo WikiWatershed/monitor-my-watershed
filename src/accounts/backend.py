@@ -12,8 +12,8 @@ import hashlib
 import hmac
 
 from typing import Union
-from cognito.base_user import User, AnonymousUser
-from cognito.user import ODM2User
+from accounts.base_user import User, AnonymousUser
+from accounts.user import ODM2User
 
 # AWS Credential Info which should be specified in the application settings 
 AWS_REGION_NAME = settings.COGNITO_REGION
@@ -48,7 +48,7 @@ class CognitoBackend(BaseBackend):
                                    aws_access_key_id=AWS_ACCESS_KEY_ID, 
                                    aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
     
-    def authenticate(self, username:str=None, password:str=None, token:str=None, code:str=None) -> Union[User]:
+    def authenticate(self, username:str=None, password:str=None, token:str=None, code:str=None) -> User:
         """
         Main method for user authenication which interfaces with AWS Cognito and exchanges provide information for Cognito username which 
         is later mapped to an application user_id. There are 3 acceptable inputs for authenications
@@ -87,7 +87,7 @@ class CognitoBackend(BaseBackend):
     def _authenticate_token(self,token) -> User:
         """Internal Method - Uses a user Access Token to fetch user information (primarily need username) from AWS Cognito user pool"""
         response = self._client.get_user(AccessToken=token)
-        return self._init_user_response(response)
+        return self._init_user_response(response, token)
 
     def _authenticate_code(self, code) -> User:
         """Internal Method - Exchanges Authorization Code for User Refresh Token 
@@ -125,7 +125,7 @@ class CognitoBackend(BaseBackend):
         hmac_obj = hmac.new(bytearray(AWS_CLIENT_SECRET, 'utf-8'), message, hashlib.sha256)
         return base64.standard_b64encode(hmac_obj.digest()).decode('utf-8') 
         
-    def _init_user_response(self, response) -> User:
+    def _init_user_response(self, response, token:str) -> User:
         """ Internal Method - Takes AWS response and return an instance of a User 
         
         Uses the 'from_mapping' method of the User class. If the method returns a None,
@@ -133,11 +133,16 @@ class CognitoBackend(BaseBackend):
 
         """
         user_attributes = {list(item.values())[0]:list(item.values())[1] for item in response['UserAttributes']}
+        if 'preferred_username' not in user_attributes:
+            user_attributes['preferred_username'] = response['Username']
         
         user = USER_MODEL.from_cognitoid(user_attributes[AWS_USERFIELD])
-        if user is not None: return user
+        if user is not None: 
+            user._set_access_token(token)
+            return user
 
         user = USER_MODEL.create_new_user(user_attributes)
+        user._set_access_token(token)
         return user
 
     @classmethod
@@ -168,8 +173,11 @@ class CognitoBackend(BaseBackend):
             request.session.cycle_key()
 
         request.session[SESSION_KEY] = user.user_id
+        request.session['TOKEN'] = user._get_access_token()
         request.session[BACKEND_SESSION_KEY] = 'CognitoBackend'
         request.session[HASH_SESSION_KEY] = session_auth_hash
         if hasattr(request, 'user'):
             request.user = user
         rotate_token(request)
+
+

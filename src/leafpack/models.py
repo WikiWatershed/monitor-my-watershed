@@ -8,7 +8,7 @@ from operator import __or__ as OR
 
 from functools import reduce
 
-import cognito
+import accounts
 
 class Macroinvertebrate(models.Model):
     """
@@ -94,9 +94,9 @@ class LeafPack(models.Model):
     placement_water_temp = models.FloatField(blank=True, null=True)
     retrieval_air_temp = models.FloatField(blank=True, null=True)
     retrieval_water_temp = models.FloatField(blank=True, null=True)
-    had_storm = models.NullBooleanField()
-    had_flood = models.NullBooleanField()
-    had_drought = models.NullBooleanField()
+    had_storm = models.BooleanField(null=True)
+    had_flood = models.BooleanField(null=True)
+    had_drought = models.BooleanField(null=True)
     storm_count = models.IntegerField(default=0)
     storm_precipitation = models.FloatField(default=0)
     types = models.ManyToManyField('LeafPackType')
@@ -250,7 +250,7 @@ class LeafPackType(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     #TODO: remove auth dependency on django models
-    created_by = models.ForeignKey(cognito.models.Account, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = models.ForeignKey(accounts.models.Account, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return self.name

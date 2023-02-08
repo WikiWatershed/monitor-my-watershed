@@ -30,7 +30,7 @@ from django.http import HttpResponse, JsonResponse
 from typing import Union
 import streamwatch
 
-import cognito
+import accounts
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -250,7 +250,7 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         data = self.request.POST or {}
         context = super(SiteUpdateView, self).get_context_data()
 
-        account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+        account = accounts.models.Account.objects.get(pk=self.request.user.user_id)
         site_alert = account.site_alerts\
             .filter(site_registration__sampling_feature_code=self.get_object().sampling_feature_code)\
             .first()
@@ -275,7 +275,7 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         if form.is_valid() and notify_form.is_valid():
             form.instance.affiliation_id = form.cleaned_data['affiliation_id'] or request.user.affiliation_id
 
-            account = cognito.models.Account.objects.get(pk=self.request.user.user_id)
+            account = accounts.models.Account.objects.get(pk=self.request.user.user_id)
             site_alert = account.site_alerts.filter(site_registration=site_registration).first()
 
             if notify_form.cleaned_data['notify'] and site_alert:
@@ -337,7 +337,7 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
             self.object = form.save()
 
             if notify_form.cleaned_data['notify']:
-                account = cognito.models.Account.objects.get(pk=request.user.user_id)
+                account = accounts.models.Account.objects.get(pk=request.user.user_id)
                 account.site_alerts.create(
                     site_registration=form.instance,
                     hours_threshold=timedelta(hours=int(notify_form.data['hours_threshold']))

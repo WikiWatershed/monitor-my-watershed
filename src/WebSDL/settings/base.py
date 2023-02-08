@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'reset_migrations',
     'timeseries_visualization',
     'formtools',
-    'cognito.apps.CognitoConfig',
+    'accounts.apps.AccountsConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +77,7 @@ MIDDLEWARE = [
     'hydroshare_util.middleware.AuthMiddleware',
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django_cprofile_middleware.middleware.ProfilerMiddleware',
-    'cognito.user_middleware.UserMiddleware',
+    'accounts.user_middleware.UserMiddleware',
 ]
 
 DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
@@ -129,6 +129,7 @@ for database in data['databases']:
         'TEST': database['test'] if 'test' in database else {},
     }
 DATAMODELCACHE = os.path.join(BASE_DIR, 'odm2', 'modelcache.pkl')
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators

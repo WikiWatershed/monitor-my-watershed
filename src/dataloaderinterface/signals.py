@@ -11,7 +11,7 @@ from dataloaderinterface.models import SiteRegistration, SiteSensor
 #PRT - deprecated
 #from tsa.helpers import TimeSeriesAnalystHelper
 
-import cognito
+import accounts
 
 
 @receiver(pre_save, sender=SiteRegistration)
@@ -30,10 +30,10 @@ def handle_site_registration_pre_save(sender, instance, update_fields=None, **kw
     if hasattr(instance, 'user'): 
         user = instance.user
     else: 
-        user = cognito.user.ODM2User.from_userid(instance.account_id.accountid)
+        user = accounts.user.ODM2User.from_userid(instance.account_id.accountid)
     affiliation = user.affiliation
-    instance.account_id = cognito.models.Account.objects.get(pk=user.user_id)
-    instance.person_id = -999 #PRT - deprecated the use of person with Cognito update   
+    instance.account_id = accounts.models.Account.objects.get(pk=user.user_id)
+    instance.person_id = -999 #PRT - deprecated the use of person with accounts update   
     instance.person_first_name = user.first_name
     instance.person_last_name = user.last_name
     instance.organization_id = affiliation.organization_id
