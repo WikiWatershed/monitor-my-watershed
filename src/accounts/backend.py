@@ -133,6 +133,8 @@ class CognitoBackend(BaseBackend):
 
         """
         user_attributes = {list(item.values())[0]:list(item.values())[1] for item in response['UserAttributes']}
+        if 'preferred_username' not in user_attributes:
+            user_attributes['preferred_username'] = response['Username']
         
         user = USER_MODEL.from_cognitoid(user_attributes[AWS_USERFIELD])
         if user is not None: 

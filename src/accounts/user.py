@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from typing import Any, Union, Dict
+import datetime
 
 from sqlalchemy.orm import Query
 
@@ -53,6 +54,14 @@ class ODM2User(User):
         user.active = True
         user.issiteadmin = False
         pkey = odm2_engine.create_object(user)
+
+        #create affiliation record
+        affiliation = models.Affiliations()
+        affiliation.affiliationstartdate = datetime.datetime.now()
+        affiliation.primaryemail = mapping['email']
+        affiliation.accountid = pkey
+        odm2_engine.create_object(affiliation) 
+
         return cls.from_userid(userid=pkey)
 
     @classmethod
