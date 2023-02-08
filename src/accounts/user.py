@@ -240,7 +240,7 @@ class ODM2User(User):
             return ""
 
     @property 
-    def organization_id(self) -> int|None:
+    def organization_id(self) -> Union[int,None]:
         affiliation = self._get_affiliation()
         if affiliation is None: return None
         return affiliation['organizationid']
