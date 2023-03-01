@@ -87,6 +87,12 @@ class SiteRegistration(models.Model):
         return self.account_id_id
 
     @property
+    def has_streamwatch(self) -> bool:
+        #TODO: implement database lookup to verify if site actual does have streamwatch
+        return True
+
+
+    @property
     def odm2_affiliation(self):
         try:
             return Affiliation.objects.get(pk=self.affiliation_id)
