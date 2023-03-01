@@ -83,6 +83,10 @@ class SiteRegistration(models.Model):
             return None
 
     @property
+    def django_user(self):
+        return self.account_id_id
+
+    @property
     def odm2_affiliation(self):
         try:
             return Affiliation.objects.get(pk=self.affiliation_id)
