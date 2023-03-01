@@ -179,6 +179,7 @@ class ODM2Engine:
             if obj is None: raise ObjectNotFound(f"No '{model.__name__}' object found with {pkey_name} = {pkey}")
             obj.update_from_dict(data)
             session.commit()
+            data[pkey_name] = pkey  
 
     def delete_object(self, model:Type[Base], pkey:Union[int, str]) -> None:
         with self.session_maker() as session:
