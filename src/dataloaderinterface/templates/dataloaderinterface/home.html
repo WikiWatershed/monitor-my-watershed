@@ -18,13 +18,20 @@
              id="banner-image-container">
             <div class="legend-container" {% if user.is_authenticated %}style="height: 400px;"{% endif %}>
                 <div class="row logos-row">
-                    <div class="col-6 col-sm-3 offset-sm-3">
+                    <div class="col-4 col-sm-3 offset-sm-2">
                         <img class="img-fluid" src="{% static "dataloaderinterface/images/envirodiy_logo.png" %}" alt="EnviroDIY Logo">
                     </div>
-                    <div class="col-6 col-sm-3">
+                    <div class="col-4 col-sm-3">
                         <img class="img-fluid"
                              src="{% static "dataloaderinterface/images/Leaf-Pack-Network-logo_horiz.png" %}"
                              alt="Leaf Pack Network Logo">
+                    </div>
+                    <div class="col-4 col-sm-3">
+                        <img class="img-fluid"
+                             src="{% static "dataloaderinterface/images/SWSchools_NO_TWI_logo.png" %}"
+                             alt="StreamWatch Schools Logo"
+                             style="max-height:96px;"
+                        >
                     </div>
                 </div>
                 <div class="banner-legend text-center">
