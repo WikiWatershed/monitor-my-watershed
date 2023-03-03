@@ -81,8 +81,8 @@ def affiliation_to_person(afflication_id:int) -> str:
     """Returns the person name and organization for a given afflication"""
     affiliation = odm2_engine.read_object(odm2_models.Affiliations, afflication_id)
     organization = odm2_engine.read_object(odm2_models.Organizations, affiliation['organizationid'])
-    person = odm2_engine.read_object(odm2_models.People, affiliation['personid'])
-    return f"{person['personfirstname']} {person['personlastname']} ({organization['organizationname']})"
+    account = odm2_engine.read_object(odm2_models.Accounts, affiliation['accountid'])
+    return f"{account['accountfirstname']} {account['accountlastname']} ({organization['organizationname']})"
 
 
 def get_assessment_summary_information(sampling_feature_code:str) -> dict[str,Any]:
