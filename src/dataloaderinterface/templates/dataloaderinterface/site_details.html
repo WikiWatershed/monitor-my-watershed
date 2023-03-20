@@ -543,30 +543,29 @@
                             alt="Leaf Pack Network logo">
                     </h5>
 
-                    {% if can_administer_site %}
                     <div class="buttons-toolbar row">
-                        <div class="col-12 text-right">
-                            <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'streamwatches' site.sampling_feature_code %}">
+                        <div class="col-12 text-right" style="margin-top:0px;">
+                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                            href="{% url 'streamwatch:csv' site.sampling_feature.sampling_feature_code streamwatch_actionids %}"
+                            download>
+                            <i class="material-icons center-icon">cloud_download</i>
+                            Download Assessment Data
+                            </a>
+                            {% if can_administer_site %}
+                                <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                href="{% url 'streamwatches' site.sampling_feature_code %}">
                                 <i class="material-icons center-icon">assignment</i>
                                 Manage Assessments
                             </a>
+                            {% endif %}
                         </div>
-                        <br>
                     </div>
-                    {% endif %}
+                    
                 </div>
+
 
                 <div class="col-12 streamwatch-site-summary">
                     {% if streamwatch %}
-                        <div class="buttons-toolbar col-12 text-right">
-                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'streamwatch:csv' site.sampling_feature.sampling_feature_code streamwatch_actionids %}"
-                               download>
-                                <i class="material-icons center-icon">cloud_download</i>
-                                Download Assessment Data
-                            </a>
-                        </div>    
                         <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover" id="streamwatch-site-summary">
                             <thead>
                                 <tr>                               
