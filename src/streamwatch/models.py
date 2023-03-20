@@ -621,6 +621,29 @@ class StreamWatchODM2Adapter():
         
     def _update_special_cases(self, form_data:Dict[str,Any]) -> None:
         """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""
+        
+        def get_actionby_bridgeid(action_id:int, lead:bool=True) -> List[Dict[str,Any]]:
+            query = (sqlalchemy.select(odm2_models.ActionBy.bridgeid)
+                .where(odm2_models.ActionBy.actionid == action_id)
+                .where(odm2_models.ActionBy.isactionlead == lead)
+                )
+            records = odm2_engine.read_query(query, output_format='dict')
+            return records[0]['bridgeid']
+        
+        def update_investigator(field_name:str, is_lead:bool) -> None:
+            if form_data[field_name] and self._attributes[field_name]:
+                bridge_id = get_actionby_bridgeid(self.action_id, is_lead)
+                odm2_engine.update_object(odm2_models.ActionBy, bridge_id, {'affiliationid':form_data[field_name].affiliation_id})
+            elif form_data[field_name] and not self._attributes[field_name]:
+                action_by = odm2_models.ActionBy()
+                action_by.actionid = self.action_id
+                action_by.affiliationid = form_data[field_name].affiliation_id 
+                action_by.isactionlead = is_lead
+                odm2_engine.create_object(action_by)
+            elif not form_data[field_name] and self._attributes[field_name]:
+                bridge_id = get_actionby_bridgeid(self.action_id, is_lead)
+                odm2_engine.delete_object(odm2_models.ActionBy, bridge_id)
+
         if (form_data['collect_date'] != self._attributes['collect_date'] 
             or form_data['collect_time'] != self._attributes['collect_time']
         ):
@@ -641,29 +664,6 @@ class StreamWatchODM2Adapter():
                 {'actiondescription': ','.join(form_data['assessment_type'])}
             )      
 
-        def get_actionby_bridgeid(action_id:int, lead:bool=True) -> List[Dict[str,Any]]:
-            query = (sqlalchemy.select(odm2_models.ActionBy.bridgeid)
-                .where(odm2_models.ActionBy.actionid == action_id)
-                .where(odm2_models.ActionBy.isactionlead == lead)
-                )
-            records = odm2_engine.read_query(query, output_format='dict')
-            return records[0]['bridgeid']
-
-        if form_data['investigator1'] != self._attributes['investigator1']:
-            bridge_id = get_actionby_bridgeid(self.action_id, True)
-            odm2_engine.update_object(odm2_models.ActionBy, bridge_id, {'affiliationid':form_data['investigator1'].affiliation_id})
-
-        if form_data['investigator2'] != self._attributes['investigator2']:
-            if form_data['investigator2'] and self._attributes['investigator2']:
-                bridge_id = get_actionby_bridgeid(self.action_id, False)
-                odm2_engine.update_object(odm2_models.ActionBy, bridge_id, {'affiliationid':form_data['investigator2'].affiliation_id})
-            elif form_data['investigator2'] and not self._attributes['investigator2']:
-                action_by = odm2_models.ActionBy()
-                action_by.actionid = self.action_id
-                action_by.affiliationid = form_data['investigator2'].affiliation_id 
-                action_by.isactionlead = False
-                odm2_engine.create_object(action_by)
-            elif not form_data['investigator2'] and self._attributes['investigator2']:
-                bridge_id = get_actionby_bridgeid(self.action_id, False)
-                odm2_engine.delete_object(odm2_models.ActionBy, bridge_id)
+        update_investigator('investigator1', True)
+        update_investigator('investigator2', False)
 

@@ -213,8 +213,6 @@ def csv_export(request, sampling_feature_code:str, actionids:str):
     :param pk: the second URL parameter and id of the leafpack experiement to download 
     """
 
-    DELIMITER = ','
-
     def format_metadata(site:SiteRegistration) -> List[List[str]]:
         result = [
             [f'# Site Information'],
