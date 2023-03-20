@@ -559,6 +559,14 @@
 
                 <div class="col-12 streamwatch-site-summary">
                     {% if streamwatch %}
+                        <div class="buttons-toolbar col-12 text-right">
+                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                               href="{% url 'streamwatch:csv' site.sampling_feature.sampling_feature_code streamwatch_actionids %}"
+                               download>
+                                <i class="material-icons center-icon">cloud_download</i>
+                                Download Assessment Data
+                            </a>
+                        </div>    
                         <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover" id="streamwatch-site-summary">
                             <thead>
                                 <tr>                               
