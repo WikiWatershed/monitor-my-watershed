@@ -1,67 +1,48 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
-import os
-from collections import OrderedDict
-from datetime import time, timedelta, datetime
-from typing import Union, Dict, Any, final
-
+from datetime import timedelta, datetime
 from io import StringIO
-from django.utils import encoding
+import os
+from typing import Union, Dict, Any, Iterable, List, Tuple
 
-import requests
 from django.conf import settings
-from django.core.mail import send_mail
-from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpRequest
 from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
-from rest_framework.generics import GenericAPIView
-
-from dataloader.models import ProfileResultValue, SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
-from django.db.models.expressions import F
 from django.utils.dateparse import parse_datetime
+from django.core.handlers.wsgi import WSGIRequest
+from django.conf import settings
+
 from rest_framework import exceptions
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import pandas as pd
+import sqlalchemy
+from sqlalchemy.sql import text
+import psycopg2
+
+from dataloader.models import SamplingFeature, Unit, EquipmentModel, TimeSeriesResult
 from dataloaderinterface.forms import SiteSensorForm, SensorDataForm
 from dataloaderinterface.models import SiteSensor, SiteRegistration, SensorOutput, SensorMeasurement
 from dataloaderservices.auth import UUIDAuthentication
 from dataloaderservices.serializers import OrganizationSerializer
-
 from leafpack.models import LeafPack
-
-from typing import Iterable, List, Tuple
-from django.core.handlers.wsgi import WSGIRequest
-
-import pandas as pd
-
-#PRT - temporary work around after replacing InfluxDB but not replacement models
-import sqlalchemy
-from sqlalchemy.sql import text
-import psycopg2
-from django.conf import settings
+from odm2 import odm2datamodels
 
 _dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 _db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10, pool_recycle=1800)
 
-from odm2 import odm2datamodels
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
-import sqlalchemy
-from sqlalchemy.sql import func
-import pandas as pd
-import datetime 
-
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class ModelVariablesApi(APIView):
     authentication_classes = (SessionAuthentication, )
