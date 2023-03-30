@@ -186,7 +186,7 @@ class AnonymousUser(User):
 
     @property
     def affiliation_id(self) -> Union[int,None]:    
-        None
+        return None
 
     @property
     def organization_code(self) -> str:
@@ -198,7 +198,7 @@ class AnonymousUser(User):
 
     @property
     def affiliation(self) -> Union["Affiliation", None]: 
-        None
+        return None
     
     @property
     def is_staff(self) -> bool:
