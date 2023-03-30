@@ -2,7 +2,7 @@
 # ------------------
 # Organization: {affiliation.organization}
 # SourceLink: {source_link}
-# ContactName: {affiliation.person}
+# ContactName: {affiliation.account_id.accountfirstname} {affiliation.account_id.accountlastname}
 # Phone: {affiliation.primary_phone}
 # Email: {affiliation.primary_email}
 # Citation: {citation}
