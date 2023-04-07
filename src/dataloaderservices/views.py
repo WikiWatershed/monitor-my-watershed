@@ -1,58 +1,48 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
-import os
-from collections import OrderedDict
-from datetime import time, timedelta, datetime
-from typing import Union, Dict, Any, final
-
+from datetime import timedelta, datetime
 from io import StringIO
-from django.utils import encoding
+import os
+from typing import Union, Dict, Any, Iterable, List, Tuple
 
-import requests
 from django.conf import settings
-from django.core.mail import send_mail
-from django.db.utils import IntegrityError
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpRequest
 from django.views.generic.base import View
 from django.db.models import QuerySet
 from django.shortcuts import reverse
-from rest_framework.generics import GenericAPIView
-
-from dataloader.models import ProfileResultValue, SamplingFeature, TimeSeriesResultValue, Unit, EquipmentModel, TimeSeriesResult, Result
-from django.db.models.expressions import F
 from django.utils.dateparse import parse_datetime
+from django.core.handlers.wsgi import WSGIRequest
+from django.conf import settings
+
 from rest_framework import exceptions
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import pandas as pd
+import sqlalchemy
+from sqlalchemy.sql import text
+import psycopg2
+
+from dataloader.models import SamplingFeature, Unit, EquipmentModel, TimeSeriesResult
 from dataloaderinterface.forms import SiteSensorForm, SensorDataForm
 from dataloaderinterface.models import SiteSensor, SiteRegistration, SensorOutput, SensorMeasurement
 from dataloaderservices.auth import UUIDAuthentication
 from dataloaderservices.serializers import OrganizationSerializer
-
 from leafpack.models import LeafPack
-
-from typing import Iterable, List, Tuple
-from django.core.handlers.wsgi import WSGIRequest
-
-import pandas as pd
-
-#PRT - temporary work around after replacing InfluxDB but not replacement models
-import sqlalchemy
-from sqlalchemy.sql import text
-import psycopg2
-from django.conf import settings
+from odm2 import odm2datamodels
 
 _dbsettings = settings.DATABASES['default']
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 _db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10, pool_recycle=1800)
 
+odm2_engine = odm2datamodels.odm2_engine
+odm2_models = odm2datamodels.models
+
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
-
-from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class ModelVariablesApi(APIView):
     authentication_classes = (SessionAuthentication, )
@@ -449,33 +439,35 @@ class CSVDataApi(View):
     @staticmethod
     def get_data_values(time_series_results:QuerySet) -> object:
         result_ids = [result_id[0] for result_id in time_series_results.values_list('pk')]
-        data_values_queryset = TimeSeriesResultValue.objects.filter(result_id__in=result_ids).order_by('value_datetime').values('value_datetime', 'value_datetime_utc_offset', 'result_id', 'data_value')
-        data_values_map = OrderedDict()
-
-        for value in data_values_queryset:
-            data_values_map.setdefault(value['value_datetime'], {}).update({
-                'utc_offset': value['value_datetime_utc_offset'],
-                value['result_id']: value['data_value']
-            })
-
-        data = []
-        for timestamp, values in data_values_map.items():
-            local_timestamp = timestamp + timedelta(hours=values['utc_offset'])
-            row = [
-                local_timestamp.strftime(CSVDataApi.date_format),   # Local DateTime
-                '{0}:00'.format(values['utc_offset']),              # UTC Offset
-                timestamp.strftime(CSVDataApi.date_format)          # UTC DateTime
-            ]
-
-            for result_id in result_ids:
-                try:
-                    row.append(values[result_id])
-                except KeyError:
-                    row.append('')
-
-            data.append(row)
-        return data
-
+        
+        query = (sqlalchemy.select(
+                odm2_models.TimeSeriesResultValues.resultid, 
+                odm2_models.TimeSeriesResultValues.datavalue,
+                odm2_models.TimeSeriesResultValues.valuedatetime,
+                odm2_models.TimeSeriesResultValues.valuedatetimeutcoffset
+            )
+            .filter(odm2_models.TimeSeriesResultValues.resultid.in_(result_ids))
+            .order_by(odm2_models.TimeSeriesResultValues.valuedatetime
+                ,odm2_models.TimeSeriesResultValues.resultid
+            )
+        )
+        df = odm2_engine.read_query(query, output_format='dataframe') 
+        
+        #convert into datetime for vector calculation to utc datetime
+        df['valuedatetime'] = pd.to_datetime(df['valuedatetime'])
+        df['valuedatetime_utc'] = df['valuedatetime'] + pd.to_timedelta(df['valuedatetimeutcoffset'], unit='hours')
+        
+        piv = pd.pivot_table(df, ['datavalue'], ['valuedatetime','valuedatetimeutcoffset','valuedatetime_utc'], ['resultid'])
+        
+        vals = piv.to_numpy()
+        dt =  piv.index.get_level_values(0).astype(str)
+        utc_off = piv.index.get_level_values(1).astype(str)
+        dt_utc =  piv.index.get_level_values(2).astype(str)
+        z = list(zip(dt, utc_off, dt_utc, vals))
+        lst = [[i[0], i[1], i[2], *i[3]] for i in z]
+        
+        return lst
+        
     @staticmethod
     def read_file(fname:str) -> str:
         fpath = os.path.join(os.path.dirname(__file__), 'csv_templates', fname)
