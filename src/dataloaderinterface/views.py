@@ -132,6 +132,8 @@ class SiteDetailView(DetailView):
 
         context['leafpacks'] = LeafPack.objects.filter(site_registration=context['site'].pk).order_by('-placement_date')
         context['streamwatch'] = streamwatch.models.samplingfeature_assessments(self.kwargs[self.slug_field])
+        if context['streamwatch']:
+            context['streamwatch_actionids'] = ','.join([str(a['actionid']) for a in context['streamwatch']])
 
         try:
             context["hydroshare_account"] = self.request.user.hydroshare_account

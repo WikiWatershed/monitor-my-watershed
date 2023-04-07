@@ -26,7 +26,7 @@
 
             <div class="buttons-toolbar row">
                 <div class="col-12 text-right">
-                    <a href="{% url 'streamwatch:csv_download' sampling_feature_code action_id %}"
+                    <a href="{% url 'streamwatch:csv' sampling_feature_code action_id %}"
                        class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
                         <i class="material-icons center-icon">cloud_download</i> Download CSV
                     </a>
@@ -422,7 +422,7 @@
                 </div>
                 <div class="mdl-dialog__actions text-right">
                     <form method="POST"
-                          action="{% autoescape off %}{% url 'streamwatch:delete' sampling_feature_code %}{% endautoescape %}">
+                          action="{% autoescape off %}{% url 'streamwatch:delete' sampling_feature_code action_id%}{% endautoescape %}">
                         {% csrf_token %}
                         <button type="submit" class="mdl-button mdl-button--raised"
                                 style="background: #d9534f; color:#FFF;" id="btn-confirm-delete">Delete

@@ -4,7 +4,7 @@ var filters = {
     dataTypes: {
         key: 'dataType',
         icon: 'cloud_queue',
-        label: 'Data Types',
+        label: 'Programs',
         values: {},
         inclusive: true, // For filter items that can take multiple values from a set of values
         has_search: false

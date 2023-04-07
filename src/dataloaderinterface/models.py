@@ -52,6 +52,7 @@ class SiteRegistration(models.Model):
     closest_town = models.CharField(max_length=255, db_column='ClosestTown', blank=True, null=True)
 
     site_notes = models.TextField(db_column='SiteNotes', blank=True, null=True)
+    streamwatch_assessments = models.IntegerField(db_column='streamwatch_assessments', blank=True, null=True)
 
     #TODO: VERIFY THIS BEHAVIOR
     followed_by = models.ManyToManyField(accounts.models.Account, related_name='followed_sites')
@@ -81,6 +82,15 @@ class SiteRegistration(models.Model):
             return SamplingFeature.objects.get(pk=self.sampling_feature_id)
         except ObjectDoesNotExist:
             return None
+
+    @property
+    def django_user(self):
+        return self.account_id_id
+
+    @property
+    def has_streamwatch(self) -> bool:
+        return self.streamwatch_assessments > 0
+
 
     @property
     def odm2_affiliation(self):
