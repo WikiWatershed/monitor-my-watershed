@@ -14,11 +14,12 @@ allowed_site_types = [
     'Storm sewer', 'Stream gage', 'Tidal stream', 'Water quality station', 'Weather station', 'Wetland', 'Other'
 ]
 
-user_affiliations = [
-    affiliation[0]
-    for affiliation
-    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
-]
+#TODO: need replacement met
+user_affiliations = []
+#    affiliation[0]
+#    for affiliation
+#    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
+#]
 
 
 class SiteTypeSelect(forms.Select):

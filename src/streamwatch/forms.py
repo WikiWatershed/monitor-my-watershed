@@ -1,5 +1,4 @@
 from django import forms
-from django.contrib.auth import get_user_model
 from django.forms import formset_factory
 
 from typing import Dict
@@ -17,9 +16,11 @@ place_holder_choices = (
     )
 
 user_affiliations = [
-    affiliation[0]
+    affiliation.affiliation_id
     for affiliation
-    in get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id')
+    in Affiliation.objects\
+        .filter(organization__isnull=False)\
+        .filter(account_id__isnull=False)
 ]
 measurement_method_choices = (('Meter','Meter'), ('Lamotte', 'Lamotte'))
 
@@ -44,13 +45,15 @@ class SetupForm(forms.Form):
 
     
     investigator1 = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)),
+        #queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
         required=True,
         help_text='Select a user as the main investigator',
         label='Investigator #1'
     )  
     investigator2 = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
+        queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)),
+        #queryset=Affiliation.objects.filter(affiliation_id__in=(user_affiliations)).for_display(),
         required=False,
         help_text='Select a user as the secondary investigator',
         label='Investigator #2'

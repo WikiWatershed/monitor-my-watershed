@@ -23,6 +23,7 @@ from .models import provenance
 from .models import results
 from .models import samplingfeatures
 from .models import simulation
+from .models import auth
 
 OUTPUT_FORMATS = ('json', 'dataframe', 'dict','records')
 
@@ -69,8 +70,9 @@ class Base():
 
 class ODM2Engine:
 
-    def __init__(self, session_maker:sqlalchemy.orm.sessionmaker) -> None:
+    def __init__(self, session_maker:sqlalchemy.orm.sessionmaker, engine:sqlalchemy.engine.Engine) -> None:
         self.session_maker = session_maker
+        self.engine = engine
 
     def read_query(self, 
             query: Union[Query, Select],
@@ -177,6 +179,7 @@ class ODM2Engine:
             if obj is None: raise ObjectNotFound(f"No '{model.__name__}' object found with {pkey_name} = {pkey}")
             obj.update_from_dict(data)
             session.commit()
+            data[pkey_name] = pkey  
 
     def delete_object(self, model:Type[Base], pkey:Union[int, str]) -> None:
         with self.session_maker() as session:
@@ -202,6 +205,7 @@ class Models:
         self._process_schema(results)        
         self._process_schema(samplingfeatures)        
         self._process_schema(simulation)         
+        self._process_schema(auth)         
 
     def _process_schema(self, schema:str) -> None:
         classes = [c for c in dir(schema) if not c.startswith('__')]
@@ -225,7 +229,7 @@ class ODM2DataModels():
         self._engine = engine
         self._session = sqlalchemy.orm.sessionmaker(self._engine)
         self._cached= False
-        self.odm2_engine: ODM2Engine = ODM2Engine(self._session)
+        self.odm2_engine: ODM2Engine = ODM2Engine(self._session, self._engine)
 
         self._model_base = self._prepare_model_base()
         self.models = Models(self._model_base)

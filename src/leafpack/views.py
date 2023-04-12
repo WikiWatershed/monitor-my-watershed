@@ -179,7 +179,7 @@ class LeafPackDetailView(DetailView):
 
         user = self.request.user
         context['can_administer_site'] = user.is_authenticated and user.can_administer_site(self.object.site_registration)
-        context['is_site_owner'] = self.request.user == self.object.site_registration.django_user
+        context['is_site_owner'] = user.id == self.object.site_registration.django_user
 
         return context
 

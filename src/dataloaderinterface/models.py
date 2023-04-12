@@ -13,6 +13,11 @@ from dataloader.models import SamplingFeature, Affiliation, Result, TimeSeriesRe
     Unit, Medium, Organization
 from dataloaderinterface.querysets import SiteRegistrationQuerySet, SensorOutputQuerySet
 
+
+
+#TODO: replace with a different model approach as this has been deprecated
+import accounts.models
+
 class SiteRegistration(models.Model):
     registration_id = models.AutoField(primary_key=True, db_column='RegistrationID')
     registration_token = models.CharField(max_length=64, editable=False, db_column='RegistrationToken', unique=True, default=uuid4)
@@ -20,7 +25,7 @@ class SiteRegistration(models.Model):
     registration_date = models.DateTimeField(db_column='RegistrationDate', default=datetime.utcnow)
     deployment_date = models.DateTimeField(db_column='DeploymentDate', blank=True, null=True)
 
-    django_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='User', related_name='deployed_sites')
+    account_id = models.ForeignKey(accounts.models.Account, on_delete=models.CASCADE, db_column='account_id', related_name='deployed_sites')
     affiliation_id = models.IntegerField(db_column='AffiliationID')
 
     person_id = models.IntegerField(db_column='PersonID', null=True)
@@ -47,9 +52,11 @@ class SiteRegistration(models.Model):
     closest_town = models.CharField(max_length=255, db_column='ClosestTown', blank=True, null=True)
 
     site_notes = models.TextField(db_column='SiteNotes', blank=True, null=True)
+    streamwatch_assessments = models.IntegerField(db_column='streamwatch_assessments', blank=True, null=True)
 
-    followed_by = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='followed_sites')
-    alert_listeners = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='+', through='SiteAlert')
+    #TODO: VERIFY THIS BEHAVIOR
+    followed_by = models.ManyToManyField(accounts.models.Account, related_name='followed_sites')
+    alert_listeners = models.ManyToManyField(accounts.models.Account, related_name='+', through='SiteAlert')
 
     objects = SiteRegistrationQuerySet.as_manager()
 
@@ -75,6 +82,15 @@ class SiteRegistration(models.Model):
             return SamplingFeature.objects.get(pk=self.sampling_feature_id)
         except ObjectDoesNotExist:
             return None
+
+    @property
+    def django_user(self):
+        return self.account_id_id
+
+    @property
+    def has_streamwatch(self) -> bool:
+        return self.streamwatch_assessments > 0
+
 
     @property
     def odm2_affiliation(self):
@@ -191,7 +207,7 @@ class SiteSensor(models.Model):
 
 
 class SiteAlert(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, db_column='User', on_delete=models.CASCADE, related_name='site_alerts')
+    account_id = models.ForeignKey(accounts.models.Account ,db_column='account_id', on_delete=models.CASCADE, related_name='site_alerts')
     site_registration = models.ForeignKey('SiteRegistration', db_column='RegistrationID', on_delete=models.CASCADE, related_name='alerts')
     last_alerted = models.DateTimeField(db_column='LastAlerted', blank=True, null=True)
     hours_threshold = models.DurationField(db_column='HoursThreshold', default=timedelta(hours=1))

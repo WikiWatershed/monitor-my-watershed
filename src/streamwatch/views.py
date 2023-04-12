@@ -1,13 +1,13 @@
+import csv
+import datetime
+from typing import List, TextIO, Dict, Any
+
 import django
 from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
 from django.http import response
 from django.contrib.auth.decorators import login_required
 from formtools.wizard.views import SessionWizardView
-
-import datetime
-import csv
-from typing import List
 
 from dataloaderinterface.models import SiteRegistration
 from streamwatch import models
@@ -28,7 +28,7 @@ class ListUpdateView(LoginRequiredMixin, django.views.generic.detail.DetailView)
 
     def dispatch(self, request, *args, **kwargs) -> HttpResponse:
         site = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
-        if request.user.is_authenticated and not request.user.can_administer_site(site):
+        if request.user.is_authenticated and not request.user.can_administer_site(site.sampling_feature_id):
             raise response.Http404
         return super().dispatch(request, *args, **kwargs)
 
@@ -143,8 +143,8 @@ class DetailView(django.views.generic.detail.DetailView):
 
         registration = SiteRegistration.objects.get(sampling_feature_code=self.kwargs[self.slug_field])
         user = self.request.user
-        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration)
-        context['is_site_owner'] = self.request.user == registration.django_user
+        context['can_administer_site'] = user.is_authenticated and user.can_administer_site(registration.sampling_feature_id)
+        context['is_site_owner'] = user.id == registration.django_user
         context['sampling_feature_code'] = self.kwargs[self.slug_field]
         context['action_id'] = int(self.kwargs['pk'])
         return context
@@ -204,7 +204,7 @@ class StreamWatchCreateMeasurementView(django.views.generic.edit.FormView):
             return self.form_invalid(form, parameter_forms)
 
 
-def download_StreamWatch_csv(request, sampling_feature_code, pk):
+def csv_export(request, sampling_feature_code:str, actionids:str):
     """
     Download handler that uses csv_writer.py to parse out a StreamWatch assessment into a csv file.
 
@@ -212,53 +212,108 @@ def download_StreamWatch_csv(request, sampling_feature_code, pk):
     :param sampling_feature_code: the first URL parameter
     :param pk: the second URL parameter and id of the leafpack experiement to download 
     """
-    DEFAULT_DASH_LENGTH = 20
-    HYPERLINK_BASE_URL = 'https://monitormywatershed.org'
 
-    action_id = int(pk)
-    form_data = models.StreamWatchODM2Adapter.from_action_id(action_id)
-    
+    def format_metadata(site:SiteRegistration) -> List[List[str]]:
+        result = [
+            [f'# Site Information'],
+            [f'# ----------------'],
+            [f'SiteCode: {site.sampling_feature_code}'],
+            [f'SiteName: {site.sampling_feature_name}'],
+            [f'SiteDescription: {site.sampling_feature.sampling_feature_description}'],
+            [f'Latitude: {site.latitude}'],
+            [f'Longitude: {site.longitude}'],
+            [f'Elevation: {site.longitude}'],
+            [f'VerticalDatum: {site.sampling_feature.elevation_datum}'],
+            [f'SiteType: {site.site_type}'],
+            [f'SiteNotes: {site.site_notes}'],
+            [f'# '],
+        ]
+        return result
+
+    def format_header() -> List[str]:
+        parameters = [
+            'Investigator_1',
+            'Investigator_2',
+            'Assessment_Date',
+            'Assessment_Time',
+            'Assessment_Types',
+            'Visual_Weather',
+            'Visual_Time_Since_Rainfall',
+            'Visual_Water_Color',
+            'Visual_Water_Odor',
+            'Visual_Turbidity',
+            'Visual_Water_Movement',
+            'Visual_Surface_Coating',
+            'Visual_Aquatic_Vegetation_Amount',
+            'Visual_Aquatic_Vegetation_Type',
+            'Visual_Algae_Amount',
+            'Visual_Algae_Type',
+            'Habitat_Woody_Debris_Amount',
+            'Habitat_Woody_Debris_Type',
+            'Habitat_Tree_Canopy',
+            'Habitat_Land_Use',
+            'Chemical_Air_Temperature_degC',
+            'Chemical_Water_Temperature_degC',
+            'Chemical_Nitrate_Nitrogen_ppm',
+            'Chemical_Phosphates_ppm',
+            'Chemical_pH',
+            'Chemical_Turbidity_Sample_Size_mL',
+            'Chemical_Turbidity_Amount_of_Regent_mL',
+            'Chemical_Turbidity_JTU',
+            'Chemical_Dissolved_Oxygen_ppm',
+            'Chemical_Salinity_ppt',
+            'General_Observations'
+        ]
+        return parameters
+
+    def format_assessment(assessment:Dict[str,Any]) -> List[str]:
+        parameters = [
+            assessment['investigator1'],
+            assessment['investigator2'],
+            assessment['collect_date'],
+            assessment['collect_time'],
+            assessment['assessment_type'],
+            assessment['weather_cond'] if 'weather_cond' in assessment else None,
+            assessment['time_since_last_precip'] if 'time_since_last_precip' in assessment else None,
+            assessment['water_color'] if 'water_color' in assessment else None,
+            assessment['water_odor'] if 'water_odor' in assessment else None,
+            assessment['clarity'] if 'clarity' in assessment else None,
+            assessment['water_movement'] if 'water_movement' in assessment else None,
+            assessment['surface_coating'] if 'surface_coating' in assessment else None,
+            assessment['algae_amount'] if 'algae_amount' in assessment else None,
+            assessment['algae_type'] if 'algae_type' in assessment else None,
+            assessment['aquatic_veg_amount'] if 'aquatic_veg_amount' in assessment else None,
+            assessment['aquatic_veg_type'] if 'aquatic_veg_type' in assessment else None,
+            assessment['simple_woody_debris_amt'] if 'simple_woody_debris_amt' in assessment else None,
+            assessment['simple_woody_debris_type'] if 'simple_woody_debris_type' in assessment else None,
+            assessment['simple_tree_canopy'] if 'simple_tree_canopy' in assessment else None,
+            assessment['simple_land_use'] if 'simple_land_use' in assessment else None,
+            assessment['simple_air_temperature'] if 'simple_air_temperature' in assessment else None,
+            assessment['simple_water_temperature'] if 'simple_water_temperature' in assessment else None,
+            assessment['simple_nitrate'] if 'simple_nitrate' in assessment else None,
+            assessment['simple_phosphate'] if 'simple_phosphate' in assessment else None,
+            assessment['simple_ph'] if 'simple_ph' in assessment else None,
+            assessment['simple_turbidity'] if 'simple_turbidity' in assessment else None,
+            assessment['simple_turbidity_reagent_amt'] if 'simple_turbidity_reagent_amt' in assessment else None,
+            assessment['simple_turbidity_sample_size'] if 'simple_turbidity_sample_size' in assessment else None,
+            assessment['simple_dissolved_oxygen'] if 'simple_dissolved_oxygen' in assessment else None,
+            assessment['simple_salinity'] if 'simple_salinity' in assessment else None,
+            assessment['site_observation'] if 'site_observation' in assessment else None,
+        ]
+        return parameters
+
     site = SiteRegistration.objects.get(sampling_feature_code=sampling_feature_code)
-    
-    filename = '{}_{}_{:03d}.csv'.format(sampling_feature_code,
-                                         datetime.datetime.now(), action_id)
+    assessments = [models.StreamWatchODM2Adapter.from_action_id(a) for a in actionids.split(',')]
+
+    filename = f'streamwatchdata_{sampling_feature_code}_{datetime.datetime.now().strftime("%Y-%m-%d")}.csv'
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="{}"'.format(filename)
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
-    
-    # Write file header
-    writer.writerow(['StreamWatch Survey Details'])
-    writer.writerow(['These data were copied to HydroShare from the WikiWatershed Data Sharing Portal.'])
-    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
-    writer.writerow([])
+    writer.writerows(format_metadata(site))
+    writer.writerow(format_header())
 
-    # write site registration information
-    #writer.make_header(['Site Information'])
-    writer.writerow(['Site Information'])
-    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
-
-    writer.writerow(['Site Code', site.sampling_feature_code])
-    writer.writerow(['Site Name', site.sampling_feature_name])
-    writer.writerow(['Site Description', site.sampling_feature.sampling_feature_description])
-    writer.writerow(['Latitude', site.latitude])
-    writer.writerow(['Longitude', site.longitude])
-    writer.writerow(['Elevation (m)', site.elevation_m])
-    writer.writerow(['Vertical Datum', site.sampling_feature.elevation_datum])
-    writer.writerow(['Site Type', site.site_type])
-
-    writer.writerow([])
-
-    # write streamwatch data
-    # todo: separate into different activities:
-    writer.writerow(['StreamWatch Survey Details'])
-    writer.writerow(['-' * DEFAULT_DASH_LENGTH])
-
-    for key, value in form_data.items():
-        writer.writerow([key.title(), value])
-    
-    writer.writerow(['URL', '{0}/sites/{1}/streamwatch/{2}'.format(HYPERLINK_BASE_URL,
-                                                     sampling_feature_code,
-                                                     action_id)])
+    for assessment in assessments:
+        writer.writerow(format_assessment(assessment.to_dict(True)))
 
     return response

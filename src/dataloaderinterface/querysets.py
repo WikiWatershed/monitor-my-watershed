@@ -49,17 +49,17 @@ class SiteRegistrationQuerySet(models.QuerySet):
 
     def with_ownership_status(self, user_id):
         return self.annotate(ownership_status=Case(
-            When(django_user_id=user_id, then=Value('owned')),
-            When(followed_by__id=user_id, then=Value('followed')),
+            When(account_id=user_id, then=Value('owned')),
+            When(followed_by=user_id, then=Value('followed')),
             default=Value('unfollowed'),
             output_field=CharField(),
         ))
-
+ 
     def deployed_by(self, user_id):
-        return self.filter(django_user_id=user_id)
+        return self.filter(account_id=user_id)
 
     def followed_by(self, user_id):
-        return self.filter(followed_by__id=user_id)
+        return self.filter(followed_by=user_id)
 
 
 class SiteSensorQuerySet(models.QuerySet):
