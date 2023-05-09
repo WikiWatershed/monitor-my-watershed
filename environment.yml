@@ -26,10 +26,20 @@ dependencies:
 
     # Dev tools
     - python-language-server
+      # Pyflakes linter to detect various errors
+      # McCabe linter for complexity checking
+      # pycodestyle linter for style checking
+      # pydocstyle linter for docstring style checking (disabled by default)
+      # autopep8 for code formatting
+      # YAPF for code formatting (preferred over autopep8)
+      # flake8 for error checking (disabled by default)
+      # pylint for code linting (disabled by default)
+    - pylsp-mypy  # MyPy type checking for Python >=3.7.
 
     # package management
     - conda
     - conda-build
+    - conda-libmamba-solver
     - pip
 
     - pip:
