@@ -15,7 +15,7 @@ dependencies:
     - pandas >=1.3
     - psycopg2 >=2.9.1
     - python-crontab >=2.5.1
-    - sqlalchemy >=1.4.0 
+    - sqlalchemy >=1.4.0  # Plan migration to >=2.0.*
 
     #django
     #additional django dependencies installed with pip
@@ -24,8 +24,10 @@ dependencies:
     - django-debug-toolbar 
     - django-widget-tweaks
 
-    # Dev tools
-    - python-language-server
+    # Dev tools: Language Server Protocol (LSP) (Optional), for...
+      # code navigation + hover suggestions + linters + autocompletion + rename
+    - python-lsp-server >=1.6 # LSP extension for Python (pylsp), including:
+      # Rope for Completions and renaming
       # Pyflakes linter to detect various errors
       # McCabe linter for complexity checking
       # pycodestyle linter for style checking
