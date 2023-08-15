@@ -32,7 +32,7 @@ from django.core.handlers.wsgi import WSGIRequest
 
 import json
 from django.http import HttpResponse, JsonResponse
-from typing import Union
+from typing import Any, Dict, Union
 import streamwatch
 
 import accounts
@@ -122,7 +122,7 @@ class BrowseSitesListView(ListView):
     model = SiteRegistration
     context_object_name = "sites"
     template_name = "dataloaderinterface/browse-sites.html"
-    __VALID_FILTERS = ("dataTypes", "organization", "siteTypes")
+    __VALID_FILTERS = ("dataTypes", "organizations", "siteTypes")
 
     def get_context_data(self, request, **kwargs: Any) -> Dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -132,7 +132,7 @@ class BrowseSitesListView(ListView):
         for f in self.__VALID_FILTERS:
             val = request.GET[f].split(",") if f in request.GET else None
             filters[f] = val
-        context["filters"] = filters
+        context["filters"] = json.dumps(filters)
 
         return context
 

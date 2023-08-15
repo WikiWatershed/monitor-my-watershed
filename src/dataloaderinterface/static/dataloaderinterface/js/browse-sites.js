@@ -243,6 +243,12 @@ $(document).ready(function () {
         });
     }
 
+    //check if there are pre-selected filters
+    let preFilters = {}
+    if (typeof selectedFilters !== 'undefined') {
+        preFilters = JSON.parse(selectedFilters);
+    }
+
     // Append filter headers
     for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
@@ -274,15 +280,18 @@ $(document).ready(function () {
         );
 
         // Append filter items
-        for (let item = 0; item < filters[f].values_sortable.length; item++) {
+        for (let i = 0; i < filters[f].values_sortable.length; i++) {
+            let item = filters[f].values_sortable[i];
+            let checked = (f in preFilters && preFilters[f] != null && preFilters[f].includes(item[0])) ? " checked" : "";
+            
             $("#collapse-" + filters[f].key + " > table tbody").append(' <tr>\
                 <td class="mdl-data-table__cell--non-numeric">\
-                    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '">\
-                        <input type="checkbox" id="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '"\
-                        class="mdl-checkbox__input chk-filter" data-value="'+ filters[f].values_sortable[item][0] + '">\
-                        <span class="mdl-checkbox__label">' + filters[f].values_sortable[item][0] + '</span>\
+                    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + item[0] + '">\
+                        <input type="checkbox" id="chk-' + filters[f].key + '-' + item[0] + '"\
+                        class="mdl-checkbox__input chk-filter" data-value="' + item[0] + '" '+ checked + '>\
+                        <span class="mdl-checkbox__label">' + item[0] + '</span>\
                     </label>\
-                    <span class="badge badge-info">' + filters[f].values_sortable[item][1] + '</span>\
+                    <span class="badge badge-info">' + item[1] + '</span>\
                 </td>\
             </tr>');
         }
@@ -341,6 +350,10 @@ $(document).ready(function () {
     });
 
     $(".chk-filter").change(filter);
+
+    //apply preselected filters
+    filter();
+
 });
 
 function isSearched(metadata, searchString) {

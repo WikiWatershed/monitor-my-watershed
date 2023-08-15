@@ -143,4 +143,8 @@
     <script src="{% static 'dataloaderinterface/js/browse-sites.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/oms.min.js' %}"></script>
     <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgps2GkNvfTnC8UIRT-X9QAz66zNa1EvY&callback=initMap"></script>
+
+    {% comment %}Copy selected filters to js variables{% endcomment %}
+    <script>var selectedFilters='{{filters|safe}}';</script>
+
 {% endblock %}
