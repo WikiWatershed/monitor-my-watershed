@@ -213,17 +213,19 @@
                         <div class="col-sm-12 col-lg-8 offset-lg-2">
                             <div class="row text-center">
                             
-                                
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
                                         <h3 class="step-number bg-light-teal">2</h3>
                                         <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
-                                        {% if user.is_authenticated %}
-                                            <h4><a href="{% url 'site_registration' %}">Register</a>
-                                        {% else %}
-                                            <h4><a href="{% url 'login' %}">Register</a>
+                                        <h4>
+                                        {% if not user.is_authenticated %}
+                                            First 
+                                            <a href="{% url 'login' %}">Log In</a> or <a href="{% url 'user_registration' %}">Sign Up</a>.
+                                            Then
                                         {% endif %}
-                                            or find your site.</h4>
+                                            <a href="{% url 'site_registration' %}">Register</a> a StreamWatch Schools site
+                                            or find your <a href="{% url 'sites_list' %}">sites</a>.
+                                        </h4>
                                     </div>
                                 </div>
 
