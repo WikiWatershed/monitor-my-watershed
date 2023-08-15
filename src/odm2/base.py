@@ -11,19 +11,19 @@ import warnings
 import pandas as pd
 
 from .exceptions import ObjectNotFound
-from .models import annotations
-from .models import core
-from .models import cv
-from .models import dataquality
-from .models import equipment
-from .models import extensionproperties
-from .models import externalidentifiers
-from .models import labanalyses
-from .models import provenance
-from .models import results
-from .models import samplingfeatures
-from .models import simulation
-from .models import auth
+from .automap_models import annotations
+from .automap_models import core
+from .automap_models import cv
+from .automap_models import dataquality
+from .automap_models import equipment
+from .automap_models import extensionproperties
+from .automap_models import externalidentifiers
+from .automap_models import labanalyses
+from .automap_models import provenance
+from .automap_models import results
+from .automap_models import samplingfeatures
+from .automap_models import simulation
+from .automap_models import auth
 
 OUTPUT_FORMATS = ("json", "dataframe", "dict", "records")
 
