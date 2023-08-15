@@ -28,7 +28,7 @@ from .automap_models import auth
 OUTPUT_FORMATS = ("json", "dataframe", "dict", "records")
 
 
-class Base:
+class AutoBase:
     @declared_attr
     def __tablename__(self) -> str:
         cls_name = str(self.__name__)
@@ -147,7 +147,7 @@ class ODM2Engine:
 
     def read_object(
         self,
-        model: Type[Base],
+        model: Type[AutoBase],
         pkey: Union[int, str],
         output_format: str = "dict",
         orient: str = "records",
@@ -189,7 +189,7 @@ class ODM2Engine:
                 raise TypeError("Unknown output format")
 
     def update_object(
-        self, model: Type[Base], pkey: Union[int, str], data: Dict[str, Any]
+        self, model: Type[AutoBase], pkey: Union[int, str], data: Dict[str, Any]
     ) -> None:
         if not isinstance(data, dict):
             data = data.dict()
@@ -206,7 +206,7 @@ class ODM2Engine:
             session.commit()
             data[pkey_name] = pkey
 
-    def delete_object(self, model: Type[Base], pkey: Union[int, str]) -> None:
+    def delete_object(self, model: Type[AutoBase], pkey: Union[int, str]) -> None:
         with self.session_maker() as session:
             obj = session.get(model, pkey)
             pkey_name = model.get_pkey_name()
@@ -274,11 +274,13 @@ class ODM2DataModels:
             with open(self._cache_path, "rb") as file:
                 metadata = pickle.load(file=file)
                 self._cached = True
-                return declarative_base(cls=Base, bind=self._engine, metadata=metadata)
+                return declarative_base(
+                    cls=AutoBase, bind=self._engine, metadata=metadata
+                )
         except FileNotFoundError:
             metadata = sqlalchemy.MetaData(schema=self._schema)
             self._cached = False
-            return automap_base(cls=Base, metadata=metadata)
+            return automap_base(cls=AutoBase, metadata=metadata)
 
     def _prepare_automap_models(self):
         # models that are declaratively mapped.
