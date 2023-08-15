@@ -122,6 +122,24 @@ class BrowseSitesListView(ListView):
     model = SiteRegistration
     context_object_name = "sites"
     template_name = "dataloaderinterface/browse-sites.html"
+    __VALID_FILTERS = ("dataTypes", "organization", "siteTypes")
+
+    def get_context_data(self, request, **kwargs: Any) -> Dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+
+        # populate preselected filters, passed in  querystring/kwargs
+        filters = {}
+        for f in self.__VALID_FILTERS:
+            val = request.GET[f].split(",") if f in request.GET else None
+            filters[f] = val
+        context["filters"] = filters
+
+        return context
+
+    def get(self, request, *args, **kwargs) -> HttpResponse:
+        self.object_list = self.get_queryset()
+        context = self.get_context_data(request)
+        return self.render_to_response(context)
 
     def get_queryset(self):
         return (
