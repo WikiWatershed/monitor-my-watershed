@@ -93,12 +93,13 @@ class SetupForm(forms.Form):
         ),
         initial="US/Eastern",
     )
-    assessment_type = forms.MultipleChoiceField(
-        widget=MDLCheckboxSelectMultiple,
-        label="Assessment type(s)",
-        required=True,
-        choices=ASSESSMENT_TYPE_CHOICES,
-    )
+
+    # assessment_type = forms.MultipleChoiceField(
+    #    widget=MDLCheckboxSelectMultiple,
+    #    label="Assessment type(s)",
+    #    required=True,
+    #    choices=ASSESSMENT_TYPE_CHOICES,
+    # )
 
 
 # Visual Assessment (All Forms)

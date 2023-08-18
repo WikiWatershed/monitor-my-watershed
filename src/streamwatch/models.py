@@ -566,7 +566,9 @@ class StreamWatchODM2Adapter:
             action.methodid = cls.ROOT_METHOD_ID
             action.begindatetime = datetime_info[0]
             action.begindatetimeutcoffset = datetime_info[1]
-            action.actiondescription = ",".join(form_data["assessment_type"])
+            # TODO - update if multiple assessment types is to be supported again
+            # action.actiondescription = ",".join(form_data["assessment_type"])
+            action.actiondescription = ",".join(["school"])
 
             action.actionid = odm2_engine.create_object(action)
             return action
