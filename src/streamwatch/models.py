@@ -6,6 +6,7 @@ from typing import Dict, Any, Iterable, Tuple, Union, List
 import sqlalchemy
 
 from odm2 import odm2datamodels
+from odm2.exceptions import ObjectNotFound
 from streamwatch import timeutils
 
 odm2_engine = odm2datamodels.odm2_engine
@@ -93,11 +94,15 @@ def get_odm2_variables() -> Dict[int, Dict[str, Any]]:
 def affiliation_to_person(afflication_id: int) -> str:
     """Returns the person name and organization for a given afflication"""
     affiliation = odm2_engine.read_object(odm2_models.Affiliations, afflication_id)
-    organization = odm2_engine.read_object(
-        odm2_models.Organizations, affiliation["organizationid"]
-    )
+    try:
+        organization = odm2_engine.read_object(
+            odm2_models.Organizations, affiliation["organizationid"]
+        )
+        org_name = organization["organizationname"]
+    except ObjectNotFound:
+        org_name = None
     account = odm2_engine.read_object(odm2_models.Accounts, affiliation["accountid"])
-    return f"{account['accountfirstname']} {account['accountlastname']} ({organization['organizationname']})"
+    return f"{account['accountfirstname']} {account['accountlastname']} {f'({org_name})' if org_name else ''}"
 
 
 def get_assessment_summary_information(sampling_feature_code: str) -> dict[str, Any]:
