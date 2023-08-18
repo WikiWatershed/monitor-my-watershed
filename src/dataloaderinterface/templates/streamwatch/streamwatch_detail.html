@@ -438,11 +438,15 @@
 {% block styles %}
     {{ block.super }}
     <link href="{% static 'dataloaderinterface/css/barchart.css' %}" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
     <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>

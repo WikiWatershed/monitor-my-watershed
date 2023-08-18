@@ -1,4 +1,5 @@
 {% load widget_tweaks %}
+{% load static %}
 
 <div class="row">
     <div class="col-12">
@@ -62,3 +63,15 @@
         </div>
     </div>
 </div>
+
+
+{% block styles %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js" defer></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+{% endblock %}
