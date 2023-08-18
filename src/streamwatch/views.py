@@ -1,17 +1,23 @@
 import csv
+import os
 import datetime
 from typing import List, TextIO, Dict, Any
 
 import django
+from django.core.files.storage import FileSystemStorage
 from django.shortcuts import reverse, redirect
 from django.http import HttpResponse
 from django.http import response
+from django.conf import settings
+
 from django.contrib.auth.decorators import login_required
 from formtools.wizard.views import SessionWizardView
 
 from dataloaderinterface.models import SiteRegistration
 from streamwatch import models
 from streamwatch import forms
+
+PHOTO_DIRECTORY = os.path.join(settings.MEDIA_ROOT, "streamwatch_site_photos")
 
 
 class LoginRequiredMixin(object):
@@ -72,7 +78,7 @@ class CreateView(SessionWizardView):
         "simplewaterquality": condition_school,
         "simplehabitat": condition_school,
     }
-
+    file_storage = FileSystemStorage(location=PHOTO_DIRECTORY)
     template_name = "streamwatch/streamwatch_wizard.html"
     slug_field = "sampling_feature_code"
 

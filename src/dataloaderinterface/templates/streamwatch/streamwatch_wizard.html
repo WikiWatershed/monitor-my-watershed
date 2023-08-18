@@ -38,7 +38,9 @@
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
                   action="{% url 'streamwatch:update' sampling_feature_code action_id %}"
-                    {% endif %}>
+                    {% endif %}
+                  enctype="multipart/form-data"
+                >
                 {% csrf_token %}
 
                 <table>

@@ -506,3 +506,7 @@ class FlowMeasurementsForm(forms.Form):
         choices=(),
         initial="1",
     )
+
+
+class SitePhotosForm(forms.Form):
+    image = forms.ImageField()
