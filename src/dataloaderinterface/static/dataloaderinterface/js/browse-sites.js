@@ -1,5 +1,6 @@
 var markers = [];
 var map;
+var prefiltersApplied = false;
 var filters = {
     dataTypes: {
         key: 'dataType',
@@ -247,6 +248,7 @@ $(document).ready(function () {
     let preFilters = {}
     if (typeof selectedFilters !== 'undefined') {
         preFilters = JSON.parse(selectedFilters);
+        prefiltersApplied = true;
     }
 
     // Append filter headers
@@ -352,7 +354,9 @@ $(document).ready(function () {
     $(".chk-filter").change(filter);
 
     //apply preselected filters
-    filter();
+    if (prefiltersApplied) {
+        filter();
+    }
 
 });
 
