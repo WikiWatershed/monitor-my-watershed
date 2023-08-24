@@ -70,6 +70,7 @@ def condition_school(wizard):
 class CreateView(SessionWizardView):
     form_list = [
         ("setup", forms.SetupForm),
+        ("photos", forms.SitePhotosForm),
         ("conditions", forms.VisualAssessmentForm),
         ("simplehabitat", forms.SimpleHabitatAssessmentForm),
         ("simplewaterquality", forms.SimpleWaterQualityForm),

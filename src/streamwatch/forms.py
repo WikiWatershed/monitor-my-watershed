@@ -1,6 +1,8 @@
 from django import forms
 from django.forms import formset_factory
+from django.conf import settings
 
+import os
 from typing import Dict
 from typing import Any
 import datetime
@@ -9,6 +11,8 @@ from dataloaderinterface.models import Affiliation
 from streamwatch import models
 from streamwatch import timeutils
 from odm2.crud import users
+
+PHOTO_DIRECTORY = os.path.join(settings.MEDIA_ROOT, "streamwatch_site_photos")
 
 
 def _get_user_choices() -> tuple[tuple[int, str]]:
