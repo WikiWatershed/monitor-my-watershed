@@ -351,9 +351,6 @@ $(document).ready(function () {
 
     $(".chk-filter").change(filter);
 
-    //apply preselected filters
-    filter();
-
 });
 
 function isSearched(metadata, searchString) {
@@ -371,7 +368,14 @@ function filter() {
     let checkedItems = getCurrentFilters();
     let someVisible = false;
     let count = 0;
-    const searchString = $("#search").val().trim().toUpperCase();
+    let searchString = "";
+    try {
+        searchString = $("#search").val().trim().toUpperCase();
+    }
+    catch (e) {
+        //handles exception where page load filter called before search initialized
+        searchString = "";
+    } 
 
     // If no checkbox selected
     if (!checkedItems.length) {
