@@ -351,6 +351,9 @@ $(document).ready(function () {
 
     $(".chk-filter").change(filter);
 
+    //apply preselected filters
+    filter();
+
 });
 
 function isSearched(metadata, searchString) {
