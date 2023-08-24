@@ -485,12 +485,6 @@ class StreamWatchODM2Adapter:
         "simple_ph": FieldConfig(543, _FloatFieldAdapter, 385, "Liquid aqueous"),
         "simple_salinity": FieldConfig(545, _FloatFieldAdapter, 428, "Liquid aqueous"),
         "simple_turbidity": FieldConfig(550, _FloatFieldAdapter, 364, "Liquid aqueous"),
-        "simple_turbidity_reagent_amt": FieldConfig(
-            548, _FloatFieldAdapter, 364, "Liquid aqueous"
-        ),
-        "simple_turbidity_sample_size": FieldConfig(
-            549, _FloatFieldAdapter, 364, "Liquid aqueous"
-        ),
         "simple_water_temperature": FieldConfig(
             542, _FloatFieldAdapter, 362, "Liquid aqueous"
         ),

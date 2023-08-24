@@ -301,8 +301,6 @@ def csv_export(request, sampling_feature_code: str, actionids: str):
             "Chemical_Nitrate_Nitrogen_ppm",
             "Chemical_Phosphates_ppm",
             "Chemical_pH",
-            "Chemical_Turbidity_Sample_Size_mL",
-            "Chemical_Turbidity_Amount_of_Regent_mL",
             "Chemical_Turbidity_JTU",
             "Chemical_Dissolved_Oxygen_ppm",
             "Chemical_Salinity_ppt",
