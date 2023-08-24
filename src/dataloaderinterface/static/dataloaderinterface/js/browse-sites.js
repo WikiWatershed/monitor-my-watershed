@@ -248,7 +248,7 @@ $(document).ready(function () {
     let preFilters = {}
     if (typeof selectedFilters !== 'undefined') {
         preFilters = JSON.parse(selectedFilters);
-        prefiltersApplied = Object.values(preFiltAers).filter(e => e != null).length > 0;
+        prefiltersApplied = Object.values(preFilters).filter(e => e != null).length > 0;
     }
 
     // Append filter headers
