@@ -222,6 +222,11 @@ SESSION_KEY = "_auth_user_id"
 BACKEND_SESSION_KEY = "_auth_user_backend"
 HASH_SESSION_KEY = "_auth_user_hash"
 
+S3_CLIENT_ID = data["s3_client_id"]
+S3_CLIENT_SECRET = data["s3_client_secret"]
+SITE_PHOTOS_S3_BUCKET = data["s3_site_photos_bucket"]
+
+
 # Static cache busting
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 

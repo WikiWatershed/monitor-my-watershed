@@ -513,4 +513,4 @@ class FlowMeasurementsForm(forms.Form):
 
 
 class SitePhotosForm(forms.Form):
-    image = forms.ImageField()
+    siteimage1 = forms.ImageField(required=False)

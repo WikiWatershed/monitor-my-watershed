@@ -2,12 +2,15 @@ from collections import namedtuple
 import copy
 import datetime
 from typing import Dict, Any, Iterable, Tuple, Union, List
+import uuid
 
 import sqlalchemy
+from django.conf import settings
 
 from odm2 import odm2datamodels
 from odm2.exceptions import ObjectNotFound
 from streamwatch import timeutils
+from utils.s3_uploader import S3Interface
 
 odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
@@ -449,6 +452,34 @@ class _TextFieldAdapter(_BaseFieldAdapter):
         )
 
 
+class _ObjectFieldAdapter(_BaseFieldAdapter):
+    RESULT_TYPE_CV = "Object store"
+    VALUE_FIELD_NAME = "objectstore_objecturi"
+
+    @classmethod
+    def create(
+        cls,
+        value: Any,
+        datetime: datetime.datetime,
+        utc_offset: int,
+        feature_action_id: int,
+        config: FieldConfig,
+    ) -> None:
+        # upload the file to S3
+        interface = S3Interface()
+        obj_id = str(uuid.uuid4())
+        f = value.file
+
+        interface.put_object(
+            key=obj_id,
+            obj=f,
+            content_type=value.content_type,
+            bucket=settings.SITE_PHOTOS_S3_BUCKET,
+        )
+
+        return None
+
+
 class StreamWatchODM2Adapter:
     """Adapter class for translating streamwatch form data in and out of ODM2"""
 
@@ -517,6 +548,7 @@ class StreamWatchODM2Adapter:
             "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
         ),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
+        "siteimage1": FieldConfig("siteimage", _ObjectFieldAdapter, 394, "placeholder"),
     }
 
     def __init__(self, action_id: int) -> None:
