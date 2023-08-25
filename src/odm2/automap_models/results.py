@@ -41,6 +41,14 @@ class ProfileResultValues:
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_ProfileResultValues.html"""
 
 
+class ObjectStoreResults:
+    """"""
+
+
+class ObjectStoreResultValues:
+    """"""
+
+
 class SectionResults:
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_SectionResults.html"""
 
