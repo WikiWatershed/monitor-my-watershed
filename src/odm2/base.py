@@ -25,6 +25,8 @@ from .automap_models import samplingfeatures
 from .automap_models import simulation
 from .automap_models import auth
 
+from odm2.models import results as _results
+
 OUTPUT_FORMATS = ("json", "dataframe", "dict", "records")
 
 
@@ -287,12 +289,12 @@ class ODM2DataModels:
         setattr(
             self._model_base,
             "TimeSeriesResults",
-            dict(results.TimeSeriesResults.__dict__),
+            dict(_results.TimeSeriesResults.__dict__),
         )
         setattr(
             self._model_base,
             "TimeSeriesResultValues",
-            dict(results.TimeSeriesResultValues.__dict__),
+            dict(_results.TimeSeriesResultValues.__dict__),
         )
 
         self._model_base.prepare(self._engine)
