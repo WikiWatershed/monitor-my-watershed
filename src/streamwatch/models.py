@@ -497,6 +497,14 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
 
         return None
 
+    @classmethod
+    def get_uri(cls, key: str) -> str:
+        """Given a S3 key, formulates and return uri to access object"""
+        region = settings.COGNITO_REGION
+        bucket = settings.SITE_PHOTOS_S3_BUCKET
+        uri = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
+        return uri
+
 
 class StreamWatchODM2Adapter:
     """Adapter class for translating streamwatch form data in and out of ODM2"""
@@ -670,6 +678,9 @@ class StreamWatchODM2Adapter:
                 odm2_models.CategoricalResultValues.datavalue.label(
                     "categorical_datavalue"
                 ),
+                odm2_models.ObjectStoreResultValues.objecturi.label(
+                    "objectstore_objecturi"
+                ),
             )
             .join(
                 odm2_models.FeatureActions,
@@ -718,6 +729,12 @@ class StreamWatchODM2Adapter:
             if record[self.VARIABLE_CODE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_CODE]]
                 field_adapter = parameter_information[1]
+                # object store
+                if field_adapter is _ObjectFieldAdapter:
+                    uri = _ObjectFieldAdapter.get_uri(field_adapter.read(record))
+                    self._attributes[parameter_information[0]] = uri
+                    continue
+                # default/other fields
                 self._attributes[parameter_information[0]] = field_adapter.read(record)
             elif record[self.VARIABLE_TYPE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
