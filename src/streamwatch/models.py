@@ -455,6 +455,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
 class _ObjectFieldAdapter(_BaseFieldAdapter):
     RESULT_TYPE_CV = "Object store"
     VALUE_FIELD_NAME = "objectstore_objecturi"
+    CENSOR_CODE_CV = "Unknown"
 
     @classmethod
     def create(
@@ -465,17 +466,34 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         feature_action_id: int,
         config: FieldConfig,
     ) -> None:
+        if not value:
+            return
         # upload the file to S3
         interface = S3Interface()
         obj_id = str(uuid.uuid4())
-        f = value.file
-
         interface.put_object(
             key=obj_id,
-            obj=f,
+            obj=value.file,
             content_type=value.content_type,
             bucket=settings.SITE_PHOTOS_S3_BUCKET,
         )
+
+        result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
+
+        result = odm2_models.ObjectStoreResults()
+        result.resultid = result_id
+        result.qualitycodecv = cls.QUALITY_CODE_CV
+        result.censorcodecv = cls.CENSOR_CODE_CV
+        result.objecttype = value.content_type
+        odm2_engine.create_object(result, preserve_pkey=True)
+
+        resultvalue = odm2_models.ObjectStoreResultValues()
+        resultvalue.resultid = result_id
+        resultvalue.objecturi = obj_id
+        resultvalue.datavalue = value
+        resultvalue.valuedatetime = datetime
+        resultvalue.valuedatetimeutcoffset = utc_offset
+        odm2_engine.create_object(resultvalue)
 
         return None
 
@@ -548,7 +566,7 @@ class StreamWatchODM2Adapter:
             "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
         ),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
-        "siteimage1": FieldConfig("siteimage", _ObjectFieldAdapter, 394, "placeholder"),
+        "siteimage1": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
     }
 
     def __init__(self, action_id: int) -> None:

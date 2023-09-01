@@ -37,4 +37,4 @@ class S3Interface:
             ServerSideEncryption="AES256",
             StorageClass="STANDARD",
         )
-        return response["ETag"]
+        return key
