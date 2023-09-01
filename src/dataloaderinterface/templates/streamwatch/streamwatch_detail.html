@@ -389,6 +389,22 @@
             </div>
 
             <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Site Photo(s)</h6>
+                    <hr class="dotted">
+                </div>
+
+                <br>
+
+                <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                    <tr>
+                        <td class="mdl-data-table__cell--non-numeric label">Site Photo 1</td>
+                        <td class="mdl-data-table__cell--non-numeric"><a href={{ streamwatch.siteimage1|default:"Unknown" }}>Site Photo</a></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="row">
 
                 {% if streamwatch.site_observation %}
                     <div class="col-12">
