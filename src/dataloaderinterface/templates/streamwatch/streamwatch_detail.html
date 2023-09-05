@@ -392,19 +392,16 @@
                 <div class="col-sm-12 col-md-6">
                     <h6 class="title">Site Photo(s)</h6>
                     <hr class="dotted">
+                    <br>
+
+                    <div class="image-grid">
+                        {% for image in streamwatch.siteimage %}
+                        {% if image %}
+                        <img class="site-photo" src={{image}}>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
-
-                <br>
-
-
-                <div class="image-grid">
-                {% for image in streamwatch.siteimage %}
-                    {% if image %}
-                        <a href={{ image|default:"Unknown" }}>Site Photo</a>
-                    {% endif %}
-                {% endfor %}
-                </div>
-               
             </div>
 
             <div class="row">
