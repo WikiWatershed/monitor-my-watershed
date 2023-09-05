@@ -505,6 +505,11 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         uri = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
         return uri
 
+    @classmethod
+    def read(cls, database_record: Dict[str, Any]) -> Any:
+        uri = super().read(database_record)
+        return cls.get_uri(uri)
+
 
 class StreamWatchODM2Adapter:
     """Adapter class for translating streamwatch form data in and out of ODM2"""
@@ -574,7 +579,10 @@ class StreamWatchODM2Adapter:
             "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
         ),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
-        "siteimage1": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
+        "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
+        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
+        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
+        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
     }
 
     def __init__(self, action_id: int) -> None:
@@ -729,17 +737,12 @@ class StreamWatchODM2Adapter:
             if record[self.VARIABLE_CODE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_CODE]]
                 field_adapter = parameter_information[1]
-                # object store
-                if field_adapter is _ObjectFieldAdapter:
-                    uri = _ObjectFieldAdapter.get_uri(field_adapter.read(record))
-                    self._attributes[parameter_information[0]] = uri
-                    continue
                 # default/other fields
                 self._attributes[parameter_information[0]] = field_adapter.read(record)
             elif record[self.VARIABLE_TYPE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
                 field_adapter = parameter_information[1]
-                if field_adapter is _MultiChoiceFieldAdapter:
+                if field_adapter is _MultiChoiceFieldAdapter or _ObjectFieldAdapter:
                     if parameter_information[0] not in self._attributes:
                         self._attributes[parameter_information[0]] = []
                     self._attributes[parameter_information[0]].append(

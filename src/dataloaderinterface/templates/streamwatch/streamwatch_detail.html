@@ -396,12 +396,15 @@
 
                 <br>
 
-                <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
-                    <tr>
-                        <td class="mdl-data-table__cell--non-numeric label">Site Photo 1</td>
-                        <td class="mdl-data-table__cell--non-numeric"><a href={{ streamwatch.siteimage1|default:"Unknown" }}>Site Photo</a></td>
-                    </tr>
-                </table>
+
+                <div class="image-grid">
+                {% for image in streamwatch.siteimage %}
+                    {% if image %}
+                        <a href={{ image|default:"Unknown" }}>Site Photo</a>
+                    {% endif %}
+                {% endfor %}
+                </div>
+               
             </div>
 
             <div class="row">
