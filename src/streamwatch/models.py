@@ -16,6 +16,7 @@ odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
 STREAMWATCH_METHOD_ID = 1
+SITE_PHOTO_VARIABLE_ID = 9
 
 
 def variable_choice_options(
@@ -478,7 +479,12 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
             bucket=settings.SITE_PHOTOS_S3_BUCKET,
         )
 
-        result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
+        result_id = cls.create_result(
+            feature_action_id,
+            config,
+            cls.RESULT_TYPE_CV,
+            variable_id=SITE_PHOTO_VARIABLE_ID,
+        )
 
         result = odm2_models.ObjectStoreResults()
         result.resultid = result_id
@@ -660,7 +666,11 @@ class StreamWatchODM2Adapter:
             )
 
         for key, value in form_data.items():
-            if key not in instance.PARAMETER_CROSSWALK:
+            # there a multiple siteimates but the crosswalk is designed as a 1:1 mapping
+            # to get around this I added additional logic here to map any `siteimageXX` to `siteimage`
+            if "siteimage" in key:
+                key = "siteimage"
+            elif key not in instance.PARAMETER_CROSSWALK:
                 continue
             config = instance.PARAMETER_CROSSWALK[key]
             config.adapter_class.create(
@@ -720,6 +730,15 @@ class StreamWatchODM2Adapter:
                 odm2_models.CategoricalResultValues,
                 odm2_models.CategoricalResultValues.resultid
                 == odm2_models.CategoricalResults.resultid,
+            )
+            .outerjoin(
+                odm2_models.ObjectStoreResults,
+                odm2_models.ObjectStoreResults.resultid == odm2_models.Results.resultid,
+            )
+            .outerjoin(
+                odm2_models.ObjectStoreResultValues,
+                odm2_models.ObjectStoreResultValues.resultid
+                == odm2_models.ObjectStoreResults.resultid,
             )
             .where(
                 odm2_models.Actions.actionid == parent_action_id
@@ -937,12 +956,16 @@ class StreamWatchODM2Adapter:
                 },
             )
 
-        if form_data["assessment_type"] != self._attributes["assessment_type"]:
-            odm2_engine.update_object(
-                odm2_models.Actions,
-                self.action_id,
-                {"actiondescription": ",".join(form_data["assessment_type"])},
-            )
+        # site photos
+        # we need to support multiple photo uploads which does not fit nicely into
+
+        # Supports multiple assessments on single form. Feature was disabled at TWI request for the time being.
+        # if form_data["assessment_type"] != self._attributes["assessment_type"]:
+        #    odm2_engine.update_object(
+        #        odm2_models.Actions,
+        #        self.action_id,
+        #        {"actiondescription": ",".join(form_data["assessment_type"])},
+        #    )
 
         update_investigator("investigator1", True)
         update_investigator("investigator2", False)
