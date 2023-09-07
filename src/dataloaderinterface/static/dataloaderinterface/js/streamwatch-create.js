@@ -27,6 +27,15 @@
         }
     });
 
+    //not-detected hide float field
+    $('.non-detect').on('change', function(){
+        const id = $(this).attr('id');
+        const checked = $(this).prop('checked')
+        const parent_field_id = id.replace('_nondetect', '');
+        $('#' + parent_field_id).parent().attr('hidden', checked);
+    });
+
+
     favorite =[];
     //totalForms = $('#id_2_TOTAL_FORMS');
     let totalForms = document.querySelector("#id_para-TOTAL_FORMS")

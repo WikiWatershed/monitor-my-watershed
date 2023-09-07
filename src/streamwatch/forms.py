@@ -375,16 +375,16 @@ class StreamHabitatAssessmentForm(forms.Form):
 
 
 class SimpleWaterQualityForm(forms.Form):
-    # Tuple pattern 'field_name, label, min[optional], max[optional]
+    # Tuple pattern 'field_name[str], label[str], non-detectable[bool] min[optional[float]], max[optional[float]],
     PARAMETER_CHOICES = (
-        ("simple_air_temperature", "Air Temperature", -40, 45),
-        ("simple_dissolved_oxygen", "Dissolved Oxygen", 0, 20),
-        ("simple_nitrate", "Nitrate Nitrogen", 0, 40),
-        ("simple_phosphate", "Phosphate", 0, 4),
-        ("simple_ph", "pH", 1, 14),
-        ("simple_salinity", "Salinity", 0, 40),
-        ("simple_turbidity", "Turbidity", 0, 300),
-        ("simple_water_temperature", "Water Temperature", 1, 40),
+        ("simple_air_temperature", "Air Temperature", False, -40, 45),
+        ("simple_dissolved_oxygen", "Dissolved Oxygen", True, 0, 20),
+        ("simple_nitrate", "Nitrate Nitrogen", True, 0, 40),
+        ("simple_phosphate", "Phosphate", True, 0, 4),
+        ("simple_ph", "pH", False, 1, 14),
+        ("simple_salinity", "Salinity", True, 0, 40),
+        ("simple_turbidity", "Turbidity", True, 0, 300),
+        ("simple_water_temperature", "Water Temperature", False, 1, 40),
     )
 
     def __set_validators(
@@ -404,13 +404,17 @@ class SimpleWaterQualityForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(SimpleWaterQualityForm, self).__init__(*args, **kwargs)
-        for field, label, *limits in self.PARAMETER_CHOICES:
+        for field, label, non_detectable, *limits in self.PARAMETER_CHOICES:
             validators = self.__set_validators(limits)
             self.fields[field] = forms.FloatField(
                 label=label,
                 required=False,
                 validators=validators,
             )
+            if non_detectable:
+                self.fields[f"{field}_nondetect"] = forms.BooleanField(
+                    required=False,
+                )
 
 
 class WaterQualityParametersForm(forms.Form):
