@@ -1,10 +1,10 @@
 from django import forms
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.forms import formset_factory
 from django.conf import settings
 
 import os
-from typing import Dict
-from typing import Any
+from typing import Any, Dict, Tuple
 import datetime
 
 from dataloaderinterface.models import Affiliation
@@ -375,25 +375,42 @@ class StreamHabitatAssessmentForm(forms.Form):
 
 
 class SimpleWaterQualityForm(forms.Form):
+    # Tuple pattern 'field_name, label, min[optional], max[optional]
     PARAMETER_CHOICES = (
-        ("simple_air_temperature", "Air Temperature"),
-        ("simple_dissolved_oxygen", "Dissolved Oxygen"),
-        ("simple_nitrate", "Nitrate Nitrogen"),
-        ("simple_phosphate", "Phosphate"),
-        ("simple_ph", "pH"),
-        ("simple_salinity", "Salinity"),
-        ("simple_turbidity", "Turbidity"),
-        ("simple_turbidity_reagent_amt", "Amount of Turbidity Reagent Added"),
-        ("simple_turbidity_sample_size", "Turbidity Sample Size"),
-        ("simple_water_temperature", "Water Temperature"),
+        ("simple_air_temperature", "Air Temperature", -40, 45),
+        ("simple_dissolved_oxygen", "Dissolved Oxygen", 0, 20),
+        ("simple_nitrate", "Nitrate Nitrogen", 0, 40),
+        ("simple_phosphate", "Phosphate", 0, 4),
+        ("simple_ph", "pH", 1, 14),
+        ("simple_salinity", "Salinity", 0, 40),
+        ("simple_turbidity", "Turbidity", 0, 300),
+        ("simple_water_temperature", "Water Temperature", 1, 40),
     )
+
+    def __set_validators(
+        self, limits=Tuple[None | float, None | float]
+    ) -> list[MinValueValidator, MaxValueValidator]:
+        """Checks optional limit specification and generates validators for django FloatField"""
+        validators = []
+        try:
+            validators.append(MinValueValidator(limits[0]))
+        except IndexError:
+            pass
+        try:
+            validators.append(MaxValueValidator(limits[1]))
+        except IndexError:
+            pass
+        return validators
 
     def __init__(self, *args, **kwargs):
         super(SimpleWaterQualityForm, self).__init__(*args, **kwargs)
-        counter = 1
-        for keyname, plabel in self.PARAMETER_CHOICES:
-            self.fields[keyname] = forms.FloatField(label=plabel, required=False)
-            counter += 1
+        for field, label, *limits in self.PARAMETER_CHOICES:
+            validators = self.__set_validators(limits)
+            self.fields[field] = forms.FloatField(
+                label=label,
+                required=False,
+                validators=validators,
+            )
 
 
 class WaterQualityParametersForm(forms.Form):
