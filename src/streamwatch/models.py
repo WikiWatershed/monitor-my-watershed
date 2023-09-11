@@ -566,7 +566,7 @@ class _FloatFieldNondetectAdapter(_FloatFieldAdapter):
     @classmethod
     def read(cls, database_record: Dict[str, Any]) -> Any:
         if database_record["measurement_censorcodecv"] == CENSOR_CODE_CV_NONDETECT:
-            return CENSOR_CODE_CV_NONDETECT
+            return True
         return database_record[cls.VALUE_FIELD_NAME]
 
 
@@ -946,8 +946,16 @@ class StreamWatchODM2Adapter:
         for record in data:
             if record[self.VARIABLE_CODE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_CODE]]
+                field = parameter_information[0]
                 field_adapter = parameter_information[1]
-                self._attributes[parameter_information[0]] = field_adapter.read(record)
+                if field_adapter is _FloatFieldNondetectAdapter:
+                    value = field_adapter.read(record)
+                    field = (
+                        f"{field}{NONDETECT_FIELD_SUFFIX}" if value is True else field
+                    )
+                    self._attributes[field] = value
+                else:
+                    self._attributes[field] = field_adapter.read(record)
             elif record[self.VARIABLE_TYPE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
                 field_adapter = parameter_information[1]
@@ -1029,7 +1037,7 @@ class StreamWatchODM2Adapter:
 
         data = copy.deepcopy(self._attributes)
         variables = get_odm2_variables()
-        for key, value in data.items():
+        for key, value in self._attributes.items():
             if key not in self.PARAMETER_CROSSWALK:
                 continue
             config = self.PARAMETER_CROSSWALK[key]
@@ -1039,6 +1047,10 @@ class StreamWatchODM2Adapter:
                 data[key] = ", ".join(
                     [variables[x]["variabledefinition"] for x in value]
                 )
+            elif config.adapter_class is _FloatFieldNondetectAdapter:
+                # if boolean indicating non-detect map to text
+                if value is True:
+                    data[key] = CENSOR_CODE_CV_NONDETECT
 
         if data["investigator1"]:
             data["investigator1"] = affiliation_to_person(data["investigator1"])
