@@ -17,6 +17,8 @@ odm2_models = odm2datamodels.models
 
 STREAMWATCH_METHOD_ID = 1
 SITE_PHOTO_VARIABLE_ID = 9
+CENSOR_CODE_CV_NONDETECT = "Non-detect"
+NONDETECT_FIELD_SUFFIX = "_nondetect"
 
 
 def variable_choice_options(
@@ -177,6 +179,8 @@ class _BaseFieldAdapter:
         config: FieldConfig,
         result_type: str,
         variable_id: int = None,
+        datetime: datetime.datetime = None,
+        utc_offset: int = None,
     ) -> int:
         """Create a ODM2 result record"""
         result = odm2_models.Results()
@@ -185,6 +189,8 @@ class _BaseFieldAdapter:
         result.variableid = variable_id if variable_id else config.variable_identifier
         result.unitsid = config.units
         result.processinglevelid = cls.PROCESSING_LEVEL
+        result.resultdatetime = datetime
+        result.resultdatetimeutcoffset = utc_offset
         result.sampledmediumcv = config.medium
         result.valuecount = -9999
         return odm2_engine.create_object(result)
@@ -220,6 +226,11 @@ class _BaseFieldAdapter:
                 odm2_models.Variables.variabletypecv == variable_type_cv
             )
         results = odm2_engine.read_query(query, output_format="dict")
+
+        if not results:
+            raise KeyError(
+                f"No result records for feature_action_id:{feature_action_id}"
+            )
         return results
 
 
@@ -349,9 +360,16 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
             return
         result_id = cls.create_result(feature_action_id, config, cls.RESULT_TYPE_CV)
 
+        cls.create_measurement_result(result_id)
+        cls.create_measurement_result_value(result_id, value, datetime, utc_offset)
+
+    @classmethod
+    def create_measurement_result(
+        cls, result_id: int, censor_code: str = CENSOR_CODE_CV
+    ) -> None:
         measurementresult = odm2_models.MeasurementResults()
         measurementresult.resultid = result_id
-        measurementresult.censorcodecv = cls.CENSOR_CODE_CV
+        measurementresult.censorcodecv = censor_code
         measurementresult.qualitycodecv = cls.QUALITY_CODE_CV
         measurementresult.aggregationstatisticcv = cls.AGGREGATION_STATISTIC_CV
         measurementresult.timeaggregationinterval = cls.TIME_AGGREGATION_INTERVAL
@@ -360,6 +378,10 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
         )
         odm2_engine.create_object(measurementresult, preserve_pkey=True)
 
+    @classmethod
+    def create_measurement_result_value(
+        cls, result_id: int, value: float, datetime: datetime, utc_offset: int
+    ) -> None:
         measurementresultvalue = odm2_models.MeasurementResultValues()
         measurementresultvalue.resultid = result_id
         measurementresultvalue.datavalue = value
@@ -372,25 +394,180 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
         result_records = cls.get_result_records(
             feature_action_id, config.variable_identifier
         )
+        # main update loop
+        # Definitions
+        #   Form: refers to the value provided by user from frontend
+        #   Record: refers to MeasurementResultValue database record associated with result_id
+        #   Result : refers to odm2.Result database record
+        # Explanation of possible states
+        #   1. Form = None
+        #       delete result and child records
+        #   2. Form = Float | Record -> Record != Exists -->
+        #       check if MeasureResults record exists --> false = create record
+        #       create MeasurementResultValues record
+        #   3. From is float | Record is Float | Record != Form -->
+
+        # Guard clause for result record does not exist
+        # This should not be necessary and should be checked higher up in the
+        # processing steps
+        # TODO test if this can be removed
         if not result_records:
             raise KeyError(
                 f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}"
             )
-        result_id = result_records[0]["resultid"]
 
+        # get the result database record for this form field
+        result = result_records[0]
+        result_id = result["resultid"]
+
+        # Address state 1
         if not value:
             odm2_engine.delete_object(odm2_models.Results, result_id)
             return
 
-        # TODO: we should implemented an update_query method in ODM2Engine
-        query = sqlalchemy.select(odm2_models.MeasurementResultValues).where(
-            odm2_models.MeasurementResultValues.resultid == result_id
-        )
-        measurement_result_value = odm2_engine.read_query(query, output_format="dict")
-        value_id = measurement_result_value[0]["valueid"]
+        try:
+            # Address state 3. If record does not exist catch exception and move to state 2
+            query = sqlalchemy.select(odm2_models.MeasurementResultValues).where(
+                odm2_models.MeasurementResultValues.resultid == result_id
+            )
+            measurement_result_value = odm2_engine.read_query(
+                query, output_format="dict"
+            )
+            value_id = measurement_result_value[0]["valueid"]
+            odm2_engine.update_object(
+                odm2_models.MeasurementResultValues, value_id, {"datavalue": value}
+            )
+            # if the record does not exist there will be an index error
+        except IndexError:
+            # state 2. We need to create a new MeasureResultValues record.
+
+            # datetime and utc_offset are required for MeasurementResultValue record.
+            # ideally that information can be pulled from the result records, but there are
+            # legacy records that might not have that information populated, so fall back to the
+            # server time as a backup/default.
+            date = (
+                result["resultdatetime"]
+                if result["resultdatetime"]
+                else datetime.datetime.now()
+            )
+            utc_offset = (
+                result["resultdatetimeutcoffset"]
+                if result["resultdatetimeutcoffset"]
+                else 0
+            )
+
+            # check if there is still existing MeasureResults record
+            query = sqlalchemy.select(odm2_models.MeasurementResults).where(
+                odm2_models.MeasurementResults.resultid == result_id
+            )
+            measurement_result = odm2_engine.read_query(query, output_format="dict")
+            if len(measurement_result) == 0:
+                cls.create_measurement_result(result_id=result_id)
+
+            # creating missing MeasurementResultValue record
+            cls.create_measurement_result_value(
+                result_id=result_id,
+                value=value,
+                datetime=date,
+                utc_offset=utc_offset,
+            )
+
+        # update censorcode_cv to ensure Non-detected does not persist
         odm2_engine.update_object(
-            odm2_models.MeasurementResultValues, value_id, {"datavalue": value}
+            odm2_models.MeasurementResults,
+            result_id,
+            {"censorcodecv": cls.CENSOR_CODE_CV},
         )
+
+
+class _FloatFieldNondetectAdapter(_FloatFieldAdapter):
+    @classmethod
+    def create(
+        cls,
+        value: Any,
+        datetime: datetime.datetime,
+        utc_offset: int,
+        feature_action_id: int,
+        config: FieldConfig,
+    ) -> None:
+        if not value:
+            return
+        result_id = cls.create_result(
+            feature_action_id,
+            config,
+            cls.RESULT_TYPE_CV,
+        )
+
+        # if non-detect was selected, form clean data method should return value=True
+        # and we should override default behavior and mark record with a special censor
+        # code indicating non-detected. Otherwise we want the default behavior.
+        censor_code = (
+            CENSOR_CODE_CV_NONDETECT if value is True else super().CENSOR_CODE_CV
+        )
+
+        cls.create_measurement_result(result_id, censor_code)
+        if value is not True:
+            cls.create_measurement_result_value(result_id, value, datetime, utc_offset)
+
+    @classmethod
+    def update(cls, value: Any, feature_action_id: int, config: FieldConfig) -> None:
+        """Updates database to reflect state of form (value)"""
+        ### main update loop
+        # We use boolean=True to indicate a non-detect, other value should be a float
+        # Definitions
+        #   Form: refers to the value provided by user from frontend
+        #   Record: refers to MeasurementResultValue database record associated with result_id
+        #   Result : refers to odm2.Result database record
+        # Explanation of possible states
+        #   1. Form = Float | Record -> Record != Exists -->
+        #       Use super class (FloatFieldAdapter)
+        #   2. From is float | Record if Float | Record != Form -->
+        #       Use super class (FloatFieldAdapter)
+        #   3. Form = True(non-detect) | Record = Exists -->
+        #       Delete MeasurementResultValues Record
+        #       Update CENSOR_CODE of MeasurementResults record
+        #   4. Form = True(non-detect) | Record = Does Not Exists -->
+        #       Update CENSOR_CODE of MeasurementResults record
+        #   5. Form = None -->
+        #       Use super class (FloatFieldAdapter)
+
+        # if the value is float (not True) then we can use the super class method to handle this
+        if value is not True or value is None:
+            return super().update(value, feature_action_id, config)
+
+        # fetch result information from the database
+        result_records = cls.get_result_records(
+            feature_action_id, config.variable_identifier
+        )
+        result_id = result_records[0]["resultid"]
+
+        try:
+            # State 3
+            query = sqlalchemy.select(odm2_models.MeasurementResultValues).where(
+                odm2_models.MeasurementResultValues.resultid == result_id
+            )
+            measurement_result_value = odm2_engine.read_query(
+                query, output_format="dict"
+            )
+            value_id = measurement_result_value[0]["valueid"]
+            odm2_engine.delete_object(odm2_models.MeasurementResultValues, value_id)
+        except IndexError:
+            # indicates state 4. If the MeasurementResultValue did not exist
+            # then we should be able to just proceed with setting the cencorcode_cv
+            # to indicate that the measurement is a non-detect
+            pass
+        finally:
+            odm2_engine.update_object(
+                odm2_models.MeasurementResults,
+                result_id,
+                {"censorcodecv": CENSOR_CODE_CV_NONDETECT},
+            )
+
+    @classmethod
+    def read(cls, database_record: Dict[str, Any]) -> Any:
+        if database_record["measurement_censorcodecv"] == CENSOR_CODE_CV_NONDETECT:
+            return CENSOR_CODE_CV_NONDETECT
+        return database_record[cls.VALUE_FIELD_NAME]
 
 
 class _TextFieldAdapter(_BaseFieldAdapter):
@@ -546,13 +723,21 @@ class StreamWatchODM2Adapter:
         "site_observation": FieldConfig(540, _TextFieldAdapter, 394, "Not applicable"),
         "simple_air_temperature": FieldConfig(541, _FloatFieldAdapter, 362, "Air"),
         "simple_dissolved_oxygen": FieldConfig(
-            544, _FloatFieldAdapter, 404, "Liquid aqueous"
+            544, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
         ),
-        "simple_nitrate": FieldConfig(546, _FloatFieldAdapter, 404, "Liquid aqueous"),
-        "simple_phosphate": FieldConfig(547, _FloatFieldAdapter, 404, "Liquid aqueous"),
+        "simple_nitrate": FieldConfig(
+            546, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
+        ),
+        "simple_phosphate": FieldConfig(
+            547, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
+        ),
         "simple_ph": FieldConfig(543, _FloatFieldAdapter, 385, "Liquid aqueous"),
-        "simple_salinity": FieldConfig(545, _FloatFieldAdapter, 428, "Liquid aqueous"),
-        "simple_turbidity": FieldConfig(550, _FloatFieldAdapter, 364, "Liquid aqueous"),
+        "simple_salinity": FieldConfig(
+            545, _FloatFieldNondetectAdapter, 428, "Liquid aqueous"
+        ),
+        "simple_turbidity": FieldConfig(
+            550, _FloatFieldNondetectAdapter, 364, "Liquid aqueous"
+        ),
         "simple_water_temperature": FieldConfig(
             542, _FloatFieldAdapter, 362, "Liquid aqueous"
         ),
@@ -586,9 +771,6 @@ class StreamWatchODM2Adapter:
         ),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
         "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
-        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
-        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
-        # "siteimage": FieldConfig(9, _ObjectFieldAdapter, 394, "Not applicable"),
     }
 
     def __init__(self, action_id: int) -> None:
@@ -673,6 +855,12 @@ class StreamWatchODM2Adapter:
             elif key not in instance.PARAMETER_CROSSWALK:
                 continue
             config = instance.PARAMETER_CROSSWALK[key]
+
+            # if non-detectable float, we need to check if additional non-detect field is checked and
+            # override the value if bool is true.
+            if config.adapter_class is _FloatFieldNondetectAdapter:
+                value = True if form_data[f"{key}{NONDETECT_FIELD_SUFFIX}"] else value
+
             config.adapter_class.create(
                 value,
                 parent_action.begindatetime,
@@ -690,6 +878,9 @@ class StreamWatchODM2Adapter:
                 odm2_models.FeatureActions,
                 odm2_models.Results,
                 odm2_models.Variables,
+                odm2_models.MeasurementResults.censorcodecv.label(
+                    "measurement_censorcodecv"
+                ),
                 odm2_models.MeasurementResultValues.datavalue.label(
                     "measurement_datavalue"
                 ),
@@ -756,7 +947,6 @@ class StreamWatchODM2Adapter:
             if record[self.VARIABLE_CODE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_CODE]]
                 field_adapter = parameter_information[1]
-                # default/other fields
                 self._attributes[parameter_information[0]] = field_adapter.read(record)
             elif record[self.VARIABLE_TYPE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
@@ -889,10 +1079,12 @@ class StreamWatchODM2Adapter:
         feature_action = odm2_engine.read_query(query, output_format="dict")
         feature_action_id = feature_action[0]["featureactionid"]
         for key, value in form_data.items():
+            # if the field is not in the cross walk (e.g. a non-detect boolean field)
             if key not in self.PARAMETER_CROSSWALK:
                 continue
 
             config = self.PARAMETER_CROSSWALK[key]
+            # case where record does not yet exiusts (i.e. this is a new paramenter)
             if key not in self._attributes:
                 config.adapter_class.create(
                     value,
@@ -901,14 +1093,20 @@ class StreamWatchODM2Adapter:
                     feature_action_id,
                     config,
                 )
-                continue
-            if value != self._attributes[key]:
+            # special case for float non-detect where value update is in two fields
+            elif config.adapter_class is _FloatFieldNondetectAdapter:
+                # check if non-detect options checked
+                check_box_value = form_data[f"{key}{NONDETECT_FIELD_SUFFIX}"]
+                # if non-detect checked, override float field value
+                value = check_box_value if check_box_value else value
+                config.adapter_class.update(value, feature_action_id, config)
+            # case where value has change
+            elif value != self._attributes[key]:
                 config.adapter_class.update(
                     value,
                     feature_action_id,
                     config,
                 )
-                continue
 
     def _update_special_cases(self, form_data: Dict[str, Any]) -> None:
         """Method to update form parameters that do not utilize a _BaseFieldAdapter subclass"""
