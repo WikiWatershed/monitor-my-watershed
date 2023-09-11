@@ -28,13 +28,12 @@
     });
 
     //not-detected hide float field
+    //event handler 
     $('.non-detect').on('change', function(){
-        const id = $(this).attr('id');
-        const checked = $(this).prop('checked')
-        const parent_field_id = id.replace('_nondetect', '');
-        $('#' + parent_field_id).parent().attr('hidden', checked);
+        updateNonDetectField(this)
     });
-
+    //initialize
+    $('.non-detect').each(function(){updateNonDetectField(this)});
 
     favorite =[];
     //totalForms = $('#id_2_TOTAL_FORMS');
@@ -104,3 +103,10 @@
 
     }
 });
+
+function updateNonDetectField(elem) {
+    const id = $(elem).attr('id');
+    const checked = $(elem).prop('checked')
+    const parent_field_id = id.replace('_nondetect', '');
+    $('#' + parent_field_id).parent().attr('hidden', checked);
+}

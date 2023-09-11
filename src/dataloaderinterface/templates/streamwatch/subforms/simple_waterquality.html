@@ -1,4 +1,13 @@
 {% load widget_tweaks %}
+
+<style>
+    .non-detect-line {
+        height: 18px;
+        line-height: 18px;
+        margin-bottom: 3px;
+    }
+</style>
+
 <div class="form-streamwatch">
     <div class="row">
         <div class="col-12">
@@ -16,6 +25,7 @@
                     <div class="row num-input">
                         <div class="form-field col-6 num-field" >
                             {{ wizard.form.simple_air_temperature.errors }}
+                            <div class="non-detect-line"></div>
                             <label for="{{ wizard.form.simple_air_temperature.id_for_label }}">{{ wizard.form.simple_air_temperature.label }}</label>
                             {{ wizard.form.simple_air_temperature|add_class:"form-control d-inline" }}
                             <small>°C</small>
@@ -23,6 +33,7 @@
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_ph.errors }}
+                            <div class="non-detect-line"></div>
                             <label for="{{ wizard.form.simple_ph.id_for_label }}">{{ wizard.form.simple_ph.label }}</label>
                             {{ wizard.form.simple_ph|add_class:"form-control d-inline" }}
                         </div>
@@ -30,6 +41,7 @@
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_water_temperature.errors }}
                             <label for="{{ wizard.form.simple_water_temperature.id_for_label }}">{{ wizard.form.simple_water_temperature.label }}</label>
+                            <div class="non-detect-line"></div>
                             {{ wizard.form.simple_water_temperature|add_class:"form-control d-inline" }}
                             <small>°C</small>
                         </div>
@@ -37,9 +49,11 @@
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_dissolved_oxygen.errors }}
                             <label for="{{ wizard.form.simple_dissolved_oxygen.id_for_label }}">{{ wizard.form.simple_dissolved_oxygen.label }}</label>
-                            <label class="non-detect-label">Not detected
-                                {{ wizard.form.simple_dissolved_oxygen_nondetect|add_class:"non-detect d-inline"}}
-                            </label>
+                            <div class="non-detect-line">
+                                <label class="non-detect-label">Not detected
+                                    {{ wizard.form.simple_dissolved_oxygen_nondetect|add_class:"non-detect d-inline"}}
+                                </label>
+                            </div>
                             <div>
                                 {{ wizard.form.simple_dissolved_oxygen|add_class:"form-control d-inline" }}
                                 <small>ppm</small>
