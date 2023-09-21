@@ -141,6 +141,12 @@ class VisualAssessmentForm(forms.Form):
         coerce=int,
         choices=models.variable_choice_options("waterOdor", False),
     )
+    water_odor_other = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 2}),
+        required=False,
+        label="Water Odor Other Description",
+        max_length=255,
+    )
     clarity = forms.TypedChoiceField(
         required=False,
         widget=forms.Select,

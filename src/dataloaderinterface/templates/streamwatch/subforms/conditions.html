@@ -52,10 +52,15 @@
                     </div>
                 </div>
 
-                <div class="form-field indent-left">
+                <div class="form-field">
                     <label for="{{ wizard.form.water_odor.id_for_label }}">{{ wizard.form.water_odor.label }}</label>
-                    {{ wizard.form.water_odor.errors }}
-                    {{ wizard.form.water_odor }}
+                        {{ wizard.form.water_odor.errors }}
+                        {{ wizard.form.water_odor }}
+                </div>
+                <div class="form-field">
+                    <label for="{{ wizard.form.water_odor_other.id_for_label }}">{{ wizard.form.water_odor_other.label }}</label>
+                    {{ wizard.form.water_odor_other.errors }}
+                    {{ wizard.form.water_odor_other|add_class:"full-width" }}
                 </div>
             </div>
         </div>
