@@ -1,0 +1,35 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter information for macroinvertebrates.<h5>
+    </div>
+</div>
+
+<div class="row std-row">
+    {{ wizard.form.site_registration }}
+    <div class="col-sm-12 col-md-6">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">
+                {% for field in form.visible_fields %}
+                    <div class="form-group">
+                        <div class="form-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <br>
+                            {% render_field field %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <br><br>
+    </div>
+
+
+{% block scripts %}
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js" defer></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+{% endblock %}

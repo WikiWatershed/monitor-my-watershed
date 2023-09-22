@@ -55,6 +55,8 @@
                         {% include 'streamwatch/subforms/simple_waterquality.html' with wizard=wizard %}
                     {% elif wizard.form.prefix == 'simplehabitat' %}
                         {% include 'streamwatch/subforms/simple_habitat.html' with wizard=wizard %}  
+                    {% elif wizard.form.prefix == 'macros' %}
+                        {% include 'streamwatch/subforms/macros.html' with wizard=wizard %}  
                     {% else %}
                         {{wizard.form.as_p}}
                     {% endif %}
