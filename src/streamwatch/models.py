@@ -769,6 +769,7 @@ class StreamWatchODM2Adapter:
         "water_odor": FieldConfig(
             "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
         ),
+        "water_odor_other": FieldConfig(585, _TextFieldAdapter, 394, "Liquid aqueous"),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
         "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
     }

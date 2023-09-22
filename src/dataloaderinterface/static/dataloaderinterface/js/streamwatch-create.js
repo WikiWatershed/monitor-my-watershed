@@ -80,6 +80,9 @@
         AddSensorParameterForm();
     }); 
 
+    $("#id_conditions-water_odor").change(function() {
+        
+    });    
 
     // tutorial for dynamically adding Forms in Django with Formsets and JavaScript
     // https://www.brennantymrak.com/articles/django-dynamic-formsets-javascript
