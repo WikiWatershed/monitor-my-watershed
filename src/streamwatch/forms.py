@@ -19,12 +19,19 @@ def _get_user_choices() -> tuple[tuple[int, str]]:
     """Initialize the user list with affiliation and account name"""
 
     def format_name(a) -> str:
-        name = f"{a[2]}, {a[1]}"
+        first = a[1]
+        last = a[2]
+        name = f"{first}, {last}"
         if a[3] is not None:
             name += f" ({a[3]})"
         return name
 
-    return tuple(((a[0], format_name(a)) for a in users.read_account_affiliations()))
+    user_options = []
+    for a in users.read_account_affiliations():
+        if a[1] is None or a[1] == "" or a[2] is None or a[2] == "":
+            continue
+        user_options.append((a[0], format_name(a)))
+    return tuple(user_options)
 
 
 class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
