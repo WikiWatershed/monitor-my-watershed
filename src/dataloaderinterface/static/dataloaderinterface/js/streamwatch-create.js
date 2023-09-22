@@ -80,8 +80,11 @@
         AddSensorParameterForm();
     }); 
 
-    $("#id_conditions-water_odor").change(function() {
-        
+    $("#id_conditions-water_odor").change(function(ths) {
+        //method to conditionally toggle visibility of the water odor other field
+        //if 'other' (value = 441) is selected field should be visible
+        //other wise hide the field and clear the entry.  
+        toogleWaterOdorOther(this);
     });    
 
     // tutorial for dynamically adding Forms in Django with Formsets and JavaScript
@@ -105,6 +108,9 @@
         totalForms.setAttribute('value', `${formNum+1}`) //Increment the number of total forms in the management form
 
     }
+
+    toogleWaterOdorOther("#id_conditions-water_odor");
+
 });
 
 function updateNonDetectField(elem) {
@@ -113,3 +119,16 @@ function updateNonDetectField(elem) {
     const parent_field_id = id.replace('_nondetect', '');
     $('#' + parent_field_id).parent().attr('hidden', checked);
 }
+
+function toogleWaterOdorOther(element) {
+    let checkElement = $(element).children().find('[value=441]').parent()
+    let otherText = $('#id_conditions-water_odor_other');
+    if (checkElement.hasClass('is-checked')) {
+        otherText.parent().show();
+        
+    } else {
+        otherText.parent().hide();
+        otherText.val('');
+    } 
+}
+
