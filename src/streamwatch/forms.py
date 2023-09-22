@@ -551,3 +551,74 @@ class SitePhotosForm(forms.Form):
     siteimage2 = forms.ImageField(required=False, label="Site Photo")
     siteimage3 = forms.ImageField(required=False, label="Site Photo")
     siteimage4 = forms.ImageField(required=False, label="Site Photo")
+
+
+class MacroInvertebrateForm(forms.Form):
+    marco_ephemeroptera = forms.IntegerField(
+        required=False, min_value=0, label="Ephemeroptera (mayflies)"
+    )
+    marco_plecoptera = forms.IntegerField(
+        required=False, min_value=0, label="Plecoptera (stoneflies)"
+    )
+    marco_hydropsychidae = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Hydropsychidae (common netspinner caddisflies)",
+    )
+    marco_other_caddisflies = forms.IntegerField(
+        required=False, min_value=0, label="Other caddisflies"
+    )
+    marco_anisoptera = forms.IntegerField(
+        required=False, min_value=0, label="Anisoptera (dragonflies)"
+    )
+    marco_zygoptera = forms.IntegerField(
+        required=False, min_value=0, label="Zygoptera (damselflies)"
+    )
+    marco_corydalidae = forms.IntegerField(
+        required=False, min_value=0, label="Corydalidae (hellgrammites)"
+    )
+    marco_sialidae = forms.IntegerField(
+        required=False, min_value=0, label="Sialidae (alderflies)"
+    )
+    marco_coleoptera = forms.IntegerField(
+        required=False, min_value=0, label="Coleoptera (beetles)"
+    )
+    marco_athericidae = forms.IntegerField(
+        required=False, min_value=0, label="Athericidae (watersnipe flies)"
+    )
+    marco_chironomidae = forms.IntegerField(
+        required=False, min_value=0, label="Chironomidae (midges)"
+    )
+    marco_simuliidae = forms.IntegerField(
+        required=False, min_value=0, label="Simuliidae (black flies)"
+    )
+    marco_tipulidae = forms.IntegerField(
+        required=False, min_value=0, label="Tipulidae (crane flies)"
+    )
+    marco_other_diptera = forms.IntegerField(
+        required=False, min_value=0, label="Other diptera"
+    )
+    marco_amphipoda = forms.IntegerField(
+        required=False, min_value=0, label="Amphipoda (scuds)"
+    )
+    marco_isopoda = forms.IntegerField(
+        required=False, min_value=0, label="Isopoda (aquatic sow bugs)"
+    )
+    marco_decapoda = forms.IntegerField(
+        required=False, min_value=0, label="Decapoda (crayfish)"
+    )
+    marco_oligochaeta = forms.IntegerField(
+        required=False, min_value=0, label="Oligochaeta (aquatic worms)"
+    )
+    marco_hirudinea = forms.IntegerField(
+        required=False, min_value=0, label="Hirudinea (leeches)"
+    )
+    marco_turbellaria = forms.IntegerField(
+        required=False, min_value=0, label="Turbellaria (planarians)"
+    )
+    marco_gastropoda = forms.IntegerField(
+        required=False, min_value=0, label="Gastropoda (snails)"
+    )
+    marco_sphaeriidae = forms.IntegerField(
+        required=False, min_value=0, label="Sphaeriidae (fingernail clams)"
+    )
