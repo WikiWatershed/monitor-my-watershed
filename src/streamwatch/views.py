@@ -285,6 +285,7 @@ def csv_export(request, sampling_feature_code: str, actionids: str):
             "Visual_Time_Since_Rainfall",
             "Visual_Water_Color",
             "Visual_Water_Odor",
+            "Visual_Water_Odor_Other",
             "Visual_Turbidity",
             "Visual_Water_Movement",
             "Visual_Surface_Coating",
@@ -321,6 +322,9 @@ def csv_export(request, sampling_feature_code: str, actionids: str):
             else None,
             assessment["water_color"] if "water_color" in assessment else None,
             assessment["water_odor"] if "water_odor" in assessment else None,
+            assessment["water_odor_other"]
+            if "water_odor_other" in assessment
+            else None,
             assessment["clarity"] if "clarity" in assessment else None,
             assessment["water_movement"] if "water_movement" in assessment else None,
             assessment["surface_coating"] if "surface_coating" in assessment else None,
