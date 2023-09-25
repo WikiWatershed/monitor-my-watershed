@@ -161,6 +161,9 @@ class DetailView(django.views.generic.detail.DetailView):
         action_id = int(self.kwargs["pk"])
         adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
         data = adapter.to_dict(string_format=True)
+
+        # add in list of macro field
+        data["macro_fields"] = forms.MacroInvertebrateForm.declared_fields
         return data
 
     def get_context_data(self, **kwargs):
