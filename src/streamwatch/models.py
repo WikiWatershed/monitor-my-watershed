@@ -976,7 +976,11 @@ class StreamWatchODM2Adapter:
             field = f"{field}{NONDETECT_FIELD_SUFFIX}" if value is True else field
             self._attributes[field] = value
         # categorical/ single- or multi-choice
-        if adapter is _MultiChoiceFieldAdapter or _ObjectFieldAdapter:
+        if adapter in (
+            _ChoiceFieldAdapter,
+            _MultiChoiceFieldAdapter,
+            _ObjectFieldAdapter,
+        ):
             if field not in self._attributes:
                 self._attributes[field] = []
             self._attributes[field].append(adapter.read(record))
@@ -1070,6 +1074,10 @@ class StreamWatchODM2Adapter:
         data = copy.deepcopy(self._attributes)
         variables = get_odm2_variables()
         for key, value in self._attributes.items():
+            # TODO we should really make this a multifield class
+            if NONDETECT_FIELD_SUFFIX in key:
+                key = key.removesuffix(NONDETECT_FIELD_SUFFIX)
+
             if key not in self.PARAMETER_CROSSWALK:
                 continue
             config = self.PARAMETER_CROSSWALK[key]
