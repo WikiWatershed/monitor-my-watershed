@@ -208,6 +208,7 @@ class _BaseFieldAdapter:
         feature_action_id: int,
         variable_id: int = None,
         variable_type_cv: str = None,
+        taxonomic_classifier: int = None,
     ) -> List[Dict[str, Any]]:
         query = (
             sqlalchemy.select(odm2_models.Results)
@@ -221,6 +222,7 @@ class _BaseFieldAdapter:
                 odm2_models.Variables.variableid == odm2_models.Results.variableid,
             )
             .where(odm2_models.FeatureActions.featureactionid == feature_action_id)
+            .where(odm2_models.Results.taxonomicclassifierid == taxonomic_classifier)
         )
         if variable_id:
             query = query.where(odm2_models.Results.variableid == variable_id)
@@ -395,7 +397,9 @@ class _FloatFieldAdapter(_BaseFieldAdapter):
     @classmethod
     def update(cls, value: Any, feature_action_id: int, config: FieldConfig) -> None:
         result_records = cls.get_result_records(
-            feature_action_id, config.variable_identifier
+            feature_action_id,
+            variable_id=config.variable_identifier,
+            taxonomic_classifier=config.taxonomic_classifier,
         )
         # main update loop
         # Definitions
@@ -610,11 +614,17 @@ class _TextFieldAdapter(_BaseFieldAdapter):
     @classmethod
     def update(cls, value: Any, feature_action_id: int, config: FieldConfig) -> None:
         result_records = cls.get_result_records(
-            feature_action_id, config.variable_identifier
+            feature_action_id,
+            variable_id=config.variable_identifier,
+            taxonomic_classifier=config.taxonomic,
         )
         if not result_records:
             raise KeyError(
                 f"No result records for feature_action_id:{feature_action_id} and variableid:{config.variable_identifier}"
+            )
+        if len(result_records) > 1:
+            raise ValueError(
+                f"Multiple result records returned (found {len(result_records)}). Executing update runs risk of updating incorrect data field"
             )
         result_id = result_records[0]["resultid"]
 
@@ -798,6 +808,12 @@ class StreamWatchODM2Adapter:
         "macro_turbellaria": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 19),
         "macro_gastropoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 29),
         "macro_sphaeriidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 30),
+        "macro_comment": FieldConfig(
+            8,
+            _TextFieldAdapter,
+            394,
+            "Other",
+        ),
     }
 
     def __init__(self, action_id: int) -> None:

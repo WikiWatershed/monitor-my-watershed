@@ -400,12 +400,19 @@
 
                     <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
                         {% for name, field in streamwatch.macro_fields.items %}
+                            {% if 'comment' not in name %}
                             <tr>
                                 <td class="mdl-data-table__cell--non-numeric label">{{ field.label }}</td>
                                 <td class="mdl-data-table__cell--non-numeric">{{ streamwatch|get_dict_attr:name|add:"0"|default:"Unknown" }}</td>
-                            </tr>                        
+                            </tr>
+                            {% endif %}                        
                         {% endfor %}
                     </table>
+                    <div class="col-12">
+                        <label>Macroinvertebrate comments</Label>
+                        <p><em>{{ streamwatch.macro_comment }}</em></p>
+                    </div>
+
                 </div>
             </div>
 

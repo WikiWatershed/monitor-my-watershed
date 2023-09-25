@@ -622,3 +622,9 @@ class MacroInvertebrateForm(forms.Form):
     macro_sphaeriidae = forms.IntegerField(
         required=False, min_value=0, label="Sphaeriidae (fingernail clams)"
     )
+    macro_comment = forms.CharField(
+        widget=forms.Textarea(),
+        required=False,
+        label="Additional Macroinvertebrate related comments (maximum 255 characters)",
+        max_length=255,
+    )
