@@ -822,9 +822,9 @@ class StreamWatchODM2Adapter:
             StreamWatchODM2Adapter object
         """
         instance = cls(action_id)
-        instance._read_and_map_special_cases()
-        data = instance._read_from_database(action_id)
-        instance._map_database_to_dict(data)
+        instance.__read_and_map_special_cases()
+        data = instance.__read_from_database(action_id)
+        instance.__map_database_to_dict(data)
         return instance
 
     @classmethod
@@ -900,7 +900,7 @@ class StreamWatchODM2Adapter:
             )
         return instance
 
-    def _read_from_database(self, parent_action_id: int) -> List[Dict[str, Any]]:
+    def __read_from_database(self, parent_action_id: int) -> List[Dict[str, Any]]:
         """Helper method to query the data from the database"""
         query = (
             sqlalchemy.select(
@@ -968,7 +968,7 @@ class StreamWatchODM2Adapter:
         data = odm2_engine.read_query(query, output_format="dict")
         return data
 
-    def _map_database_to_dict(self, data: Dict[str, Any]) -> None:
+    def __map_database_to_dict(self, data: Dict[str, Any]) -> None:
         """Reverses the database crosswalk to map data back to dictionary"""
 
         self._read_and_map_special_cases()
@@ -1000,7 +1000,7 @@ class StreamWatchODM2Adapter:
                         record
                     )
 
-    def _read_and_map_special_cases(self) -> None:
+    def __read_and_map_special_cases(self) -> None:
         action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
         self._attributes["assessment_type"] = []
         if action["actiondescription"]:
