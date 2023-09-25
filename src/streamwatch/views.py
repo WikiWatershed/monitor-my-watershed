@@ -121,6 +121,7 @@ class UpdateView(CreateView):
             self.initial_dict["conditions"] = form_data
             self.initial_dict["simplewaterquality"] = form_data
             self.initial_dict["simplehabitat"] = form_data
+            self.initial_dict["macros"] = form_data
 
         return super().get(request, *args, **kwargs)
 
