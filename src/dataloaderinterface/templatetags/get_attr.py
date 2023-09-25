@@ -5,4 +5,4 @@ register = template.Library()
 
 @register.filter
 def get_dict_attr(obj, attr):
-    return obj[attr]
+    return obj.get(attr, None)

@@ -402,7 +402,7 @@
                         {% for name, field in streamwatch.macro_fields.items %}
                             <tr>
                                 <td class="mdl-data-table__cell--non-numeric label">{{ field.label }}</td>
-                                <td class="mdl-data-table__cell--non-numeric">{{ streamwatch|get_dict_attr:name|add:"0" }}</td>
+                                <td class="mdl-data-table__cell--non-numeric">{{ streamwatch|get_dict_attr:name|add:"0"|default:"Unknown" }}</td>
                             </tr>                        
                         {% endfor %}
                     </table>
@@ -426,7 +426,6 @@
             </div>
 
             <div class="row">
-
                 {% if streamwatch.site_observation %}
                     <div class="col-12">
                         <h6 class="title">General Comments and Site Observations</h6>
