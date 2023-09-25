@@ -2,6 +2,7 @@ from collections import namedtuple
 import copy
 import datetime
 from typing import Dict, Any, Iterable, Tuple, Union, List
+import math
 import uuid
 
 import sqlalchemy
@@ -992,6 +993,11 @@ class StreamWatchODM2Adapter:
 
         crosswalk = self.__reverse_crosswalk()
         for record in data:
+            # TODO: The autompper models appear to incorrecty mappin taxonomicclassifierid to a float
+            # this is a workaround until we replace those models with an explicit version
+            if not math.isnan(record[self.TAXONOMIC_ID]):
+                record[self.TAXONOMIC_ID] = int(record[self.TAXONOMIC_ID])
+
             # different types of data fields are mapped to the databse differently.
             possible_keys = (
                 # 1 record is coded with a variable code and taxonomic identifier
@@ -1005,6 +1011,7 @@ class StreamWatchODM2Adapter:
             for key in possible_keys:
                 if key in crosswalk:
                     self.__crosswalk_record(record, crosswalk[key])
+                    break
 
     def __read_and_map_special_cases(self) -> None:
         action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
