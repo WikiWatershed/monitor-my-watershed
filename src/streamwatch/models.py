@@ -802,8 +802,7 @@ class StreamWatchODM2Adapter:
         self.action_id = action_id
         self._attributes = {}
 
-    @classmethod
-    def _reverse_crosswalk(cls) -> Dict[str, Any]:
+    def __reverse_crosswalk(cls) -> Dict[str, Any]:
         crosswalk = {}
         for k, v in cls.PARAMETER_CROSSWALK.items():
             variable, *_, taxonomic = v
@@ -971,9 +970,12 @@ class StreamWatchODM2Adapter:
     def __map_database_to_dict(self, data: Dict[str, Any]) -> None:
         """Reverses the database crosswalk to map data back to dictionary"""
 
-        self._read_and_map_special_cases()
-        crosswalk = self._reverse_crosswalk()
+        crosswalk = self.__reverse_crosswalk()
         for record in data:
+            # different types of data fields are mapped to the databse differently.
+
+            # if records is coded with a variable code and
+
             if record[self.VARIABLE_CODE] in crosswalk:
                 parameter_information = crosswalk[record[self.VARIABLE_CODE]]
                 field = parameter_information[0]
@@ -1071,9 +1073,10 @@ class StreamWatchODM2Adapter:
             if key not in self.PARAMETER_CROSSWALK:
                 continue
             config = self.PARAMETER_CROSSWALK[key]
-            if config.adapter_class is _ChoiceFieldAdapter:
-                data[key] = variables[value]["variabledefinition"]
-            elif config.adapter_class is _MultiChoiceFieldAdapter:
+            if (
+                config.adapter_class is _ChoiceFieldAdapter
+                or config.adapter_class is _MultiChoiceFieldAdapter
+            ):
                 data[key] = ", ".join(
                     [variables[x]["variabledefinition"] for x in value]
                 )
