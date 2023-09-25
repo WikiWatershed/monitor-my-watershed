@@ -144,8 +144,9 @@ def get_assessment_summary_information(sampling_feature_code: str) -> dict[str, 
     return summary
 
 
+__FIELDS = ("variable_identifier", "adapter_class", "units", "medium", "taxonomic")
 FieldConfig = namedtuple(
-    "FieldConfig", ["variable_identifier", "adapter_class", "units", "medium"]
+    "FieldConfig", field_names=__FIELDS, defaults=(None,) * len(__FIELDS)
 )
 
 
@@ -704,7 +705,7 @@ class StreamWatchODM2Adapter:
 
     # This is intended be more flexible way to map form field ODM2 data
     # and limit the hardcoding to a single location
-    # FieldConfig(variable_identifier:str|int, adapterclass|Class, units:int, medium:str)
+    # FieldConfig(variable_identifier:str|int, adapterclass|Class, units:int, medium:str, taxonomicid:optional[int])
     # for variable_identifier int corresponding to variableid should be populated for Text and Floats
     #   ans str corresponding to variabletypecv should be populated for Choice and MultiChoice
     PARAMETER_CROSSWALK = {
@@ -772,6 +773,28 @@ class StreamWatchODM2Adapter:
         "water_odor_other": FieldConfig(585, _TextFieldAdapter, 394, "Liquid aqueous"),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
         "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
+        "marco_ephemeroptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 2),
+        "marco_plecoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 1),
+        "marco_hydropsychidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 16),
+        "marco_other_caddisflies": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 3),
+        "marco_anisoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 10),
+        "marco_zygoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 9),
+        "marco_corydalidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 25),
+        "marco_sialidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 26),
+        "marco_coleoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 27),
+        "marco_athericidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 8),
+        "marco_chironomidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 17),
+        "marco_simuliidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 18),
+        "marco_tipulidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 13),
+        "marco_other_diptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 28),
+        "marco_amphipoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 12),
+        "marco_isopoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 11),
+        "marco_decapoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 15),
+        "marco_oligochaeta": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 22),
+        "marco_hirudinea": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 20),
+        "marco_turbellaria": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 19),
+        "marco_gastropoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 29),
+        "marco_sphaeriidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 30),
     }
 
     def __init__(self, action_id: int) -> None:

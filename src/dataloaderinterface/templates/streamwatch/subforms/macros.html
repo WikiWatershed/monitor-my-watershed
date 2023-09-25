@@ -18,7 +18,7 @@
                         <div class="form-field">
                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                             <br>
-                            {% render_field field %}
+                            {% render_field field|add_class:"form-control" %}
                         </div>
                     </div>
                 {% endfor %}
