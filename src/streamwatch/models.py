@@ -703,6 +703,7 @@ class StreamWatchODM2Adapter:
     PARENT_ACTION_TYPE_CV = "Field activity"
     VARIABLE_CODE = "variableid"
     VARIABLE_TYPE = "variabletypecv"
+    TAXONOMIC_ID = "taxonomicclassifierid"
 
     # This is intended be more flexible way to map form field ODM2 data
     # and limit the hardcoding to a single location
@@ -806,7 +807,7 @@ class StreamWatchODM2Adapter:
         crosswalk = {}
         for k, v in cls.PARAMETER_CROSSWALK.items():
             variable, *_, taxonomic = v
-            new_key = f"{variable}|{taxonomic}" if taxonomic else variable
+            new_key = f"{variable}|{taxonomic}" if taxonomic else f"{variable}"
             crosswalk[new_key] = (k, *v[1:])
         return crosswalk
 
@@ -967,40 +968,39 @@ class StreamWatchODM2Adapter:
         data = odm2_engine.read_query(query, output_format="dict")
         return data
 
+    def __crosswalk_record(self, record: Dict[str, Any], config: FieldConfig) -> None:
+        field = config[0]
+        adapter = config[1]
+        if adapter is _FloatFieldNondetectAdapter:
+            value = adapter.read(record)
+            field = f"{field}{NONDETECT_FIELD_SUFFIX}" if value is True else field
+            self._attributes[field] = value
+        # categorical/ single- or multi-choice
+        if adapter is _MultiChoiceFieldAdapter or _ObjectFieldAdapter:
+            if field not in self._attributes:
+                self._attributes[field] = []
+            self._attributes[field].append(adapter.read(record))
+        else:
+            self._attributes[field] = adapter.read(record)
+
     def __map_database_to_dict(self, data: Dict[str, Any]) -> None:
         """Reverses the database crosswalk to map data back to dictionary"""
 
         crosswalk = self.__reverse_crosswalk()
         for record in data:
             # different types of data fields are mapped to the databse differently.
+            possible_keys = (
+                # 1 record is coded with a variable code and taxonomic identifier
+                f"{record[self.VARIABLE_CODE]}|{record[self.TAXONOMIC_ID]}",
+                # 2 record is coded wth just a variable code
+                f"{record[self.VARIABLE_CODE]}",
+                # 3 record is coded wth a variable type (categorical parameters)
+                f"{record[self.VARIABLE_TYPE]}",
+            )
 
-            # if records is coded with a variable code and
-
-            if record[self.VARIABLE_CODE] in crosswalk:
-                parameter_information = crosswalk[record[self.VARIABLE_CODE]]
-                field = parameter_information[0]
-                field_adapter = parameter_information[1]
-                if field_adapter is _FloatFieldNondetectAdapter:
-                    value = field_adapter.read(record)
-                    field = (
-                        f"{field}{NONDETECT_FIELD_SUFFIX}" if value is True else field
-                    )
-                    self._attributes[field] = value
-                else:
-                    self._attributes[field] = field_adapter.read(record)
-            elif record[self.VARIABLE_TYPE] in crosswalk:
-                parameter_information = crosswalk[record[self.VARIABLE_TYPE]]
-                field_adapter = parameter_information[1]
-                if field_adapter is _MultiChoiceFieldAdapter or _ObjectFieldAdapter:
-                    if parameter_information[0] not in self._attributes:
-                        self._attributes[parameter_information[0]] = []
-                    self._attributes[parameter_information[0]].append(
-                        field_adapter.read(record)
-                    )
-                else:
-                    self._attributes[parameter_information[0]] = field_adapter.read(
-                        record
-                    )
+            for key in possible_keys:
+                if key in crosswalk:
+                    self.__crosswalk_record(record, crosswalk[key])
 
     def __read_and_map_special_cases(self) -> None:
         action = odm2_engine.read_object(odm2_models.Actions, self.action_id)
