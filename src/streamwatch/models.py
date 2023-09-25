@@ -188,6 +188,7 @@ class _BaseFieldAdapter:
         result.featureactionid = feature_action_id
         result.resulttypecv = result_type
         result.variableid = variable_id if variable_id else config.variable_identifier
+        result.taxonomicclassifierid = config.taxonomic
         result.unitsid = config.units
         result.processinglevelid = cls.PROCESSING_LEVEL
         result.resultdatetime = datetime
@@ -803,7 +804,12 @@ class StreamWatchODM2Adapter:
 
     @classmethod
     def _reverse_crosswalk(cls) -> Dict[str, Any]:
-        return {v[0]: (k, *v[1:]) for k, v in cls.PARAMETER_CROSSWALK.items()}
+        crosswalk = {}
+        for k, v in cls.PARAMETER_CROSSWALK.items():
+            variable, *_, taxonomic = v
+            new_key = f"{variable}|{taxonomic}" if taxonomic else variable
+            crosswalk[new_key] = (k, *v[1:])
+        return crosswalk
 
     @classmethod
     def from_action_id(cls, action_id: int) -> "StreamWatchODM2Adapter":
