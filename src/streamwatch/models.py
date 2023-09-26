@@ -68,11 +68,15 @@ def samplingfeature_assessments(sampling_feature_code: str) -> Dict[str, Any]:
     )
     results = odm2_engine.read_query(query, output_format="dict")
 
-    # convert UTC time to local time
+    # acquire additional data
     for result in results:
+        # convert UTC time to local time
         result["begindatetime"] = result["begindatetime"] - datetime.timedelta(
             hours=result["begindatetimeutcoffset"]
         )
+        adapter = StreamWatchODM2Adapter.from_action_id(result["actionid"])
+        result["adapter_attributes"] = adapter.to_dict(string_format=True)
+        result["adapter"] = adapter
 
     return results
 
@@ -878,6 +882,14 @@ class StreamWatchODM2Adapter:
                 config,
             )
         return instance
+
+    @property
+    def count_total_macros(self) -> int:
+        count = 0
+        for name, value in self._attributes.items():
+            if "macro_" in name and "comment" not in name:
+                count += value
+        return count
 
     def __read_from_database(self, parent_action_id: int) -> List[Dict[str, Any]]:
         """Helper method to query the data from the database"""
