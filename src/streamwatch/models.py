@@ -653,6 +653,7 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
     RESULT_TYPE_CV = "Object store"
     VALUE_FIELD_NAME = "objectstore_objecturi"
     CENSOR_CODE_CV = "Unknown"
+    BUCKET = settings.SITE_PHOTOS_S3_BUCKET
 
     @classmethod
     def create(
@@ -667,13 +668,7 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
             return
         # upload the file to S3
         interface = S3Interface()
-        obj_id = str(uuid.uuid4())
-        interface.put_object(
-            key=obj_id,
-            obj=value.file,
-            content_type=value.content_type,
-            bucket=settings.SITE_PHOTOS_S3_BUCKET,
-        )
+        obj_id = cls.__upload_to_s3(interface, value)
 
         result_id = cls.create_result(
             feature_action_id,
@@ -701,7 +696,31 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
 
     @classmethod
     def update(cls, value: Any, feature_action_id: int, config: FieldConfig) -> None:
-        pass
+        result_records = cls.get_result_records(
+            feature_action_id,
+            variable_id=config.variable_identifier,
+            taxonomic_classifier=config.taxonomic,
+        )
+        result_id = result_records[0]["resultid"]
+
+        query = sqlalchemy.select(odm2_models.ObjectStoreResultValues).where(
+            odm2_models.ObjectStoreResultValues.resultid == result_id
+        )
+        object_store_result_value = odm2_engine.read_query(query, output_format="dict")
+        value_id = object_store_result_value[0]["valueid"]
+
+        interface = S3Interface()
+        # we want to get existing photo uuid so we can delete the object in s3
+        # we don't want to orphan images or pay to host images that have no database
+        # record assoicated with them
+        existing_obj_uuid = object_store_result_value[0]["objecturi"]
+        cls.__delete_from_s3(interface, existing_obj_uuid)
+
+        # upload the new image
+        obj_id = cls.__upload_to_s3(interface, value)
+        odm2_engine.update_object(
+            odm2_models.ObjectStoreResultValues, value_id, {"objecturi": obj_id}
+        )
 
     @classmethod
     def get_uri(cls, key: str) -> str:
@@ -715,6 +734,29 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
     def read(cls, database_record: Dict[str, Any]) -> Any:
         uri = super().read(database_record)
         return cls.get_uri(uri)
+
+    @classmethod
+    def __upload_to_s3(
+        cls,
+        interface: S3Interface,
+        obj: Any,
+    ) -> str:
+        obj_id = str(uuid.uuid4())
+        interface.put_object(
+            key=obj_id,
+            obj=obj.file,
+            content_type=obj.content_type,
+            bucket=cls.BUCKET,
+        )
+        return obj_id
+
+    @classmethod
+    def __delete_from_s3(
+        cls,
+        interface: S3Interface,
+        uuid: str,
+    ):
+        interface.delete_object(key=uuid, bucket=cls.BUCKET)
 
 
 class StreamWatchODM2Adapter:

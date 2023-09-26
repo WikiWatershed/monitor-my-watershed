@@ -38,3 +38,11 @@ class S3Interface:
             StorageClass="STANDARD",
         )
         return key
+
+    def delete_object(
+        self,
+        key: str,
+        bucket: str = AWS_PHOTO_BUCKET,
+    ):
+        response = self.__client.delete_object(Key=key, Bucket=bucket)
+        return None
