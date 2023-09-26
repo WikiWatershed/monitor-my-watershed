@@ -189,9 +189,14 @@ class DeleteView(LoginRequiredMixin, django.views.generic.edit.DeleteView):
     slug_field = "sampling_feature_code"
 
     def post(self, request, *args, **kwargs):
-        feature_action_id = request.POST.get("id")
+        # if not passed via post body, check query parameters
+        feature_action_id = request.POST.get("id", kwargs["id"])
         models.delete_streamwatch_assessment(feature_action_id)
-        return HttpResponse("Assessment deleted successfully", status=202)
+        return redirect(
+            reverse(
+                "streamwatches", kwargs={self.slug_field: self.kwargs[self.slug_field]}
+            )
+        )
 
 
 parameter_formset = django.forms.formset_factory(
