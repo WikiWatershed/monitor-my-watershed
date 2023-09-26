@@ -18,6 +18,9 @@
                         <div class="form-field">
                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                             <br>
+                            {% if field.initial %}
+                            <img class="site-photo" src="{{field.initial}}">
+                            {% endif %}
                             {% render_field field|add_class:"form-control" %}
                         </div>
                     </div>

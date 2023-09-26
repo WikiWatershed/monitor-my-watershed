@@ -117,11 +117,8 @@ class UpdateView(CreateView):
             action_id = int(kwargs[self.PRIMARY_KEY_FIELD])
             adapter = models.StreamWatchODM2Adapter.from_action_id(action_id)
             form_data = adapter.to_dict()
-            self.initial_dict["setup"] = form_data
-            self.initial_dict["conditions"] = form_data
-            self.initial_dict["simplewaterquality"] = form_data
-            self.initial_dict["simplehabitat"] = form_data
-            self.initial_dict["macros"] = form_data
+            for form_name in self.form_list:
+                self.initial_dict[form_name] = form_data
 
         return super().get(request, *args, **kwargs)
 
