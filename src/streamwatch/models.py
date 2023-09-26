@@ -239,6 +239,9 @@ class _BaseFieldAdapter:
         return results
 
 
+"http://vocabulary.odm2.org/variablename/taxaCount/"
+
+
 class _ChoiceFieldAdapter(_BaseFieldAdapter):
     """Adapter class for translating single select field data into ODM2 results structure
 
@@ -721,100 +724,59 @@ class StreamWatchODM2Adapter:
     # FieldConfig(variable_identifier:str|int, adapterclass|Class, units:int, medium:str, taxonomicid:optional[int])
     # for variable_identifier int corresponding to variableid should be populated for Text and Floats
     #   ans str corresponding to variabletypecv should be populated for Choice and MultiChoice
+    # fmt: off
     PARAMETER_CROSSWALK = {
-        "algae_amount": FieldConfig(
-            "algaeAmount", _ChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "algae_type": FieldConfig(
-            "algaeType", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "aquatic_veg_amount": FieldConfig(
-            "aquaticVegetation", _ChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "aquatic_veg_type": FieldConfig(
-            "aquaticVegetationType", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
+        "algae_amount": FieldConfig( "algaeAmount", _ChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "algae_type": FieldConfig( "algaeType", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "aquatic_veg_amount": FieldConfig( "aquaticVegetation", _ChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "aquatic_veg_type": FieldConfig( "aquaticVegetationType", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"),
         "site_observation": FieldConfig(540, _TextFieldAdapter, 394, "Not applicable"),
         "simple_air_temperature": FieldConfig(541, _FloatFieldAdapter, 362, "Air"),
-        "simple_dissolved_oxygen": FieldConfig(
-            544, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
-        ),
-        "simple_nitrate": FieldConfig(
-            546, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
-        ),
-        "simple_phosphate": FieldConfig(
-            547, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"
-        ),
+        "simple_dissolved_oxygen": FieldConfig( 544, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"),
+        "simple_nitrate": FieldConfig( 546, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"),
+        "simple_phosphate": FieldConfig( 547, _FloatFieldNondetectAdapter, 404, "Liquid aqueous"),
         "simple_ph": FieldConfig(543, _FloatFieldAdapter, 385, "Liquid aqueous"),
-        "simple_salinity": FieldConfig(
-            545, _FloatFieldNondetectAdapter, 428, "Liquid aqueous"
-        ),
-        "simple_turbidity": FieldConfig(
-            550, _FloatFieldNondetectAdapter, 364, "Liquid aqueous"
-        ),
-        "simple_water_temperature": FieldConfig(
-            542, _FloatFieldAdapter, 362, "Liquid aqueous"
-        ),
-        "simple_woody_debris_amt": FieldConfig(
-            "woodyDebris", _ChoiceFieldAdapter, 394, "Other"
-        ),
-        "simple_woody_debris_type": FieldConfig(
-            "woodyDebrisType", _ChoiceFieldAdapter, 394, "Other"
-        ),
-        "simple_tree_canopy": FieldConfig(
-            "treeCanopy", _ChoiceFieldAdapter, 394, "Other"
-        ),
-        "simple_land_use": FieldConfig(
-            "landUse", _MultiChoiceFieldAdapter, 394, "Other"
-        ),
-        "surface_coating": FieldConfig(
-            "surfaceCoating", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "time_since_last_precip": FieldConfig(
-            "precipitation", _ChoiceFieldAdapter, 394, "Other"
-        ),
+        "simple_salinity": FieldConfig( 545, _FloatFieldNondetectAdapter, 428, "Liquid aqueous"),
+        "simple_turbidity": FieldConfig( 550, _FloatFieldNondetectAdapter, 364, "Liquid aqueous"),
+        "simple_water_temperature": FieldConfig( 542, _FloatFieldAdapter, 362, "Liquid aqueous"),
+        "simple_woody_debris_amt": FieldConfig( "woodyDebris", _ChoiceFieldAdapter, 394, "Other"),
+        "simple_woody_debris_type": FieldConfig( "woodyDebrisType", _ChoiceFieldAdapter, 394, "Other"),
+        "simple_tree_canopy": FieldConfig( "treeCanopy", _ChoiceFieldAdapter, 394, "Other"),
+        "simple_land_use": FieldConfig( "landUse", _MultiChoiceFieldAdapter, 394, "Other"),
+        "surface_coating": FieldConfig( "surfaceCoating", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "time_since_last_precip": FieldConfig( "precipitation", _ChoiceFieldAdapter, 394, "Other"),
         "clarity": FieldConfig("clarity", _ChoiceFieldAdapter, 394, "Liquid aqueous"),
-        "water_color": FieldConfig(
-            "waterColor", _ChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "water_movement": FieldConfig(
-            "waterMovement", _ChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
-        "water_odor": FieldConfig(
-            "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"
-        ),
+        "water_color": FieldConfig( "waterColor", _ChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "water_movement": FieldConfig( "waterMovement", _ChoiceFieldAdapter, 394, "Liquid aqueous"),
+        "water_odor": FieldConfig( "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"),
         "water_odor_other": FieldConfig(585, _TextFieldAdapter, 394, "Liquid aqueous"),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
         "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
-        "macro_ephemeroptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 2),
-        "macro_plecoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 1),
-        "macro_hydropsychidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 16),
-        "macro_other_caddisflies": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 3),
-        "macro_anisoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 10),
-        "macro_zygoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 9),
-        "macro_corydalidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 25),
-        "macro_sialidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 26),
-        "macro_coleoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 27),
-        "macro_athericidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 8),
-        "macro_chironomidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 17),
-        "macro_simuliidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 18),
-        "macro_tipulidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 13),
-        "macro_other_diptera": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 28),
-        "macro_amphipoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 12),
-        "macro_isopoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 11),
-        "macro_decapoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 15),
-        "macro_oligochaeta": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 22),
-        "macro_hirudinea": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 20),
-        "macro_turbellaria": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 19),
-        "macro_gastropoda": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 29),
-        "macro_sphaeriidae": FieldConfig(8, _FloatFieldAdapter, 394, "Other", 30),
-        "macro_comment": FieldConfig(
-            8,
-            _TextFieldAdapter,
-            394,
-            "Other",
-        ),
+        "macro_ephemeroptera": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 2),
+        "macro_plecoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 1),
+        "macro_hydropsychidae": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 16),
+        "macro_other_caddisflies": FieldConfig( 8, _FloatFieldAdapter, 394, "Organism", 3),
+        "macro_anisoptera": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 10),
+        "macro_zygoptera": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 9),
+        "macro_corydalidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 25),
+        "macro_sialidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 26),
+        "macro_coleoptera": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 27),
+        "macro_athericidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 8),
+        "macro_chironomidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 17),
+        "macro_simuliidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 18),
+        "macro_tipulidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 13),
+        "macro_other_diptera": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 28),
+        "macro_amphipoda": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 12),
+        "macro_isopoda": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 11),
+        "macro_decapoda": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 15),
+        "macro_oligochaeta": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 22),
+        "macro_hirudinea": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 20),
+        "macro_turbellaria": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 19),
+        "macro_gastropoda": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 29),
+        "macro_sphaeriidae": FieldConfig(8, _FloatFieldAdapter, 409, "Organism", 30),
+        "macro_comment": FieldConfig(7, _TextFieldAdapter, 394, "Other"),
     }
+    # fmt: on
 
     def __init__(self, action_id: int) -> None:
         self.action_id = action_id
