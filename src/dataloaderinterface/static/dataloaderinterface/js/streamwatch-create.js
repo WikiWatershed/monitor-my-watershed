@@ -80,12 +80,16 @@
         AddSensorParameterForm();
     }); 
 
-    $("#id_conditions-water_odor").change(function(ths) {
+    $("#id_conditions-water_odor").change(function() {
         //method to conditionally toggle visibility of the water odor other field
         //if 'other' (value = 441) is selected field should be visible
         //other wise hide the field and clear the entry.  
         toogleWaterOdorOther(this);
     });    
+
+    $(".site-photo-field").change(function() {
+        hideSitePhoto(this);
+    })
 
     // tutorial for dynamically adding Forms in Django with Formsets and JavaScript
     // https://www.brennantymrak.com/articles/django-dynamic-formsets-javascript
@@ -132,3 +136,11 @@ function toogleWaterOdorOther(element) {
     } 
 }
 
+function hideSitePhoto(element) {
+    let form_field = $(element).parent('.form-field');
+    let img = $(form_field).find('img');
+    let label = $(form_field).find('label');
+    $(img).hide();
+    $(form_field).find('p').remove();
+    $(label).after($('<p>',{text:"Site photo will be replaced with your upload", style:"font-size:10pt; padding-left:3px;"}));
+}
