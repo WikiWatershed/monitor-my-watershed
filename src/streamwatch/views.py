@@ -69,11 +69,11 @@ def condition_school(wizard):
 
 class CreateView(SessionWizardView):
     form_list = [
-        ("macros", forms.MacroInvertebrateForm),
         ("setup", forms.SetupForm),
         ("conditions", forms.VisualAssessmentForm),
         ("simplehabitat", forms.SimpleHabitatAssessmentForm),
         ("simplewaterquality", forms.SimpleWaterQualityForm),
+        ("macros", forms.MacroInvertebrateForm),
         ("photos", forms.SitePhotosForm),
     ]
     condition_dict = {
