@@ -423,9 +423,9 @@
                     <br>
 
                     <div class="image-grid">
-                        {% for image in streamwatch.siteimage %}
-                        {% if image %}
-                        <a href="{{image}}" target="_blank" rel="noopener noreferrer" ><img class="site-photo" src="{{image}}"></a>
+                        {% for key, value in streamwatch.items %}
+                        {% if 'siteimage' in key %}
+                            <a href="{{value}}" target="_blank" rel="noopener noreferrer" ><img class="site-photo" src="{{value}}"></a>
                         {% endif %}
                         {% endfor %}
                     </div>

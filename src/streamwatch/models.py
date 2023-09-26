@@ -17,7 +17,6 @@ odm2_engine = odm2datamodels.odm2_engine
 odm2_models = odm2datamodels.models
 
 STREAMWATCH_METHOD_ID = 1
-SITE_PHOTO_VARIABLE_ID = 9
 CENSOR_CODE_CV_NONDETECT = "Non-detect"
 NONDETECT_FIELD_SUFFIX = "_nondetect"
 
@@ -680,7 +679,7 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
             feature_action_id,
             config,
             cls.RESULT_TYPE_CV,
-            variable_id=SITE_PHOTO_VARIABLE_ID,
+            variable_id=config.variable_identifier,
         )
 
         result = odm2_models.ObjectStoreResults()
@@ -699,6 +698,10 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         odm2_engine.create_object(resultvalue)
 
         return None
+
+    @classmethod
+    def update(cls, value: Any, feature_action_id: int, config: FieldConfig) -> None:
+        pass
 
     @classmethod
     def get_uri(cls, key: str) -> str:
@@ -755,7 +758,10 @@ class StreamWatchODM2Adapter:
         "water_odor": FieldConfig( "waterOdor", _MultiChoiceFieldAdapter, 394, "Liquid aqueous"),
         "water_odor_other": FieldConfig(585, _TextFieldAdapter, 394, "Liquid aqueous"),
         "weather_cond": FieldConfig("weather", _MultiChoiceFieldAdapter, 394, "Air"),
-        "siteimage": FieldConfig("Photo", _ObjectFieldAdapter, 394, "Not applicable"),
+        "siteimage1": FieldConfig(3, _ObjectFieldAdapter, 394, "Not applicable"),
+        "siteimage2": FieldConfig(4, _ObjectFieldAdapter, 394, "Not applicable"),
+        "siteimage3": FieldConfig(5, _ObjectFieldAdapter, 394, "Not applicable"),
+        "siteimage4": FieldConfig(6, _ObjectFieldAdapter, 394, "Not applicable"),
         "macro_ephemeroptera": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 2),
         "macro_plecoptera": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 1),
         "macro_hydropsychidae": FieldConfig(8, _FloatFieldAdapter, 394, "Organism", 16),
@@ -863,9 +869,7 @@ class StreamWatchODM2Adapter:
         for key, value in form_data.items():
             # there a multiple siteimates but the crosswalk is designed as a 1:1 mapping
             # to get around this I added additional logic here to map any `siteimageXX` to `siteimage`
-            if "siteimage" in key:
-                key = "siteimage"
-            elif key not in instance.PARAMETER_CROSSWALK:
+            if key not in instance.PARAMETER_CROSSWALK:
                 continue
             config = instance.PARAMETER_CROSSWALK[key]
 
@@ -970,7 +974,6 @@ class StreamWatchODM2Adapter:
         if adapter in (
             _ChoiceFieldAdapter,
             _MultiChoiceFieldAdapter,
-            _ObjectFieldAdapter,
         ):
             if field not in self._attributes:
                 self._attributes[field] = []
@@ -985,7 +988,7 @@ class StreamWatchODM2Adapter:
         for record in data:
             # TODO: The autompper models appear to incorrecty mappin taxonomicclassifierid to a float
             # this is a workaround until we replace those models with an explicit version
-            if not math.isnan(record[self.TAXONOMIC_ID]):
+            if record[self.TAXONOMIC_ID] and not math.isnan(record[self.TAXONOMIC_ID]):
                 record[self.TAXONOMIC_ID] = int(record[self.TAXONOMIC_ID])
 
             # different types of data fields are mapped to the databse differently.
