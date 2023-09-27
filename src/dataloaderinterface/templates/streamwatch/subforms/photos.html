@@ -9,7 +9,7 @@
 
 <div class="row std-row">
     {{ wizard.form.site_registration }}
-    <div class="col-sm-12 col-md-6">
+    <div class="col-md-8">
         <div class="mdl-card mdl-shadow--2dp full-width">
 
             <div class="mdl-card__supporting-text default-font">
@@ -21,7 +21,20 @@
                             {% if field.initial %}
                             <img class="site-photo" src="{{field.initial}}">
                             {% endif %}
-                            {% render_field field|add_class:"form-control site-photo-field" %}
+                            <span class="photo-action" style="display:inline-bock; width:100%;"></span>
+                            <div style="display: inline-block; margin-top: 5px; height: 36px; width:100%;">
+                                <div style="width: 85%; display: inline;">
+                                    {% render_field field initial=field.initial class="site-photo-field" %}
+                                </div>
+                                {% if field.initial %}
+                                <button class="mdl-button btn-keep-photo" style="color: #009229; float: right; display: none;" type="button">
+                                    <i class="material-icons center-icon">undo</i>
+                                </button>
+                                <button class="mdl-button btn-delete-photo" style="color: #d9534f; float: right;" type="button">
+                                    <i class="material-icons center-icon">delete_forever</i>
+                                </button>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                 {% endfor %}

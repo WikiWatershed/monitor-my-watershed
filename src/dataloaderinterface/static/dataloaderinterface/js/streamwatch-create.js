@@ -88,8 +88,31 @@
     });    
 
     $(".site-photo-field").change(function() {
-        hideSitePhoto(this);
+        updateSitePhoto(this, false);
+        updatePhotoAction(this,'This site photo will be replaced by your upload. Click the arrow to restore original photo, or trash icon to remove this photo.');
+        $(this).siblings('.btn-keep-photo').show()
+        $(this).siblings('.btn-delete-photo').show()
     })
+    
+    $(".btn-delete-photo").click(function() {
+        updateSitePhoto(this, false);
+        updatePhotoAction(this,'This site photo will be deleted. Click the arrow to restore original photo, or replace the photo by choose a new file to upload.');
+        updatePhotoInput(this,'')
+        $(this).hide();
+        $(this).siblings('.btn-keep-photo').show()
+    })
+
+    $(".btn-keep-photo").click(function() {
+        updateSitePhoto(this, true);
+        updatePhotoAction(this,'Original photo will be kept. if you wish to change it, you can choose a new file to upload or delete the photo by clicking the icon.');
+        updatePhotoInput(this,'original')
+        $(this).hide();
+        $(this).siblings('.btn-delete-photo').show()
+    });
+
+
+
+
 
     // tutorial for dynamically adding Forms in Django with Formsets and JavaScript
     // https://www.brennantymrak.com/articles/django-dynamic-formsets-javascript
@@ -136,11 +159,31 @@ function toogleWaterOdorOther(element) {
     } 
 }
 
-function hideSitePhoto(element) {
-    let form_field = $(element).parent('.form-field');
-    let img = $(form_field).find('img');
-    let label = $(form_field).find('label');
-    $(img).hide();
-    $(form_field).find('p').remove();
-    $(label).after($('<p>',{text:"Site photo will be replaced with your upload", style:"font-size:10pt; padding-left:3px;"}));
+function updateSitePhoto(element, display) {
+    let form_field = $(element).parents('.form-field');
+    let img = $(form_field).find('.site-photo');
+    if (display) {
+        $(img).show();
+    } else {
+        $(img).hide();
+    }
+}
+
+function updatePhotoAction(element, text) {
+    let form_field = $(element).parents('.form-field');
+    let action = $(form_field).find('.photo-action');
+    $(action).text(text);
+}
+
+function updatePhotoInput(element, value) {
+    let form_field = $(element).parents('.form-field');
+    let photo = $(form_field).find('.site-photo-field');
+
+    if (value === '') {
+        $(photo).val('');
+    } else {
+        //$(photo).val($(photo).attr(initial));
+    }
+
+
 }
