@@ -97,7 +97,7 @@
     $(".btn-delete-photo").click(function() {
         updateSitePhoto(this, false);
         updatePhotoAction(this,'This site photo will be deleted. Click the arrow to restore original photo, or replace the photo by choose a new file to upload.');
-        updatePhotoInput(this,'')
+        updatePhotoInput(this, true)
         $(this).hide();
         $(this).siblings('.btn-keep-photo').show()
     })
@@ -105,7 +105,7 @@
     $(".btn-keep-photo").click(function() {
         updateSitePhoto(this, true);
         updatePhotoAction(this,'Original photo will be kept. if you wish to change it, you can choose a new file to upload or delete the photo by clicking the icon.');
-        updatePhotoInput(this,'original')
+        updatePhotoInput(this, false)
         $(this).hide();
         $(this).siblings('.btn-delete-photo').show()
     });
@@ -175,15 +175,9 @@ function updatePhotoAction(element, text) {
     $(action).text(text);
 }
 
-function updatePhotoInput(element, value) {
+function updatePhotoInput(element, delete_photo) {
     let form_field = $(element).parents('.form-field');
     let photo = $(form_field).find('.site-photo-field');
-
-    if (value === '') {
-        $(photo).val('');
-    } else {
-        //$(photo).val($(photo).attr(initial));
-    }
-
-
+    let delete_id = `#id_${$(photo).attr('name')}_delete`;
+    $(delete_id).val(delete_photo);
 }

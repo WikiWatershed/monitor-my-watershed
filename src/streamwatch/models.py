@@ -716,8 +716,18 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         existing_obj_uuid = object_store_result_value[0]["objecturi"]
         cls.__delete_from_s3(interface, existing_obj_uuid)
 
+        # delete use case, form class will code values as 'delete'
+        if value == "delete":
+            odm2_engine.delete_object(odm2_models.ObjectStoreResultValues, value_id)
+            odm2_engine.delete_object(odm2_models.ObjectStoreResults, result_id)
+            odm2_engine.delete_object(odm2_models.Results, result_id)
+            return
+
+        # general update case, user provided new image
         # upload the new image
-        obj_id = cls.__upload_to_s3(interface, value)
+        obj_id = ""
+        if value != "":
+            obj_id = cls.__upload_to_s3(interface, value)
         odm2_engine.update_object(
             odm2_models.ObjectStoreResultValues, value_id, {"objecturi": obj_id}
         )

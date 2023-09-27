@@ -42,7 +42,13 @@
         </div>
         <br><br>
     </div>
+    <div>
+    {% for field in form.hidden_fields %}
+        {% render_field field %}
+    {% endfor %}
+    </div>
 
+</div>
 
 {% block scripts %}
     <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>

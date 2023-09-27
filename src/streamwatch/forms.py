@@ -552,6 +552,19 @@ class SitePhotosForm(forms.Form):
     siteimage3 = forms.ImageField(required=False, label="Site Photo 3")
     siteimage4 = forms.ImageField(required=False, label="Site Photo 4")
 
+    # TODO this should be replaced with a compound field
+    siteimage1_delete = forms.BooleanField(required=False, widget=forms.HiddenInput())
+    siteimage2_delete = forms.BooleanField(required=False, widget=forms.HiddenInput())
+    siteimage3_delete = forms.BooleanField(required=False, widget=forms.HiddenInput())
+    siteimage4_delete = forms.BooleanField(required=False, widget=forms.HiddenInput())
+
+    def clean(self):
+        data = self.cleaned_data
+        for k, v in data.items():
+            if v is True:
+                photo_field = k[:-7]
+                self.cleaned_data[photo_field] = "delete"
+
 
 class MacroInvertebrateForm(forms.Form):
     macro_ephemeroptera = forms.IntegerField(
