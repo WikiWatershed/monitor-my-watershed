@@ -189,9 +189,13 @@ class DeleteView(LoginRequiredMixin, django.views.generic.edit.DeleteView):
         # if not passed via post body, check query parameters
         feature_action_id = request.POST.get("id", kwargs["id"])
         models.delete_streamwatch_assessment(feature_action_id)
+        # if specified via post parameter we want to issue success response
+        if "id" in request.POST:
+            return HttpResponse("Assessment deleted successfully", status=200)
         return redirect(
             reverse(
-                "streamwatches", kwargs={self.slug_field: self.kwargs[self.slug_field]}
+                "streamwatches",
+                kwargs={self.slug_field: self.kwargs[self.slug_field]},
             )
         )
 
