@@ -88,10 +88,14 @@
     });    
 
     $(".site-photo-field").change(function() {
-        updateSitePhoto(this, false);
-        updatePhotoAction(this,'This site photo will be replaced by your upload. Click the arrow to restore original photo, or trash icon to remove this photo.');
-        $(this).siblings('.btn-keep-photo').show()
-        $(this).siblings('.btn-delete-photo').show()
+        if ($(this).attr("initial") === "None") {
+            updatePhotoAction(this,'New photo accepted.');
+        } else {
+            updateSitePhoto(this, false);
+            updatePhotoAction(this,'This site photo will be replaced by your upload. Click the arrow to restore original photo, or trash icon to remove this photo.');
+            $(this).siblings('.btn-keep-photo').show()
+            $(this).siblings('.btn-delete-photo').show()
+        }
     })
     
     $(".btn-delete-photo").click(function() {
