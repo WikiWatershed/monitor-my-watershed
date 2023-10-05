@@ -15,6 +15,15 @@
             <div class="mdl-card__supporting-text default-font">
                 {% for field in form.visible_fields %}
                     <div class="form-group">
+                        {% if field.name == "site_observation" %}
+                        <div class="form-field">
+                            <label for="{{ wizard.form.site_observation.id_for_label }}">{{ wizard.form.site_observation.label }}</label>
+                            {% render_field field initial=field.initial class="form-control" %}
+                        </div>
+                        <br>
+
+                        {% else %}
+                        
                         <div class="form-field">
                             <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                             <br>
@@ -36,6 +45,8 @@
                                 {% endif %}
                             </div>
                         </div>
+                        {% endif %}
+
                     </div>
                 {% endfor %}
             </div>

@@ -207,12 +207,6 @@ class VisualAssessmentForm(forms.Form):
         coerce=int,
         choices=models.variable_choice_options("algaeType", False),
     )
-    site_observation = forms.CharField(
-        widget=forms.Textarea(),
-        required=False,
-        label="General Comments and Site Observations (maximum 255 characters)",
-        max_length=255,
-    )
 
 
 class SimpleHabitatAssessmentForm(forms.Form):
@@ -547,6 +541,13 @@ class FlowMeasurementsForm(forms.Form):
 
 
 class SitePhotosForm(forms.Form):
+    site_observation = forms.CharField(
+        widget=forms.Textarea(),
+        required=False,
+        label="General Comments and Site Observations (maximum 255 characters)",
+        max_length=255,
+    )
+
     siteimage1 = forms.ImageField(required=False, label="Site Photo 1")
     siteimage2 = forms.ImageField(required=False, label="Site Photo 2")
     siteimage3 = forms.ImageField(required=False, label="Site Photo 3")

@@ -73,8 +73,8 @@ class CreateView(SessionWizardView):
         ("conditions", forms.VisualAssessmentForm),
         ("simplehabitat", forms.SimpleHabitatAssessmentForm),
         ("simplewaterquality", forms.SimpleWaterQualityForm),
-        ("macros", forms.MacroInvertebrateForm),
         ("photos", forms.SitePhotosForm),
+        ("macros", forms.MacroInvertebrateForm),
     ]
     condition_dict = {
         "simplewaterquality": condition_school,
