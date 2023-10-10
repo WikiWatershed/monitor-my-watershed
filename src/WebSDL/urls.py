@@ -21,11 +21,11 @@ from django.conf.urls.static import static
 
 # TODO: Figure out where this is being initialized
 # Removes User and Group models from admin page
-from django.contrib.auth.models import User
-from django.contrib.auth.models import Group
+# from django.contrib.auth.models import User
+# from django.contrib.auth.models import Group
 
-admin.site.unregister(User)
-admin.site.unregister(Group)
+# admin.site.unregister(User)
+# admin.site.unregister(Group)
 
 # BASE_URL = settings.SITE_URL[1:]
 BASE_URL = ""

@@ -69,12 +69,12 @@ def condition_school(wizard):
 
 class CreateView(SessionWizardView):
     form_list = [
+        ("macros", forms.MacroInvertebrateForm),
         ("setup", forms.SetupForm),
         ("conditions", forms.VisualAssessmentForm),
         ("simplehabitat", forms.SimpleHabitatAssessmentForm),
         ("simplewaterquality", forms.SimpleWaterQualityForm),
         ("photos", forms.SitePhotosForm),
-        ("macros", forms.MacroInvertebrateForm),
     ]
     condition_dict = {
         "simplewaterquality": condition_school,
@@ -87,6 +87,7 @@ class CreateView(SessionWizardView):
     def get_context_data(self, form: django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
         context[self.slug_field] = self.kwargs[self.slug_field]
+        context["macro_classifiers"] = [e.value for e in forms.MacroClassifiers]
         return context
 
     def done(self, form_list: List[django.forms.Form], **kwargs):

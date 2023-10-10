@@ -6,13 +6,19 @@ from django.conf import settings
 import os
 from typing import Any, Dict, Tuple
 import datetime
+from enum import Enum
 
-from dataloaderinterface.models import Affiliation
 from streamwatch import models
 from streamwatch import timeutils
 from odm2.crud import users
 
 PHOTO_DIRECTORY = os.path.join(settings.MEDIA_ROOT, "streamwatch_site_photos")
+
+
+class MacroClassifiers(Enum):
+    SENSITIVE = "Sensitive"
+    SOMEWHAT_SENSITIVE = "Somewhat Sensitive"
+    TOLERANT = "Tolerant"
 
 
 def _get_user_choices() -> tuple[tuple[int, str]]:
@@ -26,7 +32,7 @@ def _get_user_choices() -> tuple[tuple[int, str]]:
             name += f" ({a[3]})"
         return name
 
-    user_options = []
+    user_options = [("", "")]
     for a in users.read_account_affiliations():
         if a[1] is None or a[1] == "" or a[2] is None or a[2] == "":
             continue
@@ -69,6 +75,7 @@ class SetupForm(forms.Form):
         required=True,
         help_text="Select a user as the main investigator",
         label="Investigator #1",
+        initial="",
     )
     investigator2 = forms.ChoiceField(
         choices=__USERS,
@@ -76,6 +83,7 @@ class SetupForm(forms.Form):
         required=False,
         help_text="Select a user as the secondary investigator",
         label="Investigator #2",
+        initial="",
     )
     collect_date = forms.DateField(
         required=False,
@@ -111,6 +119,14 @@ class SetupForm(forms.Form):
     #    required=True,
     #    choices=ASSESSMENT_TYPE_CHOICES,
     # )
+
+    def clean_data(self) -> Dict[str, Any]:
+        cleaned = self.cleaned_data
+        # we want to remap any '' in investigator2 to None
+        if cleaned["investigator2"] == "":
+            cleaned["investigator2"] = None
+
+        return cleaned
 
 
 # Visual Assessment (All Forms)
@@ -569,72 +585,142 @@ class SitePhotosForm(forms.Form):
 
 class MacroInvertebrateForm(forms.Form):
     macro_ephemeroptera = forms.IntegerField(
-        required=False, min_value=0, label="Ephemeroptera (mayflies)"
+        required=False,
+        min_value=0,
+        label="Ephemeroptera (mayflies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
     macro_plecoptera = forms.IntegerField(
-        required=False, min_value=0, label="Plecoptera (stoneflies)"
+        required=False,
+        min_value=0,
+        label="Plecoptera (stoneflies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
     macro_hydropsychidae = forms.IntegerField(
         required=False,
         min_value=0,
         label="Hydropsychidae (common netspinner caddisflies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_other_caddisflies = forms.IntegerField(
-        required=False, min_value=0, label="Other caddisflies"
+        required=False,
+        min_value=0,
+        label="Other caddisflies",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
     macro_anisoptera = forms.IntegerField(
-        required=False, min_value=0, label="Anisoptera (dragonflies)"
+        required=False,
+        min_value=0,
+        label="Anisoptera (dragonflies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_zygoptera = forms.IntegerField(
-        required=False, min_value=0, label="Zygoptera (damselflies)"
+        required=False,
+        min_value=0,
+        label="Zygoptera (damselflies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_corydalidae = forms.IntegerField(
-        required=False, min_value=0, label="Corydalidae (hellgrammites)"
+        required=False,
+        min_value=0,
+        label="Corydalidae (hellgrammites)",
+        # TODO - Anthony needs to confirm
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_sialidae = forms.IntegerField(
-        required=False, min_value=0, label="Sialidae (alderflies)"
+        required=False,
+        min_value=0,
+        # TODO - Anthony needs to confirm
+        label="Sialidae (alderflies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_coleoptera = forms.IntegerField(
-        required=False, min_value=0, label="Coleoptera (beetles)"
+        required=False,
+        min_value=0,
+        # TODO - Anthony needs to confirm
+        label="Coleoptera (beetles)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_athericidae = forms.IntegerField(
-        required=False, min_value=0, label="Athericidae (watersnipe flies)"
+        required=False,
+        min_value=0,
+        label="Athericidae (watersnipe flies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
     macro_chironomidae = forms.IntegerField(
-        required=False, min_value=0, label="Chironomidae (midges)"
+        required=False,
+        min_value=0,
+        label="Chironomidae (midges)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_simuliidae = forms.IntegerField(
-        required=False, min_value=0, label="Simuliidae (black flies)"
+        required=False,
+        min_value=0,
+        label="Simuliidae (black flies)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_tipulidae = forms.IntegerField(
-        required=False, min_value=0, label="Tipulidae (crane flies)"
+        required=False,
+        min_value=0,
+        label="Tipulidae (crane flies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_other_diptera = forms.IntegerField(
-        required=False, min_value=0, label="Other diptera"
+        required=False,
+        min_value=0,
+        label="Other diptera",
+        # TODO - Anthony needs to confirm
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_amphipoda = forms.IntegerField(
-        required=False, min_value=0, label="Amphipoda (scuds)"
+        required=False,
+        min_value=0,
+        label="Amphipoda (scuds)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_isopoda = forms.IntegerField(
-        required=False, min_value=0, label="Isopoda (aquatic sow bugs)"
+        required=False,
+        min_value=0,
+        label="Isopoda (aquatic sow bugs)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_decapoda = forms.IntegerField(
-        required=False, min_value=0, label="Decapoda (crayfish)"
+        required=False,
+        min_value=0,
+        label="Decapoda (crayfish)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_oligochaeta = forms.IntegerField(
-        required=False, min_value=0, label="Oligochaeta (aquatic worms)"
+        required=False,
+        min_value=0,
+        label="Oligochaeta (aquatic worms)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_hirudinea = forms.IntegerField(
-        required=False, min_value=0, label="Hirudinea (leeches)"
+        required=False,
+        min_value=0,
+        label="Hirudinea (leeches)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_turbellaria = forms.IntegerField(
-        required=False, min_value=0, label="Turbellaria (planarians)"
+        required=False,
+        min_value=0,
+        label="Turbellaria (planarians)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_gastropoda = forms.IntegerField(
-        required=False, min_value=0, label="Gastropoda (snails)"
+        required=False,
+        min_value=0,
+        label="Gastropoda (snails)",
+        # TODO - Anthony needs to confirm
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_sphaeriidae = forms.IntegerField(
-        required=False, min_value=0, label="Sphaeriidae (fingernail clams)"
+        required=False,
+        min_value=0,
+        label="Sphaeriidae (fingernail clams)",
+        # TODO - Anthony needs to confirm
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_comment = forms.CharField(
         widget=forms.Textarea(),

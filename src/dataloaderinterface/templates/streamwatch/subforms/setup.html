@@ -16,13 +16,13 @@
                 <div class="form-group">
                     <div class="form-field">
                         <label for="{{ wizard.form.investigator1.id_for_label }}">{{ wizard.form.investigator1.label }}</label>
-                        {{ wizard.form.investigator1|add_class:"form-control" }}
+                        {{ wizard.form.investigator1|add_class:"form-control"|append_attr:"data-placeholder:" }}
                     </div>
                 </div>
                 <div class="form-group">
                     <div class="form-field" >
                         <label for="{{ wizard.form.investigator2.id_for_label }}">{{ wizard.form.investigator2.label }}</label>
-                        {{ wizard.form.investigator2|add_class:"form-control" }}
+                        {{ wizard.form.investigator2|add_class:"form-control"|append_attr:"data-placeholder:" }}
                     </div>
                 </div>
                     

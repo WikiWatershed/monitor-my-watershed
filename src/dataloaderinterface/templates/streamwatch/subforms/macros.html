@@ -13,15 +13,29 @@
         <div class="mdl-card mdl-shadow--2dp full-width">
 
             <div class="mdl-card__supporting-text default-font">
-                {% for field in form.visible_fields %}
+                {% comment %}
+                    We will use label_suffix of the field to store classifier information (tolerant vs sensitive) 
+                {% endcomment %}
+                {% for classifier in macro_classifiers %}
                     <div class="form-group">
-                        <div class="form-field">
-                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                            <br>
-                            {% render_field field|add_class:"form-control" %}
-                        </div>
+                        <p>{{ classifier }}</p>
+                        {% for field in form.visible_fields %}
+                            {% if field.field.label_suffix.value == classifier %}
+                            <div class="form-field">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                <br>
+                                {% render_field field|add_class:"form-control" %}
+                            </div>
+                            {% endif %}
+                        {% endfor %}
                     </div>
                 {% endfor %}
+                <div class="form-group">
+                    <div class="form-field">
+                    <label for="{{ wizard.form.macro_comment.id_for_label }}">{{ wizard.form.macro_comment.label }}</label>
+                    {{ wizard.form.macro_comment.errors }}
+                    {{ wizard.form.macro_comment }}
+                </div>
             </div>
         </div>
         <br><br>
