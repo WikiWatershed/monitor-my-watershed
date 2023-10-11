@@ -24,7 +24,7 @@
                             <div class="form-field">
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 <br>
-                                {% render_field field|add_class:"form-control" %}
+                                {% render_field field|add_class:"form-control"|attr:"step:1" %}
                             </div>
                             {% endif %}
                         {% endfor %}
