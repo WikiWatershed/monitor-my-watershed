@@ -18,7 +18,7 @@
                 {% endcomment %}
                 {% for classifier in macro_classifiers %}
                     <div class="form-group">
-                        <p>{{ classifier }}</p>
+                        <h5>{{ classifier }}</h5>
                         {% for field in form.visible_fields %}
                             {% if field.field.label_suffix.value == classifier %}
                             <div class="form-field">

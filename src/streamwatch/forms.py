@@ -584,122 +584,117 @@ class SitePhotosForm(forms.Form):
 
 
 class MacroInvertebrateForm(forms.Form):
-    macro_ephemeroptera = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="Ephemeroptera (mayflies)",
-        label_suffix=MacroClassifiers.SENSITIVE,
-    )
+    # sensitive grouping
     macro_plecoptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Plecoptera (stoneflies)",
+        label="Plecoptera (Stoneflies)",
         label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_hydropsychidae = forms.IntegerField(
+    macro_ephemeroptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Hydropsychidae (common netspinner caddisflies)",
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
-    )
-    macro_other_caddisflies = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="Other caddisflies",
+        label="Ephemeroptera (Mayflies)",
         label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_anisoptera = forms.IntegerField(
+    macro_trichoptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Anisoptera (dragonflies)",
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Trichoptera (Non-net-spinning caddisflies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_zygoptera = forms.IntegerField(
+    macro_megaloptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Zygoptera (damselflies)",
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Megaloptera (Dobsonflies, fishflies, and alderflies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_corydalidae = forms.IntegerField(
+    macro_elmidae = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Corydalidae (hellgrammites)",
-        # TODO - Anthony needs to confirm
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Elmidae (Riffle beetles larvae/adults)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_sialidae = forms.IntegerField(
+    macro_psephenidae = forms.IntegerField(
         required=False,
         min_value=0,
-        # TODO - Anthony needs to confirm
-        label="Sialidae (alderflies)",
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Psephenidae (Water pennies)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_coleoptera = forms.IntegerField(
+    macro_prosobranchia = forms.IntegerField(
         required=False,
         min_value=0,
-        # TODO - Anthony needs to confirm
-        label="Coleoptera (beetles)",
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Prosobranchia (Right-handed/gilled snails)",
+        label_suffix=MacroClassifiers.SENSITIVE,
     )
     macro_athericidae = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Athericidae (watersnipe flies)",
+        label="Athericidae (Aquatic snipe flies)",
         label_suffix=MacroClassifiers.SENSITIVE,
     )
-    macro_chironomidae = forms.IntegerField(
+
+    # somewhat sensitive grouping
+    macro_zygoptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Chironomidae (midges)",
-        label_suffix=MacroClassifiers.TOLERANT,
-    )
-    macro_simuliidae = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="Simuliidae (black flies)",
-        label_suffix=MacroClassifiers.TOLERANT,
-    )
-    macro_tipulidae = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="Tipulidae (crane flies)",
+        label="Zygoptera (Damselflies)",
         label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
-    macro_other_diptera = forms.IntegerField(
+    macro_anisoptera = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Other diptera",
-        # TODO - Anthony needs to confirm
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
-    )
-    macro_amphipoda = forms.IntegerField(
-        required=False,
-        min_value=0,
-        label="Amphipoda (scuds)",
+        label="Anisoptera (Dragonflies)",
         label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_isopoda = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Isopoda (aquatic sow bugs)",
+        label="Isopoda (Aquatic sow bugs)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+    )
+    macro_amphipoda = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Amphipoda (Scuds)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+    )
+    macro_tipulidae = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Tipulidae (Crane flies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+    )
+    macro_bivalvia = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Bivalvia (Clams/mussels)",
         label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
     macro_decapoda = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Decapoda (crayfish)",
+        label="Decapoda (Crayfish)",
         label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
     )
-    macro_oligochaeta = forms.IntegerField(
+    macro_hydropsychidae = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Oligochaeta (aquatic worms)",
+        label="Hydropsychidae (Net-spinning caddisflies)",
+        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+    )
+
+    # tolerant grouping
+    macro_chironomidae = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Chironomidae (Midges)",
         label_suffix=MacroClassifiers.TOLERANT,
     )
-    macro_hirudinea = forms.IntegerField(
+    macro_simuliidae = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Hirudinea (leeches)",
+        label="Simuliidae (Black flies)",
         label_suffix=MacroClassifiers.TOLERANT,
     )
     macro_turbellaria = forms.IntegerField(
@@ -708,20 +703,32 @@ class MacroInvertebrateForm(forms.Form):
         label="Turbellaria (planarians)",
         label_suffix=MacroClassifiers.TOLERANT,
     )
-    macro_gastropoda = forms.IntegerField(
+    macro_hirudinea = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Gastropoda (snails)",
-        # TODO - Anthony needs to confirm
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Hirudinea (leeches)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
-    macro_sphaeriidae = forms.IntegerField(
+    macro_archaeopulmonata = forms.IntegerField(
         required=False,
         min_value=0,
-        label="Sphaeriidae (fingernail clams)",
-        # TODO - Anthony needs to confirm
-        label_suffix=MacroClassifiers.SOMEWHAT_SENSITIVE,
+        label="Archaeopulmonata (Left-handed/lunged snails)",
+        label_suffix=MacroClassifiers.TOLERANT,
     )
+    macro_oligochaeta = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Oligochaeta (Aquatic worms)",
+        label_suffix=MacroClassifiers.TOLERANT,
+    )
+    macro_syrphidae = forms.IntegerField(
+        required=False,
+        min_value=0,
+        label="Syrphidae (Rat-tailed maggots)",
+        label_suffix=MacroClassifiers.TOLERANT,
+    )
+
+    # comment
     macro_comment = forms.CharField(
         widget=forms.Textarea(),
         required=False,
