@@ -148,7 +148,14 @@ def get_assessment_summary_information(sampling_feature_code: str) -> dict[str, 
     return summary
 
 
-__FIELDS = ("variable_identifier", "adapter_class", "units", "medium", "taxonomic")
+__FIELDS = (
+    "variable_identifier",
+    "adapter_class",
+    "units",
+    "medium",
+    "taxonomic",
+    "taxonomic_classifier",
+)
 FieldConfig = namedtuple(
     "FieldConfig", field_names=__FIELDS, defaults=(None,) * len(__FIELDS)
 )
@@ -726,7 +733,7 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         # general update case, user provided new image
         # upload the new image
         obj_id = ""
-        if value != "":
+        if value and value != "":
             obj_id = cls.__upload_to_s3(interface, value)
         odm2_engine.update_object(
             odm2_models.ObjectStoreResultValues, value_id, {"objecturi": obj_id}
