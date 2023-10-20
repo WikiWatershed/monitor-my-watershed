@@ -1548,3 +1548,7 @@ i.file-icon {
 .site-photo {
     width: 100%;
 }
+
+.popup {
+    position: relative;
+}
