@@ -38,7 +38,10 @@
                                 <thead>
                                 <tr class="full-width">
                                     <th class="mdl-data-table__cell--non-numeric">Begin Date</th>
-                                    {#<th class="mdl-data-table__cell--non-numeric">Content</th>#}
+                                    <th class="mdl-data-table__cell--non-numeric">Water Temp (°C)</th>
+                                    <th class="mdl-data-table__cell--non-numeric">DO (ppm)</th>
+                                    <th class="mdl-data-table__cell--non-numeric">pH</th>
+                                    <th class="mdl-data-table__cell--non-numeric">Macro Count</th>
                                     <th class="mdl-data-table__cell--non-numeric">Edit</th>
                                     <th class="mdl-data-table__cell--non-numeric">Delete</th>
                                     <th></th>
@@ -49,7 +52,10 @@
                                     {% for survey in streamwatchsurveys %}
                                         <tr class="bg-white leafpack-form" data-id="{{ survey.actionid }}">
                                             <td class="mdl-data-table__cell--non-numeric">{{ survey.begindatetime }}</td>
-                                            {#<td class="mdl-data-table__cell--non-numeric">{{ survey.actiontypecv|default:"NA" }}</td>#}
+                                            <td class="mdl-data-table__cell--non-numeric">{{ survey.adapter_attributes.simple_water_temperature|default:"Unknown" }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">{{ survey.adapter_attributes.simple_dissolved_oxygen|default:"Unknown" }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">{{ survey.adapter_attributes.simple_ph|default:"Unknown" }}</td>
+                                            <td class="mdl-data-table__cell--non-numeric">{{ survey.adapter.count_total_macros|add:0|default:"Unknown" }}</td>
                                             <td class="mdl-data-table__cell--non-numeric">
                                                 <a href="{% url 'streamwatch:update' siteregistration.sampling_feature_code survey.actionid %}"
                                                    class="mdl-button mdl-button--accent">

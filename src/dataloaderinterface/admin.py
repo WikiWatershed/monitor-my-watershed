@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django import forms
-from django.db.models.expressions import F
 
 from dataloader.models import *
 
@@ -10,13 +9,16 @@ from dataloaderinterface.forms import SiteSensorForm
 from dataloaderinterface.models import SiteRegistration, SiteSensor, SensorOutput
 from hydroshare.models import HydroShareAccount, HydroShareResource
 from leafpack.models import LeafPack, LeafPackType, Macroinvertebrate
+from accounts.models import Account
 
 
 def update_sensor_data(obj, form, sensor_fields):
     old_object = obj.__class__.objects.get(pk=obj.pk)
     old_data = {field: getattr(old_object, field) for field in sensor_fields}
     new_data = {field: getattr(obj, field) for field in form.changed_data}
-    SensorOutput.objects.annotate(equipment_model_id=F('model_id')).filter(**old_data).update(**new_data)
+    SensorOutput.objects.annotate(equipment_model_id=F("model_id")).filter(
+        **old_data
+    ).update(**new_data)
 
 
 @admin.register(SiteSensor)
@@ -31,13 +33,23 @@ class SiteRegistrationAdmin(admin.ModelAdmin):
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('organization_code', 'organization_name', 'organization_type', 'organization_link')
+    list_display = (
+        "organization_code",
+        "organization_name",
+        "organization_type",
+        "organization_link",
+    )
 
 
 @admin.register(EquipmentModel)
 class EquipmentModelAdmin(admin.ModelAdmin):
-    sensor_fields = ['equipment_model_id']
-    list_display = ('model_name', 'model_manufacturer', 'model_description', 'model_link')
+    sensor_fields = ["equipment_model_id"]
+    list_display = (
+        "model_name",
+        "model_manufacturer",
+        "model_description",
+        "model_link",
+    )
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -48,8 +60,8 @@ class EquipmentModelAdmin(admin.ModelAdmin):
 
 @admin.register(Variable)
 class VariableAdmin(admin.ModelAdmin):
-    sensor_fields = ['variable_id']
-    list_display = ('variable_code', 'variable_name', 'variable_type', 'no_data_value')
+    sensor_fields = ["variable_id"]
+    list_display = ("variable_code", "variable_name", "variable_type", "no_data_value")
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -60,8 +72,8 @@ class VariableAdmin(admin.ModelAdmin):
 
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
-    sensor_fields = ['unit_id']
-    list_display = ('unit_name', 'unit_type', 'unit_abbreviation', 'unit_link')
+    sensor_fields = ["unit_id"]
+    list_display = ("unit_name", "unit_type", "unit_abbreviation", "unit_link")
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -72,13 +84,22 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(InstrumentOutputVariable)
 class InstrumentOutputVariableAdmin(admin.ModelAdmin):
-    list_display = ('variable', 'model', 'instrument_raw_output_unit', 'instrument_accuracy')
+    list_display = (
+        "variable",
+        "model",
+        "instrument_raw_output_unit",
+        "instrument_accuracy",
+    )
 
     def get_changelist_form(self, request, **kwargs):
-        return super(InstrumentOutputVariableAdmin, self).get_changelist_form(request, **kwargs)
+        return super(InstrumentOutputVariableAdmin, self).get_changelist_form(
+            request, **kwargs
+        )
 
     def save_model(self, request, obj, form, change):
-        super(InstrumentOutputVariableAdmin, self).save_model(request, obj, form, change)
+        super(InstrumentOutputVariableAdmin, self).save_model(
+            request, obj, form, change
+        )
 
         # There is no more time to work on having this form create user-specified SensorOutputs.
         # It creates all possible sensor outputs, so it works as before with just the instrument output variables,
@@ -109,7 +130,7 @@ class InstrumentOutputVariableAdmin(admin.ModelAdmin):
                     unit_id=obj.instrument_raw_output_unit.unit_id,
                     unit_name=obj.instrument_raw_output_unit.unit_name,
                     unit_abbreviation=obj.instrument_raw_output_unit.unit_abbreviation,
-                    sampled_medium=sampled_medium
+                    sampled_medium=sampled_medium,
                 )
                 for sampled_medium in sampled_media
             ]
@@ -117,23 +138,29 @@ class InstrumentOutputVariableAdmin(admin.ModelAdmin):
 
 
 class SensorOutputForm(forms.ModelForm):
-    model_id = forms.ModelChoiceField(queryset=EquipmentModel.objects.all(), label='Equipment Model')
-    variable_id = forms.ModelChoiceField(queryset=Variable.objects.all(), label='Variable')
-    unit_id = forms.ModelChoiceField(queryset=Unit.objects.all(), label='Unit')
-    sampled_medium = forms.ModelChoiceField(queryset=Medium.objects.all(), label='Sampled Medium')
+    model_id = forms.ModelChoiceField(
+        queryset=EquipmentModel.objects.all(), label="Equipment Model"
+    )
+    variable_id = forms.ModelChoiceField(
+        queryset=Variable.objects.all(), label="Variable"
+    )
+    unit_id = forms.ModelChoiceField(queryset=Unit.objects.all(), label="Unit")
+    sampled_medium = forms.ModelChoiceField(
+        queryset=Medium.objects.all(), label="Sampled Medium"
+    )
 
     def clean_model_id(self):
-        return self.data['model_id']
+        return self.data["model_id"]
 
     def clean_variable_id(self):
-        return self.data['variable_id']
+        return self.data["variable_id"]
 
     def clean_unit_id(self):
-        return self.data['unit_id']
+        return self.data["unit_id"]
 
     class Meta:
         model = SensorOutput
-        fields = ['model_id', 'variable_id', 'unit_id', 'sampled_medium']
+        fields = ["model_id", "variable_id", "unit_id", "sampled_medium"]
 
 
 class HydroShareResourceInline(admin.TabularInline):
@@ -142,8 +169,8 @@ class HydroShareResourceInline(admin.TabularInline):
 
 @admin.register(HydroShareAccount)
 class HydroShareAccountAdmin(admin.ModelAdmin):
-    list_display = ('id', 'ext_id', 'username', 'resources')
-    fields = ('ext_id', 'token')
+    list_display = ("id", "ext_id", "username", "resources")
+    fields = ("ext_id", "token")
 
 
 @admin.register(HydroShareResource)
@@ -163,9 +190,22 @@ class LeafPackTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Macroinvertebrate)
 class MacroinvertebrateAdmin(admin.ModelAdmin):
-
-    list_display = ('scientific_name', 'pollution_tolerance', 'common_name')
+    list_display = ("scientific_name", "pollution_tolerance", "common_name")
 
     def get_queryset(self, request):
         queryset = super(MacroinvertebrateAdmin, self).get_queryset(request)
-        return queryset.order_by('pollution_tolerance')
+        return queryset.order_by("pollution_tolerance")
+
+
+@admin.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    list_display = (
+        "accountid",
+        "cognitoid",
+        "accountemail",
+        "accountfirstname",
+        "accountmiddlename",
+        "accountlastname",
+        "active",
+        "issiteadmin",
+    )

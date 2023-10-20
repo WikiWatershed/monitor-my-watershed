@@ -1,8 +1,17 @@
 {% load widget_tweaks %}
+
+<style>
+    .non-detect-line {
+        height: 18px;
+        line-height: 18px;
+        margin-bottom: 3px;
+    }
+</style>
+
 <div class="form-streamwatch">
     <div class="row">
         <div class="col-12">
-            <h5 class="headline d-inline-block">Enter chemical measurements taken in the field.</h5>
+            <h5 class="headline d-inline-block">Enter only chemical measurements taken in the field.</h5>
         </div>
     </div>
 
@@ -16,84 +25,90 @@
                     <div class="row num-input">
                         <div class="form-field col-6 num-field" >
                             {{ wizard.form.simple_air_temperature.errors }}
-                            <label for="{{ wizard.form.simple_air_temperature.id_for_label }}">{{ wizard.form.simple_air_temperature.label }}</label>                                               </label>
+                            <div class="non-detect-line"></div>
+                            <label for="{{ wizard.form.simple_air_temperature.id_for_label }}">{{ wizard.form.simple_air_temperature.label }}</label>
                             {{ wizard.form.simple_air_temperature|add_class:"form-control d-inline" }}
                             <small>°C</small>
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_ph.errors }}
-                            <label for="{{ wizard.form.simple_ph.id_for_label }}">{{ wizard.form.simple_ph.label }}</label>                                               </label>
+                            <div class="non-detect-line"></div>
+                            <label for="{{ wizard.form.simple_ph.id_for_label }}">{{ wizard.form.simple_ph.label }}</label>
                             {{ wizard.form.simple_ph|add_class:"form-control d-inline" }}
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_water_temperature.errors }}
-                            <label for="{{ wizard.form.simple_water_temperature.id_for_label }}">{{ wizard.form.simple_water_temperature.label }}</label>                                               </label>
+                            <label for="{{ wizard.form.simple_water_temperature.id_for_label }}">{{ wizard.form.simple_water_temperature.label }}</label>
+                            <div class="non-detect-line"></div>
                             {{ wizard.form.simple_water_temperature|add_class:"form-control d-inline" }}
                             <small>°C</small>
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_dissolved_oxygen.errors }}
-                            <label for="{{ wizard.form.simple_dissolved_oxygen.id_for_label }}">{{ wizard.form.simple_dissolved_oxygen.label }}</label>                                               </label>
-                            {{ wizard.form.simple_dissolved_oxygen|add_class:"form-control d-inline" }}
-                            <small>ppm</small>
+                            <label for="{{ wizard.form.simple_dissolved_oxygen.id_for_label }}">{{ wizard.form.simple_dissolved_oxygen.label }}</label>
+                            <div class="non-detect-line">
+                                <label class="non-detect-label">Not detected
+                                    {{ wizard.form.simple_dissolved_oxygen_nondetect|add_class:"non-detect d-inline"}}
+                                </label>
+                            </div>
+                            <div>
+                                {{ wizard.form.simple_dissolved_oxygen|add_class:"form-control d-inline" }}
+                                <small>ppm</small>
+                            </div>
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_nitrate.errors }}
-                            <label for="{{ wizard.form.simple_nitrate.id_for_label }}">{{ wizard.form.simple_nitrate.label }}</label>                                               </label>
-                            {{ wizard.form.simple_nitrate|add_class:"form-control d-inline" }}
-                            <small>ppm</small>
+                            <label for="{{ wizard.form.simple_nitrate.id_for_label }}">{{ wizard.form.simple_nitrate.label }}</label>
+                            <label class="non-detect-label">Not detected
+                                {{ wizard.form.simple_nitrate_nondetect|add_class:"non-detect d-inline"}}
+                            </label>
+                            <div>
+                                {{ wizard.form.simple_nitrate|add_class:"form-control d-inline" }}
+                                <small>ppm</small>
+                            </div>
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_salinity.errors }}
-                            <label for="{{ wizard.form.simple_salinity.id_for_label }}">{{ wizard.form.simple_salinity.label }}</label>                                               </label>
-                            {{ wizard.form.simple_salinity|add_class:"form-control d-inline" }}
-                            <small>ppt</small>
+                            <label for="{{ wizard.form.simple_salinity.id_for_label }}">{{ wizard.form.simple_salinity.label }}</label>
+                            <label class="non-detect-label">Not detected
+                                {{ wizard.form.simple_salinity_nondetect|add_class:"non-detect d-inline"}}
+                            </label>
+                            <div>
+                                {{ wizard.form.simple_salinity|add_class:"form-control d-inline" }}
+                                <small>ppt</small>
+                            </div>
                         </div>
 
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_phosphate.errors }}
-                            <label for="{{ wizard.form.simple_phosphate.id_for_label }}">{{ wizard.form.simple_phosphate.label }}</label>                                               </label>
-                            {{ wizard.form.simple_phosphate|add_class:"form-control d-inline" }}
-                            <small>ppm</small>
+                            <label for="{{ wizard.form.simple_phosphate.id_for_label }}">{{ wizard.form.simple_phosphate.label }}</label>
+                            <label class="non-detect-label">Not detected
+                                {{ wizard.form.simple_phosphate_nondetect|add_class:"non-detect d-inline"}}
+                            </label>
+                            <div>
+                                {{ wizard.form.simple_phosphate|add_class:"form-control d-inline" }}
+                                <small>ppm</small>
+                            </div>
                         </div>                  
                     
-                    </div>                    
-                                       
-                </div>
-            </div>
-            <br><br>
-        </div>
-
-        <div class="col-sm-12 col-md-6">
-            <div class="mdl-card mdl-shadow--2dp full-width">
-                <div class="mdl-card__supporting-text default-font">
-                    <div class="row num-input">
-                        <div class="form-field col-6 num-field">
-                            {{ wizard.form.simple_turbidity_sample_size.errors }}
-                            <label for="{{ wizard.form.simple_turbidity_sample_size.id_for_label }}">{{ wizard.form.simple_turbidity_sample_size.label }}</label>                                               </label>
-                            {{ wizard.form.simple_turbidity_sample_size|add_class:"form-control d-inline" }}
-                            <small>mL</small>
-                        </div>
-
-                        <div class="form-field col-6 num-field">
-                            {{ wizard.form.simple_turbidity_reagent_amt.errors }}
-                            <label for="{{ wizard.form.simple_turbidity_reagent_amt.id_for_label }}">{{ wizard.form.simple_turbidity_reagent_amt.label }}</label>                                               </label>
-                            {{ wizard.form.simple_turbidity_reagent_amt|add_class:"form-control d-inline" }}
-                            <small>mL</small>
-                        </div>
-
                         <div class="form-field col-6 num-field">
                             {{ wizard.form.simple_turbidity.errors }}
-                            <label for="{{ wizard.form.simple_turbidity.id_for_label }}">{{ wizard.form.simple_turbidity.label }}</label>                                               </label>
-                            {{ wizard.form.simple_turbidity|add_class:"form-control d-inline" }}
-                            <small>JTU</small>
+                            <label for="{{ wizard.form.simple_turbidity.id_for_label }}">{{ wizard.form.simple_turbidity.label }}</label>
+                            <label class="non-detect-label">Not detected
+                                {{ wizard.form.simple_turbidity_nondetect|add_class:"non-detect d-inline"}}
+                            </label>
+                            <div>
+                                {{ wizard.form.simple_turbidity|add_class:"form-control d-inline" }}
+                                <small>JTU</small>
+                            </div>
                         </div>
-                    </div> 
+                    </div>                    
+                                       
                 </div>
             </div>
         </div>

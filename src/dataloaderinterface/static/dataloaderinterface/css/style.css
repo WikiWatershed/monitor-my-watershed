@@ -1539,3 +1539,12 @@ i.file-icon {
     text-align: center;
 }
 
+.image-grid {
+    display: grid;
+    gap:15px;
+    grid-template-columns: 45% 45%;
+}
+
+.site-photo {
+    width: 100%;
+}

@@ -11,24 +11,26 @@ import warnings
 import pandas as pd
 
 from .exceptions import ObjectNotFound
-from .models import annotations
-from .models import core
-from .models import cv
-from .models import dataquality
-from .models import equipment
-from .models import extensionproperties
-from .models import externalidentifiers
-from .models import labanalyses
-from .models import provenance
-from .models import results
-from .models import samplingfeatures
-from .models import simulation
-from .models import auth
+from .automap_models import annotations
+from .automap_models import core
+from .automap_models import cv
+from .automap_models import dataquality
+from .automap_models import equipment
+from .automap_models import extensionproperties
+from .automap_models import externalidentifiers
+from .automap_models import labanalyses
+from .automap_models import provenance
+from .automap_models import results
+from .automap_models import samplingfeatures
+from .automap_models import simulation
+from .automap_models import auth
+
+from odm2.models import results as _results
 
 OUTPUT_FORMATS = ("json", "dataframe", "dict", "records")
 
 
-class Base:
+class AutoBase:
     @declared_attr
     def __tablename__(self) -> str:
         cls_name = str(self.__name__)
@@ -147,7 +149,7 @@ class ODM2Engine:
 
     def read_object(
         self,
-        model: Type[Base],
+        model: Type[AutoBase],
         pkey: Union[int, str],
         output_format: str = "dict",
         orient: str = "records",
@@ -189,7 +191,7 @@ class ODM2Engine:
                 raise TypeError("Unknown output format")
 
     def update_object(
-        self, model: Type[Base], pkey: Union[int, str], data: Dict[str, Any]
+        self, model: Type[AutoBase], pkey: Union[int, str], data: Dict[str, Any]
     ) -> None:
         if not isinstance(data, dict):
             data = data.dict()
@@ -206,7 +208,7 @@ class ODM2Engine:
             session.commit()
             data[pkey_name] = pkey
 
-    def delete_object(self, model: Type[Base], pkey: Union[int, str]) -> None:
+    def delete_object(self, model: Type[AutoBase], pkey: Union[int, str]) -> None:
         with self.session_maker() as session:
             obj = session.get(model, pkey)
             pkey_name = model.get_pkey_name()
@@ -274,23 +276,25 @@ class ODM2DataModels:
             with open(self._cache_path, "rb") as file:
                 metadata = pickle.load(file=file)
                 self._cached = True
-                return declarative_base(cls=Base, bind=self._engine, metadata=metadata)
+                return declarative_base(
+                    cls=AutoBase, bind=self._engine, metadata=metadata
+                )
         except FileNotFoundError:
             metadata = sqlalchemy.MetaData(schema=self._schema)
             self._cached = False
-            return automap_base(cls=Base, metadata=metadata)
+            return automap_base(cls=AutoBase, metadata=metadata)
 
     def _prepare_automap_models(self):
         # models that are declaratively mapped.
         setattr(
             self._model_base,
             "TimeSeriesResults",
-            dict(results.TimeSeriesResults.__dict__),
+            dict(_results.TimeSeriesResults.__dict__),
         )
         setattr(
             self._model_base,
             "TimeSeriesResultValues",
-            dict(results.TimeSeriesResultValues.__dict__),
+            dict(_results.TimeSeriesResultValues.__dict__),
         )
 
         self._model_base.prepare(self._engine)

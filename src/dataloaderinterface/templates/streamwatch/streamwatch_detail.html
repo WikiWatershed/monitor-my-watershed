@@ -1,6 +1,7 @@
 {% extends 'dataloaderinterface/base.html' %}
 {% load static %}
 {% load site %}
+{% load get_attr %}
 {% load widget_tweaks %}
 
 {% block page_title %}
@@ -103,8 +104,11 @@
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Water Odor</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor|default:"Unknown"}}
-                            </td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor|default:"Unknown"}} </td>
+                        </tr>
+                        <tr>
+                            <td class="mdl-data-table__cell--non-numeric label">Water Odor Other Description</td>
+                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.water_odor_other|default:"N/A" }} </td>
                         </tr>
                         <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Turbidity</td>
@@ -334,14 +338,6 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Turbidity Sample Size (mL)</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_sample_size|default:"Unknown" }}</td>
-                        </tr>
-                        <tr>
-                            <td class="mdl-data-table__cell--non-numeric label">Amount of Turbidity Reagent Added (mL)</td>
-                            <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity_reagent_amt|default:"Unknown" }}</td>
-                        </tr>
-                        <tr>
                             <td class="mdl-data-table__cell--non-numeric label">Turbidity (JTU)</td>
                             <td class="mdl-data-table__cell--non-numeric">{{ streamwatch.simple_turbidity|default:"Unknown" }}</td>
                         </tr>
@@ -356,7 +352,7 @@
                     </table>
 
                     <div id="accordion" class="title">
-                        {% for measurement  in streamwatch.CAT_measurements%}
+                        {% for measurement in streamwatch.CAT_measurements%}
                             <h6>{{measurement.name}}</h6>
                             <div>
                                 <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
@@ -397,7 +393,46 @@
             </div>
 
             <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Macroinvertebrates</h6>
+                    <hr class="dotted">
+                    <br>
 
+                    <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width no-borders">
+                        {% for name, field in streamwatch.macro_fields.items %}
+                            {% if 'comment' not in name %}
+                            <tr>
+                                <td class="mdl-data-table__cell--non-numeric label">{{ field.label }}</td>
+                                <td class="mdl-data-table__cell--non-numeric">{{ streamwatch|get_dict_attr:name|add:"0"|default:"Unknown" }}</td>
+                            </tr>
+                            {% endif %}                        
+                        {% endfor %}
+                    </table>
+                    <div class="col-12">
+                        <label>Macroinvertebrate comments</Label>
+                        <p><em>{{ streamwatch.macro_comment }}</em></p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12 col-md-6">
+                    <h6 class="title">Site Photo(s)</h6>
+                    <hr class="dotted">
+                    <br>
+
+                    <div class="image-grid">
+                        {% for key, value in streamwatch.items %}
+                        {% if 'siteimage' in key %}
+                            <a href="{{value}}" target="_blank" rel="noopener noreferrer" ><img class="site-photo" src="{{value}}"></a>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
                 {% if streamwatch.site_observation %}
                     <div class="col-12">
                         <h6 class="title">General Comments and Site Observations</h6>
@@ -438,11 +473,15 @@
 {% block styles %}
     {{ block.super }}
     <link href="{% static 'dataloaderinterface/css/barchart.css' %}" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.6/select2-bootstrap.min.css" rel="stylesheet"/>
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js"></script>
     <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
     <script src="https://labratrevenge.com/d3-tip/javascripts/d3.tip.v0.6.3.js"></script>
     <script src="{% static 'dataloaderinterface/js/barchart.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/groupBarchart.js' %}"></script>

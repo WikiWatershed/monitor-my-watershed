@@ -23,7 +23,7 @@ $(document).ready(function() {
                 id: row.data('id')
             }
         }).done(function (data, message, xhr) {
-            if (xhr.status === 202) {
+            if (xhr.status === 202 || xhr.status === 200) {
                 // Valid
                 row.remove();
                 snackbarMsg('StreamWatch assessment has been deleted!');

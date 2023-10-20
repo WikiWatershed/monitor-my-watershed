@@ -22,6 +22,10 @@
   "cognito_client_secret": "client secret for cognito user pool",
   "cognito_oauth_url": "",
   "cognito_redirect_url": "The url to redirect users to on successful sign-in",
+  
+  "s3_client_id": "Access key for IAM account with S3 access",
+  "s3_client_secret" : "Secret access key for IAM account with S3 access",
+  "site_photos_s3_bucket" : "monitormywatershed-site-photos",
 
   "databases": [
     {

@@ -1,0 +1,68 @@
+{% load widget_tweaks %}
+{% load static %}
+
+<div class="row">
+    <div class="col-12">
+        <h5 class="headline d-inline-block">Enter information for macroinvertebrates.<h5>
+    </div>
+</div>
+
+<div class="row std-row">
+    {{ wizard.form.site_registration }}
+    <div class="col-md-8">
+        <div class="mdl-card mdl-shadow--2dp full-width">
+
+            <div class="mdl-card__supporting-text default-font">
+                {% for field in form.visible_fields %}
+                    <div class="form-group">
+                        {% if field.name == "site_observation" %}
+                        <div class="form-field">
+                            <label for="{{ wizard.form.site_observation.id_for_label }}">{{ wizard.form.site_observation.label }}</label>
+                            {% render_field field initial=field.initial class="form-control" %}
+                        </div>
+                        <br>
+
+                        {% else %}
+                        
+                        <div class="form-field">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            <br>
+                            {% if field.initial %}
+                            <img class="site-photo" src="{{field.initial}}">
+                            {% endif %}
+                            <span class="photo-action" style="display:inline-bock; width:100%;"></span>
+                            <div style="display: inline-block; margin-top: 5px; height: 36px; width:100%;">
+                                <div style="width: 85%; display: inline;">
+                                    {% render_field field initial=field.initial class="site-photo-field" %}
+                                </div>
+                                {% if field.initial %}
+                                <button class="mdl-button btn-keep-photo" style="color: #009229; float: right; display: none;" type="button">
+                                    <i class="material-icons center-icon">undo</i>
+                                </button>
+                                <button class="mdl-button btn-delete-photo" style="color: #d9534f; float: right;" type="button">
+                                    <i class="material-icons center-icon">delete_forever</i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        <br><br>
+    </div>
+    <div>
+    {% for field in form.hidden_fields %}
+        {% render_field field %}
+    {% endfor %}
+    </div>
+
+</div>
+
+{% block scripts %}
+    <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.full.min.js" defer></script>
+    <script src="{% static 'dataloaderinterface/js/common-forms.js' %}"></script>
+{% endblock %}
