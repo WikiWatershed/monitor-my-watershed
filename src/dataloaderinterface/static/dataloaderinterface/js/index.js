@@ -1,6 +1,13 @@
 //jquery ready event
 $(function() {
     initSubscriptionDialog();
+
+    $('#subscription-dialog').on('scroll', function() {
+        if( this.scrollTop >= (this.scrollHeight - this.offsetHeight) *.9)
+        {
+            $('#popup-close-button').prop('disabled',false);
+        }
+    });
 });
 
 function initSubscriptionDialog() {
@@ -17,6 +24,9 @@ function initSubscriptionDialog() {
 
             //disable scrolling (hide overflow) 
             $('body').css({overflow: 'hidden'});
+
+            //disable close button until you scroll to the bottom
+            $('#popup-close-button').prop('disabled',true);
         },
         close: function() {
             //disable scrolling (hide overflow) 
@@ -26,6 +36,7 @@ function initSubscriptionDialog() {
         buttons: [
             {
                 text: 'Close',
+                id: 'popup-close-button',
                 click: function() {
                     $(this).dialog('close');
                 }
@@ -33,3 +44,4 @@ function initSubscriptionDialog() {
         ]
     })
 } 
+
