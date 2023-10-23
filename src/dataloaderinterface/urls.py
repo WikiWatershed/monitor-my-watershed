@@ -26,6 +26,7 @@ urlpatterns = [
     url(r"^dmca/$", views.DMCAView.as_view(), name="dmca"),
     url(r"^privacy/$", views.PrivacyView.as_view(), name="privacy"),
     url(r"^subscriptions/$", views.SubscriptionsView.as_view(), name="subscriptions"),
+    url(r"^subscriptions-faq/$", views.SubscriptionsFAQView.as_view(), name="subscriptions_faq"),
     url(r"^cookies/$", views.CookiePolicyView.as_view(), name="cookie_policy"),
     url(r"^status/$", views.StatusListView.as_view(), name="status"),
     url(r"^browse/$", views.BrowseSitesListView.as_view(), name="browse_sites"),

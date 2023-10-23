@@ -68,6 +68,10 @@ class SubscriptionsView(TemplateView):
     template_name = "dataloaderinterface/subscriptions.html"
 
 
+class SubscriptionsFAQView(TemplateView):
+    template_name = "dataloaderinterface/subscriptions_faq.html"
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = "sites"
