@@ -27,6 +27,10 @@ function initSubscriptionDialog() {
 
             //disable close button until you scroll to the bottom
             $('#popup-close-button').prop('disabled',true);
+
+            //when open it will auto focus to first tabable element.
+            //this will scroll back to the top
+            $(this).scrollTop(0);
         },
         close: function() {
             //disable scrolling (hide overflow) 
