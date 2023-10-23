@@ -1,0 +1,91 @@
+{% extends 'dataloaderinterface/base.html' %}
+{% load static %}
+
+{% block styles %}
+    {{ block.super }}
+{% endblock %}
+
+{% block page_title %}
+    <title>Privacy Policy</title>
+{% endblock %}
+
+{% block content %}
+    <div class="ribbon ribbon-dark"></div>
+    <div class="ribbon-container">
+        <div class="container ribbon-content mdl-color--white mdl-shadow--4dp">
+            <section class="device-data col-lg-12">
+                <header class="section-header">
+                    <div class="page-title">Monitor My Watershed Subscriptions</div>
+                </header>
+                <div class="section-body">
+                    <h6 class="section-title">Why are Subscriptions Being Implemented?</h6>
+                    <p>
+                        Stroud Water Research Center is implementing a subscription plan for EnviroDIY 
+                        and other streaming data to Monitor My Watershed. Subscriptions will cover 
+                        Monitor My Watershed operating expenses, allowing us to fundraise for new 
+                        features and enhanced functionality. We do not profit from these subscriptions; 
+                        100% of subscription funds will pay for Monitor My Watershed operating expenses.
+                    </p>
+                    <h6 class="section-title">Subscription Tiers</h6>
+                    <p>
+                        Monitor My Watershed will offer four subscription tiers to match your level of utilization. 
+                        {% comment %}
+                        I think we can eventually move this to a table format, but given current 
+                        set of features for each subscription, I don't think a table is the best way 
+                        to display this information. 
+                        <table id="subscription-tiers">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Free</th>
+                                    <th>Individual</th>
+                                    <th>Small Nonprofit</th>
+                                    <th>Large Nonprofit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Number of Active Sites</td>
+                                    <td>1</td>
+                                    <td>3</td>
+                                    <td>15</td>
+                                    <td>60</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        {% endcomment %}
+                        <ul>
+                            <li><strong>Free ($0 monthly)</strong>
+                                <div style="margin-left:20px;">
+                                    Up to 1 active site.
+                                </div>
+                            </li>
+                            <li><strong>Individual ($14 monthly or $98 annually)</strong>
+                                <div style="margin-left:20px;">
+                                    Up to 3 active sites.
+                                </div>
+                            </li>
+                            <li><strong>Small Organization ($100 monthly or $1200 annually)</strong>
+                                <div style="margin-left:20px;">
+                                    Up to 15 active sites.
+                                </div>
+
+                            </li>
+                            <li><strong>Large Organization ($400 monthly or $4800 annually)</strong>
+                                <div style="margin-left:20px;">
+                                    Up to 60 active sites.
+                                </div>
+                            </li>
+                        </ul>
+
+                    </p>
+                    <h6 class="section-title">How to Purchase a Subscription</h6>
+                    <p>
+                        Subscriptions can be purchased from the <a class="link" href="https://www.envirodiy.org/shop/">EnviroDIY Shop</a>. You can make a credit or debit card payment 
+                        via Paypal (note you do not need a PayPal account to pay). 
+                    </p>
+                </div>
+            </section>
+        </div>
+    </div>
+{% endblock %}
