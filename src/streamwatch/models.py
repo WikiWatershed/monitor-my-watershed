@@ -153,7 +153,6 @@ __FIELDS = (
     "adapter_class",
     "units",
     "medium",
-    "taxonomic",
     "taxonomic_classifier",
 )
 FieldConfig = namedtuple(
@@ -199,7 +198,7 @@ class _BaseFieldAdapter:
         result.featureactionid = feature_action_id
         result.resulttypecv = result_type
         result.variableid = variable_id if variable_id else config.variable_identifier
-        result.taxonomicclassifierid = config.taxonomic
+        result.taxonomicclassifierid = config.taxonomic_classifier
         result.unitsid = config.units
         result.processinglevelid = cls.PROCESSING_LEVEL
         result.resultdatetime = datetime
@@ -629,7 +628,7 @@ class _TextFieldAdapter(_BaseFieldAdapter):
         result_records = cls.get_result_records(
             feature_action_id,
             variable_id=config.variable_identifier,
-            taxonomic_classifier=config.taxonomic,
+            taxonomic_classifier=config.taxonomic_classifer,
         )
         if not result_records:
             raise KeyError(
@@ -706,7 +705,7 @@ class _ObjectFieldAdapter(_BaseFieldAdapter):
         result_records = cls.get_result_records(
             feature_action_id,
             variable_id=config.variable_identifier,
-            taxonomic_classifier=config.taxonomic,
+            taxonomic_classifier=config.taxonomic_classifer,
         )
         result_id = result_records[0]["resultid"]
 
@@ -855,8 +854,8 @@ class StreamWatchODM2Adapter:
     def __reverse_crosswalk(cls) -> Dict[str, Any]:
         crosswalk = {}
         for k, v in cls.PARAMETER_CROSSWALK.items():
-            variable, *_, taxonomic = v
-            new_key = f"{variable}|{taxonomic}" if taxonomic else f"{variable}"
+            variable, *_, taxonomic_classifier = v
+            new_key = f"{variable}|{taxonomic_classifier}" if taxonomic_classifier else f"{variable}"
             crosswalk[new_key] = (k, *v[1:])
         return crosswalk
 
