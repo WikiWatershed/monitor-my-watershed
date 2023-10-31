@@ -855,7 +855,11 @@ class StreamWatchODM2Adapter:
         crosswalk = {}
         for k, v in cls.PARAMETER_CROSSWALK.items():
             variable, *_, taxonomic_classifier = v
-            new_key = f"{variable}|{taxonomic_classifier}" if taxonomic_classifier else f"{variable}"
+            new_key = (
+                f"{variable}|{taxonomic_classifier}"
+                if taxonomic_classifier
+                else f"{variable}"
+            )
             crosswalk[new_key] = (k, *v[1:])
         return crosswalk
 
@@ -920,7 +924,7 @@ class StreamWatchODM2Adapter:
             instance.action_id, form_data["sampling_feature_id"]
         )
         create_investigator(instance.action_id, int(form_data["investigator1"]), True)
-        if form_data["investigator2"] is not None:
+        if form_data["investigator2"] is not None and form_data["investigator2"] != "":
             create_investigator(
                 instance.action_id, int(form_data["investigator2"]), False
             )
