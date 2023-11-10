@@ -52,10 +52,15 @@
                     </div>
                 </div>
 
-                <div class="form-field indent-left">
+                <div class="form-field">
                     <label for="{{ wizard.form.water_odor.id_for_label }}">{{ wizard.form.water_odor.label }}</label>
-                    {{ wizard.form.water_odor.errors }}
-                    {{ wizard.form.water_odor }}
+                        {{ wizard.form.water_odor.errors }}
+                        {{ wizard.form.water_odor }}
+                </div>
+                <div class="form-field">
+                    <label for="{{ wizard.form.water_odor_other.id_for_label }}">{{ wizard.form.water_odor_other.label }}</label>
+                    {{ wizard.form.water_odor_other.errors }}
+                    {{ wizard.form.water_odor_other|add_class:"full-width" }}
                 </div>
             </div>
         </div>
@@ -119,17 +124,5 @@
         <br><br>
     </div>
 
-    <div class="col-sm-12 col-md-6">
-        <div class="mdl-card mdl-shadow--2dp full-width">                                     
-            <div class="mdl-card__supporting-text mdl-card--border default-font">  
 
-                <div class="form-field">
-                    <label for="{{ wizard.form.site_observation.id_for_label }}">{{ wizard.form.site_observation.label }}</label>
-                    {{ wizard.form.site_observation|add_class:"form-control" }}
-                </div>
-                
-            </div>
-        </div>
-        <br><br>
-    </div>
 </div>

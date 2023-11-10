@@ -13,16 +13,29 @@ dependencies:
     - hs_restclient >=1.3.7  # https://github.com/hydroshare/hs_restclient
     - markdown >=3.3.4
     - pandas >=1.3
+    - pillow #required for image support
     - psycopg2 >=2.9.1
     - python-crontab >=2.5.1
     - sqlalchemy >=1.4.0,<2.0
 
-    # Dev tools
-    - python-language-server
+    # Dev tools: Language Server Protocol (LSP) (Optional), for...
+      # code navigation + hover suggestions + linters + autocompletion + rename
+    - python-lsp-server >=1.6 # LSP extension for Python (pylsp), including:
+      # Rope for Completions and renaming
+      # Pyflakes linter to detect various errors
+      # McCabe linter for complexity checking
+      # pycodestyle linter for style checking
+      # pydocstyle linter for docstring style checking (disabled by default)
+      # autopep8 for code formatting
+      # YAPF for code formatting (preferred over autopep8)
+      # flake8 for error checking (disabled by default)
+      # pylint for code linting (disabled by default)
+    - pylsp-mypy  # MyPy type checking for Python >=3.7.
 
     # package management
     - conda
     - conda-build
+    - conda-libmamba-solver
     - pip
 
     - pip:

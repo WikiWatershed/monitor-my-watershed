@@ -570,7 +570,10 @@
                             <thead>
                                 <tr>                               
                                     <th>Date</th>
-                                    <th>Assessment Type</th>
+                                    <th>Water Temp (°C)</th>
+                                    <th>DO (ppm)</th>
+                                    <th>pH</th>
+                                    <th>Macro Count</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -579,8 +582,10 @@
 
                                 <tr class="bg-white leafpack-form" data-id="{{ assessment.actionid }}">
                                     <td class="mdl-data-table__cell--non-numeric">{{ assessment.begindatetime }}</td>
-                                    {#<td class="mdl-data-table__cell--non-numeric">{{ survey.actiontypecv|default:"NA" }}</td>#}
-                                    <td>{{assessment.actiondescription}}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_water_temperature|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_dissolved_oxygen|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_ph|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter.count_total_macros|add:0|default:"Unknown" }}</td>
                                     <td class="mdl-data-table__cell--non-numeric">
                                         <a class="mdl-button mdl-js-button button-link mdl-button--primary"
                                            href="{% url 'streamwatch:view' site.sampling_feature.sampling_feature_code assessment.actionid %}">

@@ -1,64 +1,19 @@
-"""Data models corresponding to the tables under the ODM2Results schema
-	Reference: http://odm2.github.io/ODM2/schemas/ODM2_Current/schemas/ODM2Results.html
-"""
 import typing
 import datetime
 
-import sqlalchemy as sqla
 from sqlalchemy import orm
+import sqlalchemy as sqla
 from sqlalchemy.dialects import postgresql as pg
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 
-class CategoricalResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_CategoricalResults.html"""
-
-
-class CategoricalResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_CategoricalResultValues.html"""
-
-
-class MeasurementResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_MeasurementResults.html"""
-
-
-class MeasurementResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_MeasurementResultValues.html"""
-
-
-class PointCoverageResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_PointCoverageResults.html"""
-
-
-class PointCoverageResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_PointCoverageResultValues.html"""
-
-
-class ProfileResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_ProfileResults.html"""
-
-
-class ProfileResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_ProfileResultValues.html"""
-
-
-class SectionResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_SectionResults.html"""
-
-
-class SectionResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_SectionResultValues.html"""
-
-
-class SpectraResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_SpectraResults.html"""
-
-
-class SpectraResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_SpectraResultValues.html"""
-
-
-class TimeSeriesResults:
+class TimeSeriesResults(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResults.html"""
+
+    __tablename__ = "timeseriesresults"
+    __table_args__ = {"schema": "odm2"}
 
     resultid: orm.Mapped[int] = sqla.Column("resultid", sqla.Integer, primary_key=True)
     xlocation: orm.Mapped[typing.Optional[float]] = sqla.Column(
@@ -93,8 +48,11 @@ class TimeSeriesResults:
     )
 
 
-class TimeSeriesResultValues:
+class TimeSeriesResultValues(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResultValues.html"""
+
+    __tablename__ = "timeseriesresultvalues"
+    __table_args__ = {"schema": "odm2"}
 
     valueid: orm.Mapped[int] = sqla.Column("valueid", sqla.Integer, primary_key=True)
     resultid: orm.Mapped[int] = sqla.Column(
@@ -119,19 +77,3 @@ class TimeSeriesResultValues:
     timeaggregationintervalunitsid: orm.Mapped[int] = sqla.Column(
         "timeaggregationintervalunitsid", sqla.ForeignKey("units.unitsid")
     )
-
-
-class TrajectoryResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TrajectoryResults.html"""
-
-
-class TrajectoryResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TrajectoryResultValues.html"""
-
-
-class TransectResults:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TransectResults.html"""
-
-
-class TransectResultValues:
-    """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TransectResultValues.html"""
