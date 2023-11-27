@@ -4,10 +4,16 @@ import datetime
 from sqlalchemy import orm
 import sqlalchemy as sqla
 from sqlalchemy.dialects import postgresql as pg
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 
-class TimeSeriesResults:
+class TimeSeriesResults(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResults.html"""
+
+    __tablename__ = "timeseriesresults"
+    __table_args__ = {"schema": "odm2"}
 
     resultid: orm.Mapped[int] = sqla.Column("resultid", sqla.Integer, primary_key=True)
     xlocation: orm.Mapped[typing.Optional[float]] = sqla.Column(
@@ -42,8 +48,11 @@ class TimeSeriesResults:
     )
 
 
-class TimeSeriesResultValues:
+class TimeSeriesResultValues(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResultValues.html"""
+
+    __tablename__ = "timeseriesresultvalues"
+    __table_args__ = {"schema": "odm2"}
 
     valueid: orm.Mapped[int] = sqla.Column("valueid", sqla.Integer, primary_key=True)
     resultid: orm.Mapped[int] = sqla.Column(
