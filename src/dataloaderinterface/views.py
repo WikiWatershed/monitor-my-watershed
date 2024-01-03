@@ -83,7 +83,7 @@ class SitesListView(LoginRequiredMixin, ListView):
             .get_queryset()
             .with_sensors()
             .with_latest_measurement_id()
-            .deployed_by(user_id=self.request.user.id)
+            .deployed_by(affiliation_ids=self.request.user.affiliation_id)
         )
 
     def get_context_data(self, **kwargs):
@@ -156,7 +156,7 @@ class BrowseSitesListView(ListView):
             .with_sensors()
             .with_leafpacks()
             .with_latest_measurement_id()
-            .with_ownership_status(self.request.user.id)
+            .with_ownership_status(self.request.user.user_id, self.request.user.affiliation_id)
         )
 
 

@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, Union, Dict
+from typing import Any, Union, Dict, List
 import datetime
 
 from sqlalchemy.orm import Query
@@ -218,19 +218,18 @@ class ODM2User(User):
             affiliations = odm2_engine.read_query(
                 query, output_format="dict", orient="records"
             )
-            first_affiliation = affiliations[0]
-            return first_affiliation
+            return affiliations
         except odm2.exceptions.ObjectNotFound as e:
             return None
         except IndexError as e:
             return None
 
     @property
-    def affiliation_id(self) -> Union[int, None]:
+    def affiliation_id(self) -> Union[List[int], None]:
         affiliation = self._get_affiliation()
-        if affiliation is None:
+        if not affiliation:
             return None
-        return affiliation["affiliationid"]
+        return [a['affiliationid'] for a in affiliation]
 
     @property
     def organization_code(self) -> str:
@@ -274,11 +273,10 @@ class ODM2User(User):
         )
 
     @property
-    def affiliation(self) -> Union["Affiliation", None]:
-        affiliation_id = self.affiliation_id
-        if not affiliation_id:
-            return None
-        return dataloader.models.Affiliation.objects.get(pk=self.affiliation_id)
+    def affiliation(self) -> List["Affiliation"]:
+        if not self.affiliation_id:
+            return []
+        return list(dataloader.models.Affiliation.objects.filter(pk__in=self.affiliation_id).all())
 
     @property
     def is_staff(self) -> bool:

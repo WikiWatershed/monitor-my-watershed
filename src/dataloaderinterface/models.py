@@ -44,31 +44,11 @@ class SiteRegistration(models.Model):
         db_column="DeploymentDate", blank=True, null=True
     )
 
-    account_id = models.ForeignKey(
-        accounts.models.Account,
-        on_delete=models.CASCADE,
-        db_column="account_id",
-        related_name="deployed_sites",
-    )
-    affiliation_id = models.IntegerField(db_column="AffiliationID")
-
-    person_id = models.IntegerField(db_column="PersonID", null=True)
-    person_first_name = models.CharField(
-        max_length=255, db_column="PersonFirstName", blank=True, null=True
-    )
-    person_last_name = models.CharField(
-        max_length=255, db_column="PersonLastName", blank=True, null=True
-    )
-
     organization_id = models.IntegerField(db_column="OrganizationID", null=True)
-    organization_code = models.CharField(
-        db_column="OrganizationCode", max_length=50, blank=True, null=True
-    )
-    organization_name = models.CharField(
-        max_length=255, db_column="OrganizationName", blank=True, null=True
-    )
 
     sampling_feature_id = models.IntegerField(db_column="SamplingFeatureID", null=True)
+    #TODO: We should deprecate sampling_feature_code and sampling_feature_name in favor of 
+    #storing that information in the odm2.samplingfeatures table and then accessing via foreign key
     sampling_feature_code = models.CharField(
         max_length=50, unique=True, db_column="SamplingFeatureCode"
     )
@@ -138,10 +118,6 @@ class SiteRegistration(models.Model):
             return SamplingFeature.objects.get(pk=self.sampling_feature_id)
         except ObjectDoesNotExist:
             return None
-
-    @property
-    def django_user(self):
-        return self.account_id_id
 
     @property
     def has_streamwatch(self) -> bool:

@@ -89,16 +89,15 @@
                             <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width shade-first-col">
                                 <tr>
                                     <td class="mdl-data-table__cell--non-numeric">
-                                        <i class="fa fa-user-o" aria-hidden="true"></i> Deployment By
-                                    </td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ site.account_id.full_name }}</td>
-                                </tr>
-
-                                <tr>
-                                    <td class="mdl-data-table__cell--non-numeric">
                                         <i class="fa fa-building-o" aria-hidden="true"></i> Organization
                                     </td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ site.organization_name }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">
+                                        {% if site.organization.organizationtypecv == 'Individual' %} 
+                                            Individual
+                                        {% else %}
+                                            {{ site.organization.organization_name }}
+                                        {% endif %}
+                                    </td>
                                 </tr>
 
                                 <tr>
