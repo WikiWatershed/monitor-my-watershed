@@ -5,7 +5,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch.dispatcher import receiver
 
 from dataloader.models import SamplingFeature, Site, Annotation, SamplingFeatureAnnotation, SpatialReference, Action, \
-    Method, Result, ProcessingLevel, TimeSeriesResult, Unit
+    Method, Result, ProcessingLevel, TimeSeriesResult, Unit, Affiliation
 from dataloaderinterface.models import SiteRegistration, SiteSensor
 
 #PRT - deprecated
@@ -31,14 +31,15 @@ def handle_site_registration_pre_save(sender, instance, update_fields=None, **kw
         user = instance.user
     else: 
         user = accounts.user.ODM2User.from_userid(instance.account_id.accountid)
-    affiliation = user.affiliation
+    
+    #use the selected affiliation to look up organization
+    affiliation = Affiliation.objects.get(pk=instance.affiliation_id)
+    
     instance.account_id = accounts.models.Account.objects.get(pk=user.user_id)
     instance.person_id = -999 #PRT - deprecated the use of person with accounts update   
     instance.person_first_name = user.first_name
     instance.person_last_name = user.last_name
     instance.organization_id = affiliation.organization_id
-    instance.organization_code = affiliation.organization and affiliation.organization.organization_code
-    instance.organization_name = affiliation.organization and affiliation.organization.organization_name
 
 
 @receiver(post_save, sender=SiteRegistration)

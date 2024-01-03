@@ -199,11 +199,18 @@ class ODM2User(User):
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
         # TODO
         query = "SELECT * FROM dataloaderinterface_siteregistration WHERE \"SamplingFeatureID\" = '%s';"
+
+        #presently being affiliated with site grants ownership, though this will update with permissions later
+
+        organization_id = None
         with odm2_engine.engine.connect() as connection:
             site_registration = connection.execute(
                 query, (sampling_feature_id)
             ).fetchall()
-            return site_registration[0]["account_id"] == self.user_id
+            organization_id= site_registration[0]["OrganizationID"]
+
+        for a in self.affiliation:
+            if a.organization_id == organization_id: return True
         return False
 
     def can_administer_site(self, sampling_feature_id: int) -> bool:

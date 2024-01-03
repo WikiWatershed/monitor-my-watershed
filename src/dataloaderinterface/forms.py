@@ -45,14 +45,6 @@ allowed_site_types = [
     "Other",
 ]
 
-user_affiliations = [
-    affiliation.affiliation_id
-    for affiliation in Affiliation.objects.filter(organization__isnull=False).filter(
-        account_id__isnull=False
-    )
-]
-
-
 class SiteTypeSelect(forms.Select):
     site_types = {
         name: definition
@@ -93,13 +85,11 @@ class SampledMediumField(forms.ModelChoiceField):
 
 
 class SiteRegistrationForm(forms.ModelForm):
-    affiliation_id = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(
-            affiliation_id__in=(user_affiliations)
-        ).for_display(),
-        required=False,
-        help_text="Select the user that deployed or manages the site",
-        label="Deployed By",
+    affiliation_id = forms.ChoiceField(
+        choices = [],
+        required=True,
+        help_text="Select the organization that deployed or manages the site",
+        label="Deploy Site For",
     )
     site_type = forms.ModelChoiceField(
         queryset=SiteType.objects.filter(name__in=allowed_site_types),

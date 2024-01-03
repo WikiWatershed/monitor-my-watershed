@@ -434,7 +434,15 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         data = self.request.POST or None
-        return self.get_form_class()(initial=self.get_default_data(), data=data)
+        form = self.get_form_class()(initial=self.get_default_data(), data=data)
+        
+        #set list of affiliation to only those of the user
+        choices = []
+        for a in self.request.user.affiliation:
+            choices.append((a.affiliation_id,a.organization.display_name))
+        form.fields["affiliation_id"].choices = choices
+        
+        return form
 
     def get_context_data(self, **kwargs):
         context = super(SiteRegistrationView, self).get_context_data()
@@ -444,7 +452,7 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form_class()(request.POST)
+        form = self.get_form()
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():

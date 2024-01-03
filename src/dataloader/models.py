@@ -586,6 +586,12 @@ class Organization(ODM2Model):
 
     objects = OrganizationQuerySet.as_manager()
 
+    @property
+    def display_name(self):
+        if self.organization_type.name == "Individual":
+            return "Myself"
+        return self.organization_name
+
     def __str__(self):
         return "%s" % self.organization_code
 
