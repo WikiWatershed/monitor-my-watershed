@@ -84,6 +84,11 @@ class CreateView(SessionWizardView):
     template_name = "streamwatch/streamwatch_wizard.html"
     slug_field = "sampling_feature_code"
 
+    def get_form_kwargs(self,index):
+        kwargs = super().get_form_kwargs(index)
+        kwargs["user_organization_ids"] = self.request.user.organization_id
+        return kwargs
+
     def get_context_data(self, form: django.forms.Form, **kwargs):
         context = super().get_context_data(form=form, **kwargs)
         context[self.slug_field] = self.kwargs[self.slug_field]
