@@ -239,10 +239,10 @@ class ODM2User(User):
         return [a['affiliationid'] for a in affiliation]
 
     @property
-    def organization_code(self) -> str:
+    def organization_code(self) -> List[str]:
         affiliation = self._get_affiliation()
         if affiliation is None:
-            return ""
+            return []
         try:
             organization = odm2_engine.read_object(
                 models.Organizations, affiliation["organizationid"]
@@ -252,10 +252,10 @@ class ODM2User(User):
             return ""
 
     @property
-    def organization_name(self) -> str:
+    def organization_name(self) -> List[str]:
         affiliation = self._get_affiliation()
         if affiliation is None:
-            return ""
+            return []
         try:
             organization = odm2_engine.read_object(
                 models.Organizations, affiliation["organizationid"]
@@ -265,11 +265,11 @@ class ODM2User(User):
             return ""
 
     @property
-    def organization_id(self) -> Union[int, None]:
+    def organization_id(self) -> List[int]:
         affiliation = self._get_affiliation()
         if affiliation is None:
-            return None
-        return affiliation["organizationid"]
+            return []
+        return [a["organizationid"] for a in affiliation]
 
     @organization_id.setter
     def organization_id(self, value: int) -> None:

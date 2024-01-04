@@ -37,6 +37,8 @@ import streamwatch
 
 import accounts
 
+from odm2 import odm2datamodels
+from sqlalchemy import text
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -142,9 +144,20 @@ class BrowseSitesListView(ListView):
             filters[f] = val
         context["filters"] = json.dumps(filters)
 
+        #pull data from database
+        context["data"] = self.get_site_data()
+
+        #set ownership status
+        organization_ids = [a["organizationid"] for a in request.user.affiliation_id]
+        for d in context["data"]:
+            d["owner"] = d["organization_id"] in organization_ids 
+
         return context
 
     def get(self, request, *args, **kwargs) -> HttpResponse:
+        
+        
+        
         self.object_list = self.get_queryset()
         context = self.get_context_data(request)
         return self.render_to_response(context)
@@ -158,6 +171,61 @@ class BrowseSitesListView(ListView):
             .with_latest_measurement_id()
             .with_ownership_status(self.request.user.user_id, self.request.user.affiliation_id)
         )
+
+    #TODO: move to crud endpoint that uses SQLAlchemy models
+    def get_site_data(self):
+        """Method to fetch site data required for template"""
+        sql = '''
+            WITH last_measurement AS (
+                SELECT 
+                    ss."RegistrationID" 
+                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasure
+                    ,MAX(sm.value_datetime) AS latestmeasure_utc
+                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasure_utc_offset
+                FROM dataloaderinterface_sensormeasurement AS sm
+                JOIN dataloaderinterface_sitesensor AS ss 
+                    ON sm.sensor_id = ss.id 
+                GROUP BY (ss."RegistrationID")
+            )
+            ,leafpack AS (
+                SELECT site_registration_id, COUNT(id) AS leafpack_count
+                FROM leafpack
+                GROUP BY "site_registration_id"
+            ) 
+            SELECT 
+                sr."SamplingFeatureID" AS sampling_feature_id
+                ,sr."SamplingFeatureCode" AS sampling_feature_code
+                ,org.organizationid AS organization_id
+                ,org.organizationtypecv AS organization_type
+                ,org.organizationcode AS organization_code
+                ,org.organizationname AS organization_name  
+                ,sr."StreamName" AS stream_name
+                ,sr."MajorWatershed" AS major_watershed
+                ,sr."SubBasin" AS sub_basin
+                ,sr."ClosestTown" AS closest_town
+                ,sr."SiteNotes" AS site_notes
+                ,sr."SiteType" AS site_type
+                ,sr."SamplingFeatureName" AS sampling_feature_name
+                ,sr."Latitude" AS latitude
+                ,sr."Longitude" AS longitude
+                ,sr."Elevation" AS elevation
+                ,lm.latestmeasure_utc AS latest_measurement_utc
+                ,lm.latestmeasure_utc_offset AS latest_measurement_utcoffset
+                ,lm.latestmeasure AS latest_measurement
+                ,lp.leafpack_count AS leafpack_count
+                ,sr.streamwatch_assessments AS streamwatch_count
+
+            FROM public.dataloaderinterface_siteregistration AS sr
+            JOIN odm2.organizations AS org ON sr."OrganizationID" = org.organizationid
+            LEFT JOIN last_measurement AS lm ON lm."RegistrationID" = sr."RegistrationID"
+            LEFT JOIN leafpack AS lp ON lp.site_registration_id = sr."RegistrationID"
+        '''
+
+        with odm2datamodels.odm2_engine.session_maker() as session:
+            result = session.execute(text(sql)).mappings().all()
+
+        return [dict(d) for d in result]
+
 
 
 class SiteDetailView(DetailView):
