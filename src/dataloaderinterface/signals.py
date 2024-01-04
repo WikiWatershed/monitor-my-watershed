@@ -124,11 +124,9 @@ def handle_sensor_pre_save(sender, instance, update_fields=None, **kwargs):
 
 @receiver(post_save, sender=SiteSensor)
 def handle_sensor_post_save(sender, instance, created, update_fields=None, **kwargs):
-    action = instance.registration.sampling_feature.actions.first()
     result_queryset = Result.objects.filter(result_id=instance.result_id)
 
     if created:
-        action.action_by.create(affiliation=instance.registration.odm2_affiliation, is_action_lead=True)
         TimeSeriesResult.objects.create(
             result=result_queryset.first(),
             aggregation_statistic_id='Average',
