@@ -148,7 +148,7 @@ class BrowseSitesListView(ListView):
         context["data"] = self.get_site_data()
 
         #set ownership status
-        organization_ids = [a.organizationid for a in request.user.affiliation]
+        organization_ids = request.user.organization_id 
         for d in context["data"]:
             d["owner"] = d["organization_id"] in organization_ids 
 
