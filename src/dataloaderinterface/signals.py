@@ -26,19 +26,9 @@ def handle_site_registration_pre_save(sender, instance, update_fields=None, **kw
         )
         instance.sampling_feature_id = sampling_feature.sampling_feature_id
 
-    user = None
-    if hasattr(instance, 'user'): 
-        user = instance.user
-    else: 
-        user = accounts.user.ODM2User.from_userid(instance.account_id.accountid)
-    
     #use the selected affiliation to look up organization
     affiliation = Affiliation.objects.get(pk=instance.affiliation_id)
     
-    instance.account_id = accounts.models.Account.objects.get(pk=user.user_id)
-    instance.person_id = -999 #PRT - deprecated the use of person with accounts update   
-    instance.person_first_name = user.first_name
-    instance.person_last_name = user.last_name
     instance.organization_id = affiliation.organization_id
 
 

@@ -92,7 +92,7 @@
                                         <i class="fa fa-building-o" aria-hidden="true"></i> Organization
                                     </td>
                                     <td class="mdl-data-table__cell--non-numeric">
-                                        {% if site.organization.organizationtypecv == 'Individual' %} 
+                                        {% if site.organization.organizationtypecv == 'Individual' or site.organization.organization_type_id == 'Individual' %} 
                                             Individual
                                         {% else %}
                                             {{ site.organization.organization_name }}

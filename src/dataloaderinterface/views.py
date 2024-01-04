@@ -382,7 +382,17 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         data = self.request.POST or None
         site_registration = self.get_object()
-        return self.get_form_class()(data=data, instance=site_registration)
+        
+        form = self.get_form_class()(data=data, instance=site_registration)
+        
+        #set list of affiliation to only those of the user
+        choices = []
+        for a in self.request.user.affiliation:
+            choices.append((a.affiliation_id,a.organization.display_name))
+        form.fields["affiliation_id"].choices = choices
+
+        return form
+        
 
     def get_queryset(self):
         return super(SiteUpdateView, self).get_queryset().with_sensors()
@@ -427,7 +437,7 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         site_registration = self.get_object()
-        form = self.get_form_class()(request.POST, instance=site_registration)
+        form = self.get_form()
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
