@@ -106,6 +106,10 @@ class User(ABC):
         """"""
 
     @property
+    def organization_id(self) -> List[int]:
+        """"""
+
+    @property
     def affiliation(self) -> List["Affiliation"]: 
         """"""
     
@@ -192,6 +196,10 @@ class AnonymousUser(User):
     @property
     def organization_name(self) -> str:
         return ""
+    
+    @property
+    def organization_id(self) -> str:
+        return []
 
     @property
     def affiliation(self) -> List["Affiliation"]: 

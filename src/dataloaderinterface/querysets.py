@@ -57,8 +57,8 @@ class SiteRegistrationQuerySet(models.QuerySet):
             output_field=CharField(),
         ))
  
-    def deployed_by(self, affiliation_ids:List[int]):
-        return self.filter(organization_id__in=affiliation_ids)
+    def deployed_by(self, organization_ids:List[int]):
+        return self.filter(organization_id__in=organization_ids)
 
     def followed_by(self, user_id):
         return self.filter(followed_by=user_id)

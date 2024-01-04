@@ -231,6 +231,21 @@ class ODM2User(User):
         except IndexError as e:
             return None
 
+    def _get_organization(self) -> List[Dict]:
+        organization_ids = [a.organization_id for a in self.affiliation]
+        query = Query(models.Organizations).filter(
+            models.Organizations.organizationid.in_(organization_ids)
+        )
+        try:
+            organizations = odm2_engine.read_query(
+                query, output_format="dict", orient="records"
+            )
+            return organizations
+        except odm2.exceptions.ObjectNotFound as e:
+            return None
+        except IndexError as e:
+            return None
+
     @property
     def affiliation_id(self) -> Union[List[int], None]:
         affiliation = self._get_affiliation()
@@ -240,36 +255,24 @@ class ODM2User(User):
 
     @property
     def organization_code(self) -> List[str]:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
+        organizations = self._get_organization()
+        if organizations is None:
             return []
-        try:
-            organization = odm2_engine.read_object(
-                models.Organizations, affiliation["organizationid"]
-            )
-            return organization["organizationcode"]
-        except odm2.exceptions.ObjectNotFound:
-            return ""
+        return [o["organizationcode"] for o in organizations]
 
     @property
     def organization_name(self) -> List[str]:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
+        organizations = self._get_organization()
+        if organizations is None:
             return []
-        try:
-            organization = odm2_engine.read_object(
-                models.Organizations, affiliation["organizationid"]
-            )
-            return organization["organizationname"]
-        except odm2.exceptions.ObjectNotFound:
-            return ""
+        return [o["organizationname"] for o in organizations]
 
     @property
     def organization_id(self) -> List[int]:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
+        organizations = self._get_organization()
+        if organizations is None:
             return []
-        return [a["organizationid"] for a in affiliation]
+        return [o["organizationid"] for o in organizations]
 
     @organization_id.setter
     def organization_id(self, value: int) -> None:
