@@ -85,7 +85,7 @@ class SitesListView(LoginRequiredMixin, ListView):
             .get_queryset()
             .with_sensors()
             .with_latest_measurement_id()
-            .deployed_by(affiliation_ids=self.request.user.affiliation_id)
+            .deployed_by(organization_ids=self.request.user.organization_id)
         )
 
     def get_context_data(self, **kwargs):
@@ -148,29 +148,16 @@ class BrowseSitesListView(ListView):
         context["data"] = self.get_site_data()
 
         #set ownership status
-        organization_ids = [a["organizationid"] for a in request.user.affiliation_id]
+        organization_ids = [a.organizationid for a in request.user.affiliation]
         for d in context["data"]:
             d["owner"] = d["organization_id"] in organization_ids 
 
         return context
 
     def get(self, request, *args, **kwargs) -> HttpResponse:
-        
-        
-        
-        self.object_list = self.get_queryset()
+        self.object_list = []
         context = self.get_context_data(request)
         return self.render_to_response(context)
-
-    def get_queryset(self):
-        return (
-            super(BrowseSitesListView, self)
-            .get_queryset()
-            .with_sensors()
-            .with_leafpacks()
-            .with_latest_measurement_id()
-            .with_ownership_status(self.request.user.user_id, self.request.user.affiliation_id)
-        )
 
     #TODO: move to crud endpoint that uses SQLAlchemy models
     def get_site_data(self):
