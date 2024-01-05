@@ -59,9 +59,17 @@
                             <td><h6>{{ user.email }}</h6></td>
                         </tr>
                         <tr>
-                            <td><h6 class="title text-muted"><i class="fa fa-building" aria-hidden="true"></i> Organization:</h6>
+                            <td><h6 class="title text-muted"><i class="fa fa-building" aria-hidden="true"></i> Organization(s):</h6>
                             </td>
-                            <td><h6>{{ user.organization_name }}</h6></td>
+                            <td>
+                                <h6>
+                                    {% for org in user.organization_name %}
+                                        {% if 'individual' not in org %}
+                                            {{ org }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </h6>
+                            </td>
                         </tr>
                     </table>
                 </div>
@@ -104,18 +112,6 @@
                                             username
                                         </label>
                                         <input id="id_username" value="{{ user.username }}" class="form-control form-field">
-                                    </div>
-
-                                    <div class="col-sm-12">
-                                        <label class="control-label" for="id_organization">
-                                            <i class="fa fa-building" aria-hidden="true"></i>
-                                            Organization
-                                        </label>
-                                        <i id="organization-help" class="material-icons text-muted help-icon">help</i>
-                                        <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--right"
-                                        data-mdl-for="organization-help">
-                                        </div>
-                                        <select id="id_organization_id" class="form-control form-field" org="{{user.organization_id}}" placeholder="Choose your affiliated organization">{{user.organization.name}}</select>
                                     </div>
                                 </div>
                             </div>
