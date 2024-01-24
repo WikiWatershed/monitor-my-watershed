@@ -32,7 +32,6 @@ var textSearchFacets = [
     "organization_code",
     "type",
     "dataType",
-    "deployment_by",
     "stream_name",
     "major_watershed",
     "sub_basin",
