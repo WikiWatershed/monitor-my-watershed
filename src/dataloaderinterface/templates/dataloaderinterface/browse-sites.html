@@ -2,6 +2,7 @@
 {% load static %}
 {% load helpers %}
 {% load site %}
+{% load get_attr %}
 
 {% block page_title %}
     <title>Browse Sites</title>
@@ -141,7 +142,7 @@
     <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/browse-sites.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/oms.min.js' %}"></script>
-    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgps2GkNvfTnC8UIRT-X9QAz66zNa1EvY&callback=initMap"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key={% get_settings_attr "MAP_API_KEY" %}&callback=initMap"></script>
 
     {% comment %}Copy selected filters to js variables{% endcomment %}
     <script>var selectedFilters='{{filters|safe}}';</script>
