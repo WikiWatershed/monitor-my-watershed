@@ -1,6 +1,7 @@
 {% extends 'dataloaderinterface/base.html' %}
 {% load static %}
 {% load helpers %}
+{% load get_attr %}
 
 {% block page_title %}
     <title>My Sites</title>
@@ -377,5 +378,5 @@
     <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/my-sites.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/oms.min.js' %}"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgps2GkNvfTnC8UIRT-X9QAz66zNa1EvY&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={% get_settings_attr "MAP_API_KEY" %}&callback=initMap"></script>
 {% endblock %}
