@@ -16,7 +16,6 @@ function createInfoWindowContent(site) {
 }
 
 function getMarkerIcon(type, color, dataTypes) {
-    console.log(type);
     type = type != "affiliated" ? "fat" : "skinny";
     if (dataTypes[0] == "Leaf Pack") {
         color = "blue";

@@ -97,6 +97,24 @@ class SitesListView(LoginRequiredMixin, ListView):
             .with_latest_measurement_id()
             .followed_by(user_id=self.request.user.id)
         )
+        #we want to preorder affiliations 
+        affiliated_orgs = {}
+        for affiliation in self.request.user.affiliation:
+            org = affiliation.organization
+            if org.organization_type.name == "Individual":
+                affiliated_orgs[' '] = org
+                continue
+            affiliated_orgs[org.organization_name] = org
+        context["organizations"] = dict(sorted(affiliated_orgs.items())).values()
+        
+        organization_site_counts = {}
+        for site in context['sites']:
+            try:
+                organization_site_counts[site.organization_id] += 1
+            except KeyError:
+                organization_site_counts[site.organization_id] = 1
+        context['organization_site_counts'] = organization_site_counts        
+
         return context
 
 
