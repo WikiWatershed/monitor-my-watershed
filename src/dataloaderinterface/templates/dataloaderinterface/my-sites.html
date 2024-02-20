@@ -65,14 +65,14 @@
                 </div>
                 {% if sites %}
                     <div class="col-13 collapse show" id="sitesCollapse-{{organization.organization_id}}" style="width:100%;">
-                        <button id="btnOrderMySites"
+                        <button id="btnOrderMySites-{{organization.organization_id}}"
                                 class="mdl-button mdl-js-button">
                             Order <i class="material-icons">arrow_drop_down</i>
                         </button>
 
                         <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu menu-order"
-                            data-sort-target="#mySites"
-                            for="btnOrderMySites">
+                            data-sort-target="#mySites-{{organization.organization_id}}"
+                            for="btnOrderMySites-{{organization.organization_id}}">
                             <li class="mdl-menu__item" data-sort-by="sitecode">
                                 <i class="material-icons center-icon">sort_by_alpha</i> Alphabetically
                             </li>
