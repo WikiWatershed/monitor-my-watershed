@@ -150,7 +150,7 @@ class BrowseSitesListView(ListView):
         #set ownership status
         organization_ids = request.user.organization_id 
         for d in context["data"]:
-            d["owner"] = d["organization_id"] in organization_ids 
+            d["ownership_status"] = 'affiliated' if d["organization_id"] in organization_ids else ''
 
         return context
 
