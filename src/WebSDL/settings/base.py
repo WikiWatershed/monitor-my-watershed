@@ -210,6 +210,7 @@ GOOGLE_API_CONF = data.get("google_api_conf", None)
 # AWS Congnito
 COGNITO_SIGNUP_URL = data["cognito_signup_url"]
 COGNITO_SIGNIN_URL = data["cognito_signin_url"]
+COGNITO_RESET_URL = data["cognito_reset_url"]
 COGNITO_REGION = data["cognito_region"]
 COGNITO_ACCESS_KEY = data["cognito_access_key"]
 COGNITO_SECRET_ACCESS_KEY = data["cognito_secret_access_key"]

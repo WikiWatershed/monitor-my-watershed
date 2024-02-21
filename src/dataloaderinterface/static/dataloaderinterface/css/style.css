@@ -1558,3 +1558,13 @@ i.file-icon {
     color: #336666 !important;
     font-weight: 600;
 }
+
+.password-button,
+.password-button:hover {
+    border: 1px solid #FFF;
+    border-radius: 8px;
+    background-color: #66CCCC;
+    padding: 5px;
+    text-decoration: none;
+    color: #FFFFFF;
+}
