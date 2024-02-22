@@ -162,3 +162,7 @@ h4 {
         margin-bottom: 0;
     }
 }
+
+.popup {
+    z-index: 9000;
+}

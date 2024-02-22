@@ -5,6 +5,7 @@ $(function() {
 
 function initSubscriptionDialog() {
     $("#subscription-dialog").dialog({
+        dialogClass: "popup",
         autoOpen: true,
         width: 950,
         height: 650,

@@ -1549,11 +1549,6 @@ i.file-icon {
     width: 100%;
 }
 
-.popup {
-    position: relative;
-}
-
-
 .link {
     color: #336666 !important;
     font-weight: 600;
