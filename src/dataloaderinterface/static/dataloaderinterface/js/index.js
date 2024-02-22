@@ -1,14 +1,32 @@
 //jquery ready event
 $(function() {
-    initSubscriptionDialog();
+    let width = window.innerWidth * .5;
+    let height = window.innerHeight * .6;
+    initSubscriptionDialog(width, height);
+
+    window.addEventListener('resize', function(event) {
+        resizeSubscriptionDialog();
+    }, true);
+
 });
 
-function initSubscriptionDialog() {
+function resizeSubscriptionDialog() {
+    let width = window.innerWidth * .5;
+    let height = window.innerHeight * .6;
+    $("#subscription-dialog").dialog("option", "width", width)
+    $("#subscription-dialog").dialog("option", "height", height)
+}
+
+function initSubscriptionDialog(width=550, height=350) {
     $("#subscription-dialog").dialog({
         dialogClass: "popup",
         autoOpen: true,
-        width: 950,
-        height: 650,
+        minWidth: 550,
+        minHeight: 350,
+        maxHeight: 650,
+        maxWidth: 950,
+        width: width,
+        height: height,
         modal: true,
         resizable: true,
         title:'Upcoming Changes',
