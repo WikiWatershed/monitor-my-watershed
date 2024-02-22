@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -404,28 +405,28 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         form = self.get_form_class()(data=data, instance=site_registration)
         
         #choices should be a list of tuples with org and org name
-        #for general user, we can get the organization for this accounts through affiliations
+        #for general user, we need to filter to only the organizations affiliated with the account
         user = self.request.user
-        organizations = [a.organization for a in user.affiliation]
+        organization_ids = [a.organization.organization_id for a in user.affiliation]
         #for staff/admins if users is site admin they should see all organizations 
         if user.is_staff:
-            organizations = Organization.objects.all().prefetch_related("accounts")
+            organization_ids = None
 
         choices = []
-        for org in organizations:
-            display_name = org.display_name
-            if org.organization_type.name == "Individual":
-                account = org.accounts.first()
-                try:
-                    display_name = f'(Individual) {account.full_name}'
-                except AttributeError:
-                    print(f'orphan organization {org.organization_id}')
-                    continue
-                if account.accountid == user.id:
-                    display_name = f'(Individual - Myself) {account.full_name}' 
-            choices.append((org.organization_id,display_name))
-        form.fields["organization_id"].choices = choices
+        from odm2.crud.organizations import read_organization_names 
+        from odm2 import create_session
+        session = create_session()
+        organizations = read_organization_names(session, organization_ids)
 
+        #process organization records into a displayable name
+        for org in organizations:
+            display_name = org.organizationname
+            #if this is an individual account we will want to display their name instead
+            if org.organizationtypecv == "Individual":
+                prefix = '(Individual - Myself)' if org.accountid == user.id else '(Individual)'
+                display_name = f'{prefix} {org.accountfirstname} {org.accountlastname}'
+            choices.append((org.organizationid,display_name))
+        form.fields["organization_id"].choices = choices
         return form
         
 
