@@ -85,7 +85,7 @@ class SampledMediumField(forms.ModelChoiceField):
 
 
 class SiteRegistrationForm(forms.ModelForm):
-    affiliation_id = forms.ChoiceField(
+    organization_id = forms.ChoiceField(
         choices = [],
         required=True,
         help_text="Select the organization that deployed or manages the site",
@@ -98,7 +98,7 @@ class SiteRegistrationForm(forms.ModelForm):
     )
 
     def clean_affiliation_id(self):
-        return self.data["affiliation_id"] if "affiliation_id" in self.data else None
+        return self.data["organization_id"] if "organization_id" in self.data else None
 
     def clean_site_type(self):
         return self.data["site_type"]
@@ -106,7 +106,7 @@ class SiteRegistrationForm(forms.ModelForm):
     class Meta:
         model = SiteRegistration
         fields = [
-            "affiliation_id",
+            "organization_id",
             "sampling_feature_code",
             "sampling_feature_name",
             "latitude",

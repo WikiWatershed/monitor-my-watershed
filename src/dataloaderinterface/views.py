@@ -15,7 +15,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, ModelFormMixin
 from django.views.generic.list import ListView
 
-from dataloader.models import ElevationDatum, SiteType
+from dataloader.models import ElevationDatum, SiteType, Organization
 from dataloaderinterface.models import SiteRegistration
 from dataloaderinterface.forms import (
     SiteAlertForm,
@@ -403,11 +403,28 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         
         form = self.get_form_class()(data=data, instance=site_registration)
         
-        #set list of affiliation to only those of the user
+        #choices should be a list of tuples with org and org name
+        #for general user, we can get the organization for this accounts through affiliations
+        user = self.request.user
+        organizations = [a.organization for a in user.affiliation]
+        #for staff/admins if users is site admin they should see all organizations 
+        if user.is_staff:
+            organizations = Organization.objects.all().prefetch_related("accounts")
+
         choices = []
-        for a in self.request.user.affiliation:
-            choices.append((a.affiliation_id,a.organization.display_name))
-        form.fields["affiliation_id"].choices = choices
+        for org in organizations:
+            display_name = org.display_name
+            if org.organization_type.name == "Individual":
+                account = org.accounts.first()
+                try:
+                    display_name = f'(Individual) {account.full_name}'
+                except AttributeError:
+                    print(f'orphan organization {org.organization_id}')
+                    continue
+                if account.accountid == user.id:
+                    display_name = f'(Individual - Myself) {account.full_name}' 
+            choices.append((org.organization_id,display_name))
+        form.fields["organization_id"].choices = choices
 
         return form
         
@@ -459,8 +476,8 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
-            form.instance.affiliation_id = (
-                form.cleaned_data["affiliation_id"] or request.user.affiliation_id
+            form.instance.organization_id = (
+                form.cleaned_data["organization_id"]
             )
 
             account = accounts.models.Account.objects.get(pk=self.request.user.user_id)

@@ -26,12 +26,6 @@ def handle_site_registration_pre_save(sender, instance, update_fields=None, **kw
         )
         instance.sampling_feature_id = sampling_feature.sampling_feature_id
 
-    #use the selected affiliation to look up organization
-    affiliation = Affiliation.objects.get(pk=instance.affiliation_id)
-    
-    instance.organization_id = affiliation.organization_id
-
-
 @receiver(post_save, sender=SiteRegistration)
 def handle_site_registration_post_save(sender, instance, created, update_fields=None, **kwargs):
     sampling_feature = instance.sampling_feature
