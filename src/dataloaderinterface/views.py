@@ -409,7 +409,7 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         user = self.request.user
         organization_ids = [a.organization.organization_id for a in user.affiliation]
         #for staff/admins if users is site admin they should see all organizations 
-        if user.is_staff:
+        if not user.is_staff:
             organization_ids = None
 
         choices = []

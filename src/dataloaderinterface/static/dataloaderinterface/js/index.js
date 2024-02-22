@@ -1,13 +1,6 @@
 //jquery ready event
 $(function() {
     initSubscriptionDialog();
-
-    $('#subscription-dialog').on('scroll', function() {
-        if( this.scrollTop >= (this.scrollHeight - this.offsetHeight) *.9)
-        {
-            $('#popup-close-button').prop('disabled',false);
-        }
-    });
 });
 
 function initSubscriptionDialog() {
@@ -24,9 +17,6 @@ function initSubscriptionDialog() {
 
             //disable scrolling (hide overflow) 
             $('body').css({overflow: 'hidden'});
-
-            //disable close button until you scroll to the bottom
-            $('#popup-close-button').prop('disabled',true);
 
             //when open it will auto focus to first tabable element.
             //this will scroll back to the top
