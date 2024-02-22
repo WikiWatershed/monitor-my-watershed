@@ -18,6 +18,13 @@ function resizeSubscriptionDialog() {
 }
 
 function initSubscriptionDialog(width=550, height=350) {
+    //check cookies to to see if user has seen in last 24 hours 
+    const popupSeen = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("popupSeen="))
+    ?.split("=")[1];
+    if (popupSeen) {return;}
+    
     $("#subscription-dialog").dialog({
         dialogClass: "popup",
         autoOpen: true,
@@ -44,6 +51,7 @@ function initSubscriptionDialog(width=550, height=350) {
         close: function() {
             //disable scrolling (hide overflow) 
             $('body').css({overflow: 'auto'});
+            document.cookie = "popupSeen=true; max-age=86400;"
 
         },
         buttons: [
