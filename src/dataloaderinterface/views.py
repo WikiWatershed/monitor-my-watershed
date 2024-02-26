@@ -540,8 +540,8 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         #set list of affiliation to only those of the user
         choices = []
         for a in self.request.user.affiliation:
-            choices.append((a.affiliation_id,a.organization.display_name))
-        form.fields["affiliation_id"].choices = choices
+            choices.append((a.organization.organization_id,a.organization.display_name))
+        form.fields["organization_id"].choices = choices
         
         return form
 
@@ -557,8 +557,8 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
-            form.instance.affiliation_id = (
-                form.cleaned_data["affiliation_id"] or request.user.affiliation_id
+            form.instance.organization_id = (
+                form.cleaned_data["organization_id"] or request.user.organization_id
             )
             form.instance.user = request.user
             form.instance.save()

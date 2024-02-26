@@ -5,7 +5,6 @@ from django.forms.widgets import HiddenInput
 
 from dataloader.models import (
     Organization,
-    Affiliation,
     EquipmentModel,
     Medium,
     OrganizationType,

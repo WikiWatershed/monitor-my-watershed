@@ -5,11 +5,8 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.dispatch.dispatcher import receiver
 
 from dataloader.models import SamplingFeature, Site, Annotation, SamplingFeatureAnnotation, SpatialReference, Action, \
-    Method, Result, ProcessingLevel, TimeSeriesResult, Unit, Affiliation
+    Method, Result, ProcessingLevel, TimeSeriesResult, Unit, Affiliation, ActionType, FeatureAction
 from dataloaderinterface.models import SiteRegistration, SiteSensor
-
-#PRT - deprecated
-#from tsa.helpers import TimeSeriesAnalystHelper
 
 import accounts
 
@@ -52,6 +49,24 @@ def handle_site_registration_post_save(sender, instance, created, update_fields=
             SamplingFeatureAnnotation(annotation=closest_town, sampling_feature=sampling_feature)
         ])
 
+        #Create and action indicating site registration
+        action_type = ActionType.objects.get(name="Instrument deployment")
+        method = Method.objects.get(method_id=2)
+        action = Action(
+            action_type=action_type,
+            method=method,
+            begin_datetime=datetime.utcnow(),
+            begin_datetime_utc_offset=0,
+        )
+        action.save()
+
+        #set featureaction
+        feature_action = FeatureAction(
+            sampling_feature=sampling_feature,
+            action=action,
+        )
+        feature_action.save()
+
     else:
         SamplingFeature.objects.filter(pk=instance.sampling_feature_id).update(
             sampling_feature_code=instance.sampling_feature_code,
@@ -70,15 +85,6 @@ def handle_site_registration_post_save(sender, instance, created, update_fields=
         sampling_feature.annotations.filter(annotation_code='major_watershed').update(annotation_text=instance.major_watershed or '')
         sampling_feature.annotations.filter(annotation_code='sub_basin').update(annotation_text=instance.sub_basin or '')
         sampling_feature.annotations.filter(annotation_code='closest_town').update(annotation_text=instance.closest_town or '')
-
-
-#PRT - deprecated
-#@receiver(post_save, sender=SiteRegistration)
-#def handle_site_registration_tsa_post_save(sender, instance, created, update_fields=None, **kwargs):
-#    if created:
-#        return
-#    helper = TimeSeriesAnalystHelper()
-#    helper.update_series_from_site(instance)
 
 
 @receiver(post_delete, sender=SiteRegistration)
