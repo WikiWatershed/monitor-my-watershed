@@ -127,3 +127,4 @@ settings.json
 settings.*.json
 src/odm2/modelcache.pkl
 local_media/*
+tests/data-stream/.env
