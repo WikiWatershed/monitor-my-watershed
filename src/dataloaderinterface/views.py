@@ -185,9 +185,9 @@ class BrowseSitesListView(ListView):
             WITH last_measurement AS (
                 SELECT 
                     ss."RegistrationID" 
-                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasure
-                    ,MAX(sm.value_datetime) AS latestmeasure_utc
-                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasure_utc_offset
+                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasurement
+                    ,MAX(sm.value_datetime) AS latestmeasurement_utc
+                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasurement_utc_offset
                 FROM dataloaderinterface_sensormeasurement AS sm
                 JOIN dataloaderinterface_sitesensor AS ss 
                     ON sm.sensor_id = ss.id 
@@ -215,9 +215,9 @@ class BrowseSitesListView(ListView):
                 ,sr."Latitude" AS latitude
                 ,sr."Longitude" AS longitude
                 ,sr."Elevation" AS elevation
-                ,lm.latestmeasure_utc AS latest_measurement_utc
-                ,lm.latestmeasure_utc_offset AS latest_measurement_utcoffset
-                ,lm.latestmeasure AS latest_measurement
+                ,lm.latestmeasurement_utc AS latest_measurement_utc
+                ,lm.latestmeasurement_utc_offset AS latest_measurement_utcoffset
+                ,lm.latestmeasurement AS latest_measurement
                 ,lp.leafpack_count AS leafpack_count
                 ,sr.streamwatch_assessments AS streamwatch_count
 
