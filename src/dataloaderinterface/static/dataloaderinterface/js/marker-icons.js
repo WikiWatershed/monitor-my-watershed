@@ -16,7 +16,7 @@ function createInfoWindowContent(site) {
 }
 
 function getMarkerIcon(type, color, dataTypes) {
-    type = type != "owned" ? "fat" : "skinny";
+    type = type != "affiliated" ? "fat" : "skinny";
     if (dataTypes[0] == "Leaf Pack") {
         color = "blue";
     }
@@ -111,14 +111,14 @@ function appendMarkersLegend(map) {
                         <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-skinny-bright.png" 
                         alt="Marker for sites you own">
                     </td>
-                    <td>Sites you own</td>
+                    <td>Sites you are affiliated with</td>
                 </tr>
                 <tr>
                     <td>
                         <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png" 
                         alt="Marker for sites you do not own">
                     </td>
-                    <td>Sites you do not own</td>
+                    <td>Sites you are not affiliated with</td>
                 </tr>
             </table>
         </div>`;

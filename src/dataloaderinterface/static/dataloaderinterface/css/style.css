@@ -947,7 +947,7 @@ hr {
     overflow: hidden;
 }
 
-#followedSites .site-card .mdl-card__title, #mySites .site-card .mdl-card__title {
+#followedSites .site-card .mdl-card__title, .mySites .site-card .mdl-card__title {
     padding-right: 60px;
     background-color: #66CCCC;
     color: #FFF;
@@ -1213,23 +1213,23 @@ label.checkbox-label {
     color: #fff;
 }
 
-div#followedSites .mdl-card tr:first-child, div#mySites .mdl-card tr:first-child {
+div#followedSites .mdl-card tr:first-child, div.mySites .mdl-card tr:first-child {
     color: #66CCCC;
 }
 
-div#mySites .mdl-card__title,
+div.mySites .mdl-card__title,
 div#followedSites .mdl-card__title {
     height: 48px !important; /* important! to override the all powerful mdl css*/
     padding: 14px !important;
 }
 
-div#mySites .mdl-card__title > .mdl-card__title-text,
+div.mySites .mdl-card__title > .mdl-card__title-text,
 div#followedSites .mdl-card__title > .mdl-card__title-text {
     font-size: 18px;
     max-width: calc(100% - 32px);
 }
 
-div#mySites .mdl-card__menu,
+div.mySites .mdl-card__menu,
 div#followedSites .mdl-card__menu {
     top: 8px !important;  /* centers the material design icon */
 }
@@ -1547,4 +1547,19 @@ i.file-icon {
 
 .site-photo {
     width: 100%;
+}
+
+.link {
+    color: #336666 !important;
+    font-weight: 600;
+}
+
+.password-button,
+.password-button:hover {
+    border: 1px solid #FFF;
+    border-radius: 8px;
+    background-color: #66CCCC;
+    padding: 5px;
+    text-decoration: none;
+    color: #FFFFFF;
 }

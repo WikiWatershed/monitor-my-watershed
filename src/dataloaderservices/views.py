@@ -95,6 +95,16 @@ class RegisterSensorApi(APIView):
         height = form.cleaned_data["height"]
         notes = form.cleaned_data["sensor_notes"]
 
+        #create action-by record
+        affiliation = None
+        for a in self.request.user.affiliation:
+            if a.organization_id == registration.organization_id:
+                affiliation = a
+                break
+
+        action = registration.sampling_feature.actions.first()
+        action.action_by.create(affiliation=affiliation, is_action_lead=True)
+
         site_sensor = SiteSensor.objects.create(
             registration=registration,
             sensor_output=sensor_output,

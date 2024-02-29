@@ -15,33 +15,30 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 
-from dataloaderinterface.views import SitesListView, SiteDetailView, SiteRegistrationView, SensorListUpdateView, \
-    HomeView, BrowseSitesListView, SiteUpdateView, SiteDeleteView, StatusListView, LeafPackListUpdateView, \
-    TermsOfUseView, DMCAView, PrivacyView, CookiePolicyView
-
+import dataloaderinterface.views as views
 from streamwatch import views as streamwatchviews
 
-
-import dataloaderinterface.views as views
-
+# fmt: off
 urlpatterns = [
-    url(r'^$', HomeView.as_view(), name='home'),
-    url(r'^sites/$', SitesListView.as_view(), name='sites_list'),
-    url(r'^terms/$', TermsOfUseView.as_view(), name='terms_of_use'),
-    url(r'^dmca/$', DMCAView.as_view(), name='dmca'),
-    url(r'^privacy/$', PrivacyView.as_view(), name='privacy'),
-    url(r'^cookies/$', CookiePolicyView.as_view(), name='cookie_policy'),
-    url(r'^status/$', StatusListView.as_view(), name='status'),
-    url(r'^browse/$', BrowseSitesListView.as_view(), name='browse_sites'),
-    url(r'^sites/register/$', SiteRegistrationView.as_view(), name='site_registration'),
-    url(r'^sites/update/(?P<sampling_feature_code>.*?)/sensors/$', SensorListUpdateView.as_view(), name='sensors'),
-    url(r'^sites/update/(?P<sampling_feature_code>.*?)/leafpacks/$', LeafPackListUpdateView.as_view(), name='leafpacks'),
-    url(r'^sites/update/(?P<sampling_feature_code>.*?)/streamwatches/$', streamwatchviews.ListUpdateView.as_view(), name='streamwatches'),
-    url(r'^sites/update/(?P<sampling_feature_code>.*)/$', SiteUpdateView.as_view(), name='site_update'),
-    url(r'^sites/delete/(?P<sampling_feature_code>.*)/$', SiteDeleteView.as_view(), name='site_delete'),
-    url(r'^sites/(?P<sampling_feature_code>.*)/leafpack/', include(('leafpack.urls', 'leafpack'), namespace='leafpack')),
-    url(r'^sites/(?P<sampling_feature_code>.*)/streamwatch/', include(('streamwatch.urls', 'streamwatch'), namespace='streamwatch')),
-    url(r'^sites/(?P<sampling_feature_code>.*)/$', SiteDetailView.as_view(), name='site_detail'),
-    url(r'^dataloader/ajax/', views.ajax_router, name='ajax'),
-
+    url(r"^$", views.HomeView.as_view(), name="home"),
+    url(r"^sites/$", views.SitesListView.as_view(), name="sites_list"),
+    url(r"^terms/$", views.TermsOfUseView.as_view(), name="terms_of_use"),
+    url(r"^dmca/$", views.DMCAView.as_view(), name="dmca"),
+    url(r"^privacy/$", views.PrivacyView.as_view(), name="privacy"),
+    url(r"^subscriptions/$", views.SubscriptionsView.as_view(), name="subscriptions"),
+    url(r"^subscriptions-faq/$", views.SubscriptionsFAQView.as_view(), name="subscriptions_faq"),
+    url(r"^cookies/$", views.CookiePolicyView.as_view(), name="cookie_policy"),
+    url(r"^status/$", views.StatusListView.as_view(), name="status"),
+    url(r"^browse/$", views.BrowseSitesListView.as_view(), name="browse_sites"),
+    url( r"^sites/register/$", views.SiteRegistrationView.as_view(), name="site_registration",),
+    url( r"^sites/update/(?P<sampling_feature_code>.*?)/sensors/$", views.SensorListUpdateView.as_view(), name="sensors",),
+    url( r"^sites/update/(?P<sampling_feature_code>.*?)/leafpacks/$", views.LeafPackListUpdateView.as_view(), name="leafpacks",),
+    url( r"^sites/update/(?P<sampling_feature_code>.*?)/streamwatches/$", streamwatchviews.ListUpdateView.as_view(), name="streamwatches",),
+    url( r"^sites/update/(?P<sampling_feature_code>.*)/$", views.SiteUpdateView.as_view(), name="site_update",),
+    url( r"^sites/delete/(?P<sampling_feature_code>.*)/$", views.SiteDeleteView.as_view(), name="site_delete",),
+    url( r"^sites/(?P<sampling_feature_code>.*)/leafpack/", include(("leafpack.urls", "leafpack"), namespace="leafpack"),),
+    url( r"^sites/(?P<sampling_feature_code>.*)/streamwatch/", include(("streamwatch.urls", "streamwatch"), namespace="streamwatch"),),
+    url( r"^sites/(?P<sampling_feature_code>.*)/$", views.SiteDetailView.as_view(), name="site_detail",),
+    url(r"^dataloader/ajax/", views.ajax_router, name="ajax"),
 ]
+# fmt: off

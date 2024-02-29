@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 from datetime import timedelta
 
 from django.conf import settings
@@ -15,7 +16,7 @@ from django.views.generic.detail import DetailView
 from django.views.generic.edit import UpdateView, CreateView, DeleteView, ModelFormMixin
 from django.views.generic.list import ListView
 
-from dataloader.models import ElevationDatum, SiteType
+from dataloader.models import ElevationDatum, SiteType, Organization
 from dataloaderinterface.models import SiteRegistration
 from dataloaderinterface.forms import (
     SiteAlertForm,
@@ -37,6 +38,8 @@ import streamwatch
 
 import accounts
 
+from odm2 import odm2datamodels
+from sqlalchemy import text
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -64,6 +67,14 @@ class CookiePolicyView(TemplateView):
     template_name = "dataloaderinterface/cookie_policy.html"
 
 
+class SubscriptionsView(TemplateView):
+    template_name = "dataloaderinterface/subscriptions.html"
+
+
+class SubscriptionsFAQView(TemplateView):
+    template_name = "dataloaderinterface/subscriptions_faq.html"
+
+
 class SitesListView(LoginRequiredMixin, ListView):
     model = SiteRegistration
     context_object_name = "sites"
@@ -75,7 +86,7 @@ class SitesListView(LoginRequiredMixin, ListView):
             .get_queryset()
             .with_sensors()
             .with_latest_measurement_id()
-            .deployed_by(user_id=self.request.user.id)
+            .deployed_by(organization_ids=self.request.user.organization_id)
         )
 
     def get_context_data(self, **kwargs):
@@ -87,6 +98,24 @@ class SitesListView(LoginRequiredMixin, ListView):
             .with_latest_measurement_id()
             .followed_by(user_id=self.request.user.id)
         )
+        #we want to preorder affiliations 
+        affiliated_orgs = {}
+        for affiliation in self.request.user.affiliation:
+            org = affiliation.organization
+            if org.organization_type.name == "Individual":
+                affiliated_orgs[' '] = org
+                continue
+            affiliated_orgs[org.organization_name] = org
+        context["organizations"] = dict(sorted(affiliated_orgs.items())).values()
+        
+        organization_site_counts = {}
+        for site in context['sites']:
+            try:
+                organization_site_counts[site.organization_id] += 1
+            except KeyError:
+                organization_site_counts[site.organization_id] = 1
+        context['organization_site_counts'] = organization_site_counts        
+
         return context
 
 
@@ -134,22 +163,75 @@ class BrowseSitesListView(ListView):
             filters[f] = val
         context["filters"] = json.dumps(filters)
 
+        #pull data from database
+        context["data"] = self.get_site_data()
+
+        #set ownership status
+        organization_ids = request.user.organization_id 
+        for d in context["data"]:
+            d["ownership_status"] = 'affiliated' if d["organization_id"] in organization_ids else ''
+
         return context
 
     def get(self, request, *args, **kwargs) -> HttpResponse:
-        self.object_list = self.get_queryset()
+        self.object_list = []
         context = self.get_context_data(request)
         return self.render_to_response(context)
 
-    def get_queryset(self):
-        return (
-            super(BrowseSitesListView, self)
-            .get_queryset()
-            .with_sensors()
-            .with_leafpacks()
-            .with_latest_measurement_id()
-            .with_ownership_status(self.request.user.id)
-        )
+    #TODO: move to crud endpoint that uses SQLAlchemy models
+    def get_site_data(self):
+        """Method to fetch site data required for template"""
+        sql = '''
+            WITH last_measurement AS (
+                SELECT 
+                    ss."RegistrationID" 
+                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasure
+                    ,MAX(sm.value_datetime) AS latestmeasure_utc
+                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasure_utc_offset
+                FROM dataloaderinterface_sensormeasurement AS sm
+                JOIN dataloaderinterface_sitesensor AS ss 
+                    ON sm.sensor_id = ss.id 
+                GROUP BY (ss."RegistrationID")
+            )
+            ,leafpack AS (
+                SELECT site_registration_id, COUNT(id) AS leafpack_count
+                FROM leafpack
+                GROUP BY "site_registration_id"
+            ) 
+            SELECT 
+                sr."SamplingFeatureID" AS sampling_feature_id
+                ,sr."SamplingFeatureCode" AS sampling_feature_code
+                ,org.organizationid AS organization_id
+                ,org.organizationtypecv AS organization_type
+                ,org.organizationcode AS organization_code
+                ,org.organizationname AS organization_name  
+                ,sr."StreamName" AS stream_name
+                ,sr."MajorWatershed" AS major_watershed
+                ,sr."SubBasin" AS sub_basin
+                ,sr."ClosestTown" AS closest_town
+                ,sr."SiteNotes" AS site_notes
+                ,sr."SiteType" AS site_type
+                ,sr."SamplingFeatureName" AS sampling_feature_name
+                ,sr."Latitude" AS latitude
+                ,sr."Longitude" AS longitude
+                ,sr."Elevation" AS elevation
+                ,lm.latestmeasure_utc AS latest_measurement_utc
+                ,lm.latestmeasure_utc_offset AS latest_measurement_utcoffset
+                ,lm.latestmeasure AS latest_measurement
+                ,lp.leafpack_count AS leafpack_count
+                ,sr.streamwatch_assessments AS streamwatch_count
+
+            FROM public.dataloaderinterface_siteregistration AS sr
+            JOIN odm2.organizations AS org ON sr."OrganizationID" = org.organizationid
+            LEFT JOIN last_measurement AS lm ON lm."RegistrationID" = sr."RegistrationID"
+            LEFT JOIN leafpack AS lp ON lp.site_registration_id = sr."RegistrationID"
+        '''
+
+        with odm2datamodels.odm2_engine.session_maker() as session:
+            result = session.execute(text(sql)).mappings().all()
+
+        return [dict(d) for d in result]
+
 
 
 class SiteDetailView(DetailView):
@@ -319,7 +401,34 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         data = self.request.POST or None
         site_registration = self.get_object()
-        return self.get_form_class()(data=data, instance=site_registration)
+        
+        form = self.get_form_class()(data=data, instance=site_registration)
+        
+        #choices should be a list of tuples with org and org name
+        #for general user, we need to filter to only the organizations affiliated with the account
+        user = self.request.user
+        organization_ids = [a.organization.organization_id for a in user.affiliation]
+        #for staff/admins if users is site admin they should see all organizations 
+        if not user.is_staff:
+            organization_ids = None
+
+        choices = []
+        from odm2.crud.organizations import read_organization_names 
+        from odm2 import create_session
+        session = create_session()
+        organizations = read_organization_names(session, organization_ids)
+
+        #process organization records into a displayable name
+        for org in organizations:
+            display_name = org.organizationname
+            #if this is an individual account we will want to display their name instead
+            if org.organizationtypecv == "Individual":
+                prefix = '(Individual - Myself)' if org.accountid == user.id else '(Individual)'
+                display_name = f'{prefix} {org.accountfirstname} {org.accountlastname}'
+            choices.append((org.organizationid,display_name))
+        form.fields["organization_id"].choices = choices
+        return form
+        
 
     def get_queryset(self):
         return super(SiteUpdateView, self).get_queryset().with_sensors()
@@ -364,12 +473,12 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         site_registration = self.get_object()
-        form = self.get_form_class()(request.POST, instance=site_registration)
+        form = self.get_form()
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
-            form.instance.affiliation_id = (
-                form.cleaned_data["affiliation_id"] or request.user.affiliation_id
+            form.instance.organization_id = (
+                form.cleaned_data["organization_id"]
             )
 
             account = accounts.models.Account.objects.get(pk=self.request.user.user_id)
@@ -426,7 +535,15 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
 
     def get_form(self, form_class=None):
         data = self.request.POST or None
-        return self.get_form_class()(initial=self.get_default_data(), data=data)
+        form = self.get_form_class()(initial=self.get_default_data(), data=data)
+        
+        #set list of affiliation to only those of the user
+        choices = []
+        for a in self.request.user.affiliation:
+            choices.append((a.organization.organization_id,a.organization.display_name))
+        form.fields["organization_id"].choices = choices
+        
+        return form
 
     def get_context_data(self, **kwargs):
         context = super(SiteRegistrationView, self).get_context_data()
@@ -436,12 +553,12 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        form = self.get_form_class()(request.POST)
+        form = self.get_form()
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
-            form.instance.affiliation_id = (
-                form.cleaned_data["affiliation_id"] or request.user.affiliation_id
+            form.instance.organization_id = (
+                form.cleaned_data["organization_id"] or request.user.organization_id
             )
             form.instance.user = request.user
             form.instance.save()
