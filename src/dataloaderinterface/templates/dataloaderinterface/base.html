@@ -11,13 +11,13 @@
     <meta name="description" content="Web Streaming Data Loader">
 
     {% block page_title %}
-        <title>Monitor My Watershed</title>
+    <title>Monitor My Watershed</title>
     {% endblock %}
-
+    
     <link rel="icon"
-          type="image/png"
-          href="{% static 'dataloaderinterface/images/WikiWatershed_icon.png' %}">
-
+    type="image/png"
+    href="{% static 'dataloaderinterface/images/WikiWatershed_icon.png' %}">
+    
     {% block styles %}
         <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Ubuntu" />
         <link rel="stylesheet"
@@ -54,10 +54,14 @@
 </head>
 
 <body>
-<div id="wrapper">
-    <header>
-        <nav class="navbar navbar-dark navbar-expand-lg fixed-top">
-            <a class="navbar-brand" href="{% url 'home' %}">
+    <div id="wrapper">
+        
+        {% block popups %}
+        {% endblock %}
+
+        <header>
+            <nav class="navbar navbar-dark navbar-expand-lg fixed-top">
+                <a class="navbar-brand" href="{% url 'home' %}">
                 <img src="{% static 'dataloaderinterface/images/MonitorMyWatershed_logo_white.png' %}"
                      alt="Monitor My Watershed Logo"
                      title="Monitor My Watershed"
@@ -90,6 +94,9 @@
                     <li class="nav-item">
                         <a class="nav-link" href="https://wikiwatershed.org/help/" target="_blank">Help <i
                                 class="material-icons" style="font-size: 14px;">open_in_new</i></a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'subscriptions' %}">Subscriptions</a>
                     </li>
                     {% if user.is_authenticated %}
                         {% if user.is_staff %}
@@ -129,6 +136,7 @@
     </div>
 </div>
 
+
 {% block footer %}
     <footer>
         {% include 'dataloaderinterface/footer.html' %}
@@ -146,7 +154,7 @@
 
 {% block scripts %}
     <script src="{% static 'dataloaderinterface/js/vendor/jquery-3.2.1.min.js' %}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/mdl/material.min.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/websdl-utils.js' %}"></script>

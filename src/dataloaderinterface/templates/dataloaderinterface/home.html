@@ -323,6 +323,13 @@
             </div>
         </div>
     {% endif %}
+
+{% endblock %}
+
+{% block popups %}
+    <div id="subscription-dialog" class="popup" style="display: none;">
+        {% include "dataloaderinterface/subscriptions_faq_content.html" %}
+    </div>
 {% endblock %}
 
 {% block scripts %}
@@ -339,5 +346,6 @@
         }
     </script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/index.js' %}"></script>
 
 {% endblock %}

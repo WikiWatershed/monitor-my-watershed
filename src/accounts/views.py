@@ -24,7 +24,10 @@ def logout(request:HttpRequest) -> HttpResponse:
     return redirect('home')
 
 def signup(request:HttpRequest) -> HttpResponse:
-    return (redirect (settings.COGNITO_SIGNUP_URL))
+    return redirect (settings.COGNITO_SIGNUP_URL)
+
+def reset_password(request:HttpRequest) -> HttpResponse:
+    return redirect (settings.COGNITO_RESET_URL)
 
 def login_failed(request:HttpRequest) -> HttpResponse:
     """Placeholder authorization failed endpoint"""

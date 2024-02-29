@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from typing import Any, Union, Dict
+from typing import Any, Union, Dict, List
 import datetime
 
 from sqlalchemy.orm import Query
@@ -199,11 +199,18 @@ class ODM2User(User):
         """Given a dataloader Registration instance, checks if the registration belows to the user"""
         # TODO
         query = "SELECT * FROM dataloaderinterface_siteregistration WHERE \"SamplingFeatureID\" = '%s';"
+
+        #presently being affiliated with site grants ownership, though this will update with permissions later
+
+        organization_id = None
         with odm2_engine.engine.connect() as connection:
             site_registration = connection.execute(
                 query, (sampling_feature_id)
             ).fetchall()
-            return site_registration[0]["account_id"] == self.user_id
+            organization_id= site_registration[0]["OrganizationID"]
+
+        for a in self.affiliation:
+            if a.organization_id == organization_id: return True
         return False
 
     def can_administer_site(self, sampling_feature_id: int) -> bool:
@@ -218,52 +225,54 @@ class ODM2User(User):
             affiliations = odm2_engine.read_query(
                 query, output_format="dict", orient="records"
             )
-            first_affiliation = affiliations[0]
-            return first_affiliation
+            return affiliations
+        except odm2.exceptions.ObjectNotFound as e:
+            return None
+        except IndexError as e:
+            return None
+
+    def _get_organization(self) -> List[Dict]:
+        organization_ids = [a.organization_id for a in self.affiliation]
+        query = Query(models.Organizations).filter(
+            models.Organizations.organizationid.in_(organization_ids)
+        )
+        try:
+            organizations = odm2_engine.read_query(
+                query, output_format="dict", orient="records"
+            )
+            return organizations
         except odm2.exceptions.ObjectNotFound as e:
             return None
         except IndexError as e:
             return None
 
     @property
-    def affiliation_id(self) -> Union[int, None]:
+    def affiliation_id(self) -> Union[List[int], None]:
         affiliation = self._get_affiliation()
-        if affiliation is None:
+        if not affiliation:
             return None
-        return affiliation["affiliationid"]
+        return [a['affiliationid'] for a in affiliation]
 
     @property
-    def organization_code(self) -> str:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
-            return ""
-        try:
-            organization = odm2_engine.read_object(
-                models.Organizations, affiliation["organizationid"]
-            )
-            return organization["organizationcode"]
-        except odm2.exceptions.ObjectNotFound:
-            return ""
+    def organization_code(self) -> List[str]:
+        organizations = self._get_organization()
+        if organizations is None:
+            return []
+        return [o["organizationcode"] for o in organizations]
 
     @property
-    def organization_name(self) -> str:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
-            return ""
-        try:
-            organization = odm2_engine.read_object(
-                models.Organizations, affiliation["organizationid"]
-            )
-            return organization["organizationname"]
-        except odm2.exceptions.ObjectNotFound:
-            return ""
+    def organization_name(self) -> List[str]:
+        organizations = self._get_organization()
+        if organizations is None:
+            return []
+        return [o["organizationname"] for o in organizations]
 
     @property
-    def organization_id(self) -> Union[int, None]:
-        affiliation = self._get_affiliation()
-        if affiliation is None:
-            return None
-        return affiliation["organizationid"]
+    def organization_id(self) -> List[int]:
+        organizations = self._get_organization()
+        if organizations is None:
+            return []
+        return [o["organizationid"] for o in organizations]
 
     @organization_id.setter
     def organization_id(self, value: int) -> None:
@@ -274,11 +283,10 @@ class ODM2User(User):
         )
 
     @property
-    def affiliation(self) -> Union["Affiliation", None]:
-        affiliation_id = self.affiliation_id
-        if not affiliation_id:
-            return None
-        return dataloader.models.Affiliation.objects.get(pk=self.affiliation_id)
+    def affiliation(self) -> List["Affiliation"]:
+        if not self.affiliation_id:
+            return []
+        return list(dataloader.models.Affiliation.objects.filter(pk__in=self.affiliation_id).all())
 
     @property
     def is_staff(self) -> bool:

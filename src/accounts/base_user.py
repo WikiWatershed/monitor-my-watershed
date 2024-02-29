@@ -1,13 +1,10 @@
 from abc import ABC
 from abc import abstractmethod
 
-from typing import Union, Any
+from typing import Union, Any, List
 from collections.abc import Mapping
 
 from warnings import warn
-
-import dataloaderinterface 
-import dataloader
 
 class User(ABC):
     """Abstract Base Class for custom user implementations """
@@ -97,7 +94,7 @@ class User(ABC):
         return self.user_id 
 
     @property
-    def affiliation_id(self) -> Union[int,None]:    
+    def affiliation_id(self) -> List[int]:    
         """"""
 
     @property
@@ -109,7 +106,11 @@ class User(ABC):
         """"""
 
     @property
-    def affiliation(self) -> Union["Affiliation",None]: 
+    def organization_id(self) -> List[int]:
+        """"""
+
+    @property
+    def affiliation(self) -> List["Affiliation"]: 
         """"""
     
     @property
@@ -185,8 +186,8 @@ class AnonymousUser(User):
         return False
 
     @property
-    def affiliation_id(self) -> Union[int,None]:    
-        return None
+    def affiliation_id(self) -> List[int]:    
+        return []
 
     @property
     def organization_code(self) -> str:
@@ -195,10 +196,14 @@ class AnonymousUser(User):
     @property
     def organization_name(self) -> str:
         return ""
+    
+    @property
+    def organization_id(self) -> str:
+        return []
 
     @property
-    def affiliation(self) -> Union["Affiliation", None]: 
-        return None
+    def affiliation(self) -> List["Affiliation"]: 
+        return []
     
     @property
     def is_staff(self) -> bool:

@@ -210,6 +210,7 @@ GOOGLE_API_CONF = data.get("google_api_conf", None)
 # AWS Congnito
 COGNITO_SIGNUP_URL = data["cognito_signup_url"]
 COGNITO_SIGNIN_URL = data["cognito_signin_url"]
+COGNITO_RESET_URL = data["cognito_reset_url"]
 COGNITO_REGION = data["cognito_region"]
 COGNITO_ACCESS_KEY = data["cognito_access_key"]
 COGNITO_SECRET_ACCESS_KEY = data["cognito_secret_access_key"]
@@ -226,7 +227,6 @@ S3_CLIENT_ID = data["s3_client_id"]
 S3_CLIENT_SECRET = data["s3_client_secret"]
 SITE_PHOTOS_S3_BUCKET = data["s3_site_photos_bucket"]
 
-
 # Static cache busting
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
@@ -234,3 +234,7 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesSto
 MEDIA_ROOT = data["MEDIA_ROOT"] if "MEDIA_ROOT" in data else "./local_media"
 
 DEBUG = True if "debug_mode" in data and data["debug_mode"] == "True" else False
+
+#google map API KEY
+MAP_API_CONF = data.get("google_api_conf",{})
+MAP_API_KEY = MAP_API_CONF.get("api_key", "")

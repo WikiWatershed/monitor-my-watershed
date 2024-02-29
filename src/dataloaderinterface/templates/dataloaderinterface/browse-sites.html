@@ -2,6 +2,7 @@
 {% load static %}
 {% load helpers %}
 {% load site %}
+{% load get_attr %}
 
 {% block page_title %}
     <title>Browse Sites</title>
@@ -50,13 +51,12 @@
             {% autoescape off %}
             <script id="sites-data" type="application/json">
                 [
-                {% for site in sites %}
+                {% for site in data %}
                     {
                     "id": "{{ site.sampling_feature_id }}",
                     "code": "{{ site.sampling_feature_code }}",
-                    "organization": "{{ site.organization_name }}",
-                    "organization_code": "{{ site.organization_code }}",
-                    "deployment_by": "{{ site.django_user.get_full_name }}",
+                    "organization": "{% if site.organization_type != 'Individual' %}{{ site.organization_name }}{% else %}Individual Sites{% endif %}",
+                    "organization_code": "{% if site.organization_type != 'Individual' %}{{ site.organization_code }}{% else %}Individual Sites{% endif %}",
                     "stream_name": "{{ site.stream_name|default:"" }}",
                     "major_watershed":"{{ site.major_watershed|default:"" }}",
                     "sub_basin":"{{ site.sub_basin|default:"" }}",
@@ -66,12 +66,12 @@
                     "name": "{{ site.sampling_feature_name }}",
                     "latitude": {{ site.latitude|default_if_none:0 }},
                     "longitude": {{ site.longitude|default_if_none:0 }},
-                    "elevation": {{ site.elevation_m|default_if_none:'""' }},
-                    "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
+                    "elevation": {{ site.elevation|default_if_none:'""' }},
+                    "latest-measurement": "{% if site.latest_measurement %}{{ site.latest_measurement }} {{ site.latest_measurement.utc_offset_hours_display }} ({{ site.latest_measurement.value_datetime|utc_timesince }} ago){% else %}-{% endif %}",
                     "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
-                    "dataType": "{% if site.sensors.all.count > 0 %}EnviroDIY,{% endif %}{% if site.leafpack_set.all.count > 0 %}Leaf Pack,{% endif %}{% if site.has_streamwatch %}StreamWatch Schools,{% endif %}",
+                    "dataType": "{% if site.latest_measurement%}EnviroDIY,{% endif %}{% if site.leafpack_count > 0 %}Leaf Pack,{% endif %}{% if site.streamwatch_count > 0 %}StreamWatch Schools,{% endif %}",
                     "status": "{{ site.ownership_status }}",
-                    "dataAge":"{{ site.latest_measurement.value_datetime|data_age }}"
+                    "dataAge":"{{ site.latest_measurement|data_age }}"
                     }{% if not forloop.last %},{% endif %}
                 {% endfor %}
                 ]
@@ -142,7 +142,7 @@
     <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/browse-sites.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/oms.min.js' %}"></script>
-    <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDgps2GkNvfTnC8UIRT-X9QAz66zNa1EvY&callback=initMap"></script>
+    <script defer src="https://maps.googleapis.com/maps/api/js?key={% get_settings_attr "MAP_API_KEY" %}&callback=initMap"></script>
 
     {% comment %}Copy selected filters to js variables{% endcomment %}
     <script>var selectedFilters='{{filters|safe}}';</script>

@@ -21,19 +21,22 @@ class MacroClassifiers(Enum):
     TOLERANT = "Tolerant"
 
 
-def _get_user_choices() -> tuple[tuple[int, str]]:
+def _get_user_choices(user_organization_ids = None) -> tuple[tuple[int, str]]:
     """Initialize the user list with affiliation and account name"""
 
     def format_name(a) -> str:
         first = a[1]
         last = a[2]
-        name = f"{first}, {last}"
+        name = f"{first.capitalize()}, {last.capitalize()}"
         if a[3] is not None:
-            name += f" ({a[3]})"
+            if a[4] == 'Individual':
+                name += f" (Individual Account)"
+            else:
+                name += f" ({a[3]})"
         return name
 
     user_options = [("", "")]
-    for a in users.read_account_affiliations():
+    for a in users.read_account_affiliations(organizations=user_organization_ids):
         if a[1] is None or a[1] == "" or a[2] is None or a[2] == "":
             continue
         user_options.append((a[0], format_name(a)))
@@ -51,15 +54,14 @@ class MDLCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 
 
 class SetupForm(forms.Form):
-    __USERS = _get_user_choices()
-    # __USERS = [
-    #    affiliation.affiliation_id
-    #    for affiliation in (
-    #        Affiliation.objects.filter(organization__isnull=False).filter(
-    #            account_id__isnull=False
-    #        )
-    #    )
-    # ]
+
+    __USERS = []
+
+    def __init__(self, *args, user_organization_ids:None, **kwargs) -> None:
+        self.__USERS = _get_user_choices(user_organization_ids)
+        self.base_fields['investigator1'].choices = self.__USERS
+        self.base_fields['investigator2'].choices = self.__USERS
+        super().__init__(*args, **kwargs)
 
     ASSESSMENT_TYPE_CHOICES = (
         ("school", "StreamWatch Schools"),

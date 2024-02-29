@@ -14,6 +14,7 @@
 
   "cognito_signin_url": "url to aws cognito user pool's sign-in page",
   "cognito_signup_url": "url to aws cognito user pool's sign-up page",
+  "congito_reset_url": "url to aws cognito's password reset page",
   "cognito_region": "aws region cognito user pool is located in",
   "cognito_access_key": "IAM user access key for cognito",
   "cognito_secret_access_key": "IAM user secret access key for cognito",

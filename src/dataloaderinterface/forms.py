@@ -5,7 +5,6 @@ from django.forms.widgets import HiddenInput
 
 from dataloader.models import (
     Organization,
-    Affiliation,
     EquipmentModel,
     Medium,
     OrganizationType,
@@ -44,14 +43,6 @@ allowed_site_types = [
     "Wetland",
     "Other",
 ]
-
-user_affiliations = [
-    affiliation.affiliation_id
-    for affiliation in Affiliation.objects.filter(organization__isnull=False).filter(
-        account_id__isnull=False
-    )
-]
-
 
 class SiteTypeSelect(forms.Select):
     site_types = {
@@ -93,13 +84,11 @@ class SampledMediumField(forms.ModelChoiceField):
 
 
 class SiteRegistrationForm(forms.ModelForm):
-    affiliation_id = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(
-            affiliation_id__in=(user_affiliations)
-        ).for_display(),
-        required=False,
-        help_text="Select the user that deployed or manages the site",
-        label="Deployed By",
+    organization_id = forms.ChoiceField(
+        choices = [],
+        required=True,
+        help_text="Select the organization that deployed or manages the site",
+        label="Deploy Site For",
     )
     site_type = forms.ModelChoiceField(
         queryset=SiteType.objects.filter(name__in=allowed_site_types),
@@ -108,7 +97,7 @@ class SiteRegistrationForm(forms.ModelForm):
     )
 
     def clean_affiliation_id(self):
-        return self.data["affiliation_id"] if "affiliation_id" in self.data else None
+        return self.data["organization_id"] if "organization_id" in self.data else None
 
     def clean_site_type(self):
         return self.data["site_type"]
@@ -116,7 +105,7 @@ class SiteRegistrationForm(forms.ModelForm):
     class Meta:
         model = SiteRegistration
         fields = [
-            "affiliation_id",
+            "organization_id",
             "sampling_feature_code",
             "sampling_feature_name",
             "latitude",
