@@ -4,10 +4,7 @@ import datetime
 from sqlalchemy import orm
 import sqlalchemy as sqla
 from sqlalchemy.dialects import postgresql as pg
-from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
+from odm2.models.base import Base
 
 class TimeSeriesResults(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResults.html"""
@@ -46,7 +43,6 @@ class TimeSeriesResults(Base):
     aggregationstaticcv: orm.Mapped[str] = sqla.Column(
         "aggregationstaticcv", sqla.ForeignKey("cv_aggregationstatistic.term")
     )
-
 
 class TimeSeriesResultValues(Base):
     """http://odm2.github.io/ODM2/schemas/ODM2_Current/tables/ODM2Results_TimeSeriesResultValues.html"""
