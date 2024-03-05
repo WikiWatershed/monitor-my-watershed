@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 
@@ -5,6 +7,32 @@ from odm2 import odm2datamodels
 
 models = odm2datamodels.models
 session = odm2datamodels.odm2_engine.session_maker
+
+def create_individual_organization(
+    account: models.Accounts,
+    session: Session = session(),
+) -> None:
+    #create organization model
+    organization = models.Organizations()
+    organization.organizationtypecv = 'Individual'
+    organization.organizationcode = f'individual_org_account_{account.accountid}'
+    organization.organizationname = f'individual_org_account_{account.accountid}'
+
+    #create organization record
+    session.add(organization)
+    session.commit()
+    
+    #make affiliation record to tie new organization to account
+    affiliation = models.Affiliations()
+    affiliation.organizationid=organization.organizationid
+    affiliation.isprimaryorganizationcontact=True
+    affiliation.affiliationstartdate = datetime.today()
+    affiliation.primaryemail = account.accountemail
+    affiliation.accountid = account.accountid
+
+    #add record to database
+    session.add(affiliation)
+    session.commit()
 
 def read_organization_names(
     session: Session = session(), 
