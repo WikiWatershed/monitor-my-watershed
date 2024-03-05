@@ -9,6 +9,7 @@ import dataloader
 from accounts.cognito_updater import CognitoUpdater
 import odm2
 from odm2 import odm2datamodels
+from odm2 import crud
 
 models = odm2datamodels.models
 odm2_engine = odm2datamodels.odm2_engine
@@ -45,6 +46,7 @@ class ODM2User(User):
             odm2_engine.update_object(models.Accounts, user["accountid"], user)
             return cls.from_userid(user["accountid"])
 
+        #create the account record for the user
         user = models.Accounts()
         user.cognitoid = mapping["sub"]
         user.username = mapping["preferred_username"]
@@ -55,12 +57,8 @@ class ODM2User(User):
         user.issiteadmin = False
         pkey = odm2_engine.create_object(user)
 
-        # create affiliation record
-        affiliation = models.Affiliations()
-        affiliation.affiliationstartdate = datetime.datetime.now()
-        affiliation.primaryemail = mapping["email"]
-        affiliation.accountid = pkey
-        odm2_engine.create_object(affiliation)
+        #create organization and affiliation
+        crud.organization.create_individual_organization(account=user)
 
         return cls.from_userid(userid=pkey)
 
