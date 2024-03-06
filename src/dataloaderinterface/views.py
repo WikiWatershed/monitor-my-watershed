@@ -40,6 +40,8 @@ import accounts
 
 from odm2 import odm2datamodels
 from sqlalchemy import text
+from odm2.crud.organization import read_organization_names 
+from odm2 import create_session
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -409,12 +411,10 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         user = self.request.user
         organization_ids = [a.organization.organization_id for a in user.affiliation]
         #for staff/admins if users is site admin they should see all organizations 
-        if not user.is_staff:
+        if user.is_staff:
             organization_ids = None
 
         choices = []
-        from odm2.crud.organizations import read_organization_names 
-        from odm2 import create_session
         session = create_session()
         organizations = read_organization_names(session, organization_ids)
 
