@@ -4,7 +4,6 @@
     <br>
     <div class="row">
         <div class="form-group col-sm-12 col-md-6 sampling-feature-fields">
-            {% if user.is_staff %}
             <div class="form-field {% if form.organization_id.field.required %} required-field{% endif %}{% if form.organization_id.errors %} has-error{% endif %}"
                  data-field="{{ form.organization_id.display_name }}">
                 <label class="control-label"
@@ -18,7 +17,6 @@
                 </div>
                 {{ form.organization_id|add_class:"form-control input-sm" }}
             </div>
-            {% endif %}
 
             <div class="form-field {% if form.sampling_feature_code.field.required %} required-field{% endif %}{% if form.sampling_feature_code.errors %} has-error{% endif %}"
                  data-field="{{ form.sampling_feature_code.name }}">

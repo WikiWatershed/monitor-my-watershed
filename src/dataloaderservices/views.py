@@ -95,7 +95,7 @@ class RegisterSensorApi(APIView):
         height = form.cleaned_data["height"]
         notes = form.cleaned_data["sensor_notes"]
 
-        #create action-by record
+        # create action-by record
         affiliation = None
         for a in self.request.user.affiliation:
             if a.organization_id == registration.organization_id:
@@ -682,7 +682,8 @@ class CSVDataApi(View):
         # Write Source Information data
 
         # affiliation = tsr.result.feature_action.action.people.first()
-        affiliation = site_sensor.registration.odm2_affiliation
+        # affiliation = site_sensor.registration.odm2_affiliation
+        organization = site_sensor.registration.organization
         annotation = tsr.result.annotations.first()
         citation = (
             annotation.citation.title if annotation and annotation.citation else ""
@@ -706,7 +707,7 @@ class CSVDataApi(View):
             )
 
         metadata += CSVDataApi.read_file("source_info_template.txt").format(
-            affiliation=affiliation, citation=citation, source_link=source_link
+            organization=organization, citation=citation, source_link=source_link
         )
 
         return metadata
