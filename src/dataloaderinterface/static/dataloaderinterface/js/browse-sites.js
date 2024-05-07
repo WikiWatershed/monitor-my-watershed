@@ -1,10 +1,11 @@
 var markers = [];
 var map;
+var prefiltersApplied = false;
 var filters = {
     dataTypes: {
         key: 'dataType',
         icon: 'cloud_queue',
-        label: 'Data Types',
+        label: 'Programs',
         values: {},
         inclusive: true, // For filter items that can take multiple values from a set of values
         has_search: false
@@ -31,7 +32,6 @@ var textSearchFacets = [
     "organization_code",
     "type",
     "dataType",
-    "deployment_by",
     "stream_name",
     "major_watershed",
     "sub_basin",
@@ -243,6 +243,13 @@ $(document).ready(function () {
         });
     }
 
+    //check if there are pre-selected filters
+    let preFilters = {}
+    if (typeof selectedFilters !== 'undefined') {
+        preFilters = JSON.parse(selectedFilters);
+        prefiltersApplied = Object.values(preFilters).filter(e => e != null).length > 0;
+    }
+
     // Append filter headers
     for (let f in filters) {
         $("#filters").append('<div class="filter-container"><div class="filter-header">\
@@ -274,15 +281,18 @@ $(document).ready(function () {
         );
 
         // Append filter items
-        for (let item = 0; item < filters[f].values_sortable.length; item++) {
+        for (let i = 0; i < filters[f].values_sortable.length; i++) {
+            let item = filters[f].values_sortable[i];
+            let checked = (f in preFilters && preFilters[f] != null && preFilters[f].includes(item[0])) ? " checked" : "";
+            
             $("#collapse-" + filters[f].key + " > table tbody").append(' <tr>\
                 <td class="mdl-data-table__cell--non-numeric">\
-                    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '">\
-                        <input type="checkbox" id="chk-' + filters[f].key + '-' + filters[f].values_sortable[item][0] + '"\
-                        class="mdl-checkbox__input chk-filter" data-value="'+ filters[f].values_sortable[item][0] + '">\
-                        <span class="mdl-checkbox__label">' + filters[f].values_sortable[item][0] + '</span>\
+                    <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="chk-' + filters[f].key + '-' + item[0] + '">\
+                        <input type="checkbox" id="chk-' + filters[f].key + '-' + item[0] + '"\
+                        class="mdl-checkbox__input chk-filter" data-value="' + item[0] + '" '+ checked + '>\
+                        <span class="mdl-checkbox__label">' + item[0] + '</span>\
                     </label>\
-                    <span class="badge badge-info">' + filters[f].values_sortable[item][1] + '</span>\
+                    <span class="badge badge-info">' + item[1] + '</span>\
                 </td>\
             </tr>');
         }
@@ -341,6 +351,12 @@ $(document).ready(function () {
     });
 
     $(".chk-filter").change(filter);
+
+    //apply preselected filters
+    if (prefiltersApplied) {
+        filter();
+    }
+
 });
 
 function isSearched(metadata, searchString) {
@@ -358,7 +374,14 @@ function filter() {
     let checkedItems = getCurrentFilters();
     let someVisible = false;
     let count = 0;
-    const searchString = $("#search").val().trim().toUpperCase();
+    let searchString = "";
+    try {
+        searchString = $("#search").val().trim().toUpperCase();
+    }
+    catch (e) {
+        //handles exception where page load filter called before search initialized
+        searchString = "";
+    } 
 
     // If no checkbox selected
     if (!checkedItems.length) {

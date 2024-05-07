@@ -126,3 +126,4 @@ docker-compose.yml
 settings.json
 settings.*.json
 src/odm2/modelcache.pkl
+local_media/*

@@ -1,11 +1,13 @@
 from __future__ import unicode_literals
 
+from typing import List
+
 from django.db import models
 from django.db.models.aggregates import Max
 from django.db.models.expressions import F, OuterRef, Subquery, When, Value, Case
+from django.db.models import expressions
 from django.db.models.query import Prefetch
 from django.db.models import CharField
-
 
 class SiteRegistrationQuerySet(models.QuerySet):
     # TODO: put the status variables in a settings file so it's customizable.
@@ -47,19 +49,19 @@ class SiteRegistrationQuerySet(models.QuerySet):
             queryset=sensor_model.objects.filter(sensor_output__variable_code__in=self.status_variables),
             to_attr='status_sensors'))
 
-    def with_ownership_status(self, user_id):
+    def with_ownership_status(self, user_id:int, affiliation_ids:List[int]):
         return self.annotate(ownership_status=Case(
-            When(django_user_id=user_id, then=Value('owned')),
-            When(followed_by__id=user_id, then=Value('followed')),
+            When(organization_id__in=affiliation_ids, then=Value('owned')),
+            When(followed_by=user_id, then=Value('followed')),
             default=Value('unfollowed'),
             output_field=CharField(),
         ))
-
-    def deployed_by(self, user_id):
-        return self.filter(django_user_id=user_id)
+ 
+    def deployed_by(self, organization_ids:List[int]):
+        return self.filter(organization_id__in=organization_ids)
 
     def followed_by(self, user_id):
-        return self.filter(followed_by__id=user_id)
+        return self.filter(followed_by=user_id)
 
 
 class SiteSensorQuerySet(models.QuerySet):

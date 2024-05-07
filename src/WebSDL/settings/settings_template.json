@@ -12,6 +12,22 @@
   "tsa_url": "{{time series analyst address}}",
   "sensor_data_period": "{{days it takes for the data to be considered stale}}",
 
+  "cognito_signin_url": "url to aws cognito user pool's sign-in page",
+  "cognito_signup_url": "url to aws cognito user pool's sign-up page",
+  "congito_reset_url": "url to aws cognito's password reset page",
+  "cognito_region": "aws region cognito user pool is located in",
+  "cognito_access_key": "IAM user access key for cognito",
+  "cognito_secret_access_key": "IAM user secret access key for cognito",
+  "cognito_user_pool_id": "user pool ID for cognito user pool",
+  "cognito_client_id": "client ID for cognito user pool",
+  "cognito_client_secret": "client secret for cognito user pool",
+  "cognito_oauth_url": "",
+  "cognito_redirect_url": "The url to redirect users to on successful sign-in",
+  
+  "s3_client_id": "Access key for IAM account with S3 access",
+  "s3_client_secret" : "Secret access key for IAM account with S3 access",
+  "site_photos_s3_bucket" : "monitormywatershed-site-photos",
+
   "databases": [
     {
       "name": "default",

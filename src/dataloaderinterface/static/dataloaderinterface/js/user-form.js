@@ -2,7 +2,6 @@
  * Created by Juan on 12/12/2016.
  */
 
-
 function cleanOrganizationForm() {
     $('.organization-fields input, .organization-fields select').val('');
     initializeSelect($('.organization-fields select'));
@@ -17,18 +16,115 @@ function generateErrorList(errors) {
     return list;
 }
 
-$(document).ready(function() {
-    var organizationForm = $('div.organization-fields');
-    var organizationSelect = $('div.user-fields').find('select[name="organization_code"]');
-    initializeSelect(organizationForm.find('[name="organization_type"]'));
+function setMode(mode) {
+            if (mode === "edit") {
+                $("[data-profile-mode='view']").toggleClass("hidden", true);
+                $("[data-profile-mode='edit']").toggleClass("hidden", false);
+                $("#btn-edit-profile").removeClass("fab-trans");
+                $("#btn-cancel-profile-edit").addClass("fab-trans");
+                $("#btn-update-user").addClass("fab-trans");
+            }
+            else {
+                $("[data-profile-mode='edit']").toggleClass("hidden", true);
+                $("[data-profile-mode='view']").toggleClass("hidden", false);
+                $("#btn-edit-profile").addClass("fab-trans");
+                $("#btn-cancel-profile-edit").removeClass("fab-trans");
+                $("#btn-update-user").removeClass("fab-trans");
+            }
+}
 
-    $('<option value="new">Add New Organization...</option>').insertAfter(organizationSelect.children().first());
-    organizationSelect.on('change', function() {
+function getFormData(form_id) {
+    let $form = (`#${form_id}`)
+
+    let data = {};
+    $($form).children().find('.form-field').each( function() {
+        let id = $(this).prop('id');
+        let parameter_name = id.split('id_',2)[1];
+        let value = $(this).val();
+        data[parameter_name] = value; 
+    });
+    return data;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function initializeOrganizationSelect() {
+    organizations = await $.ajax({
+        url : '/api/organizations/',
+        method : 'GET'
+    });
+    let $organization_select = $('#id_organization_id')
+    let org = $organization_select.attr('org');
+    $organization_select.empty()
+    organizations.forEach(function(organization) {
+        $($organization_select).append(
+            $('<option>', {
+                value : organization.organizationid,
+                text : organization.organizationname,
+            })
+        );
+    });
+    $organization_select.val(org);
+    
+    initializeSelect($organization_select);
+    $('<option value="new">Add New Organization...</option>').insertBefore($organization_select.children().first());
+    $organization_select.on('change', function() {
         if ($(this).val() === 'new') {
             cleanOrganizationForm();
             $('#organization-dialog').modal('toggle');
         }
     });
+}
+
+$(document).ready(function() {
+    
+    $("#btn-edit-profile").on("click", function(){
+        initializeOrganizationSelect();
+        setMode("edit");
+    });
+
+    $("#btn-cancel-profile-edit").on("click", function(){
+        setMode("view");
+    });
+
+    if ($(".user-registration .alert-error").length > 0) {
+        setMode("edit");
+    }
+
+    $("#btn-update-user").on("click", function() {
+        let formData = getFormData('profile-form');
+        $.ajax({
+            url : '/update_account/',
+            headers: { "X-CSRFToken": getCookie("csrftoken")}, 
+            method : 'POST',
+            data : formData,
+            success : function(response) {
+                location.reload();
+            },
+            error : function(response) {
+                alert(response.responseText);
+            },
+
+
+        });
+    });
+    
+    var organizationForm = $('div.organization-fields');
+
 
     $('#new-organization-button').on('click', function() {
         clearFieldErrors($('.organization-fields .has-error'));
@@ -38,7 +134,7 @@ $(document).ready(function() {
         }, {});
 
         $.ajax({
-            url: $('#new-organization-api').val(),
+            url: '/api/organization/',
             type: 'post',
             data: $.extend({
                 csrfmiddlewaretoken: $('form input[name="csrfmiddlewaretoken"]').val()
@@ -46,8 +142,8 @@ $(document).ready(function() {
         }).done(function(data, message, xhr) {
             if (xhr.status === 201) {
                 // organization created
-                var newOption = $('<option value="' + data.organization_code + '">' + data.organization_name + '</option>');
-                $('.user-fields select[name="organization_code"]').append(newOption).val(data.organization_code);
+                $('#id_organization_id').attr('org',data.organization_id);
+                initializeOrganizationSelect();
                 $('#organization-dialog').modal('toggle');
             } else if (xhr.status === 206) {
                 // organization form error

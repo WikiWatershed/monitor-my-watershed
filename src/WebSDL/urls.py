@@ -16,51 +16,37 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
-from django.contrib.auth import views as auth_views
 from django.urls import reverse_lazy
 from django.conf.urls.static import static
 
-from accounts.views import UserRegistrationView, UserUpdateView, logout_view
+# TODO: Figure out where this is being initialized
+# Removes User and Group models from admin page
+# from django.contrib.auth.models import User
+# from django.contrib.auth.models import Group
 
+# admin.site.unregister(User)
+# admin.site.unregister(Group)
 
-#BASE_URL = settings.SITE_URL[1:]
-BASE_URL = ''
+# BASE_URL = settings.SITE_URL[1:]
+BASE_URL = ""
 
-login_configuration = {
-    'redirect_field_name': 'next'
-}
+login_configuration = {"redirect_field_name": "next"}
 
-logout_configuration = {
-    'next_page': reverse_lazy('home')
-}
+logout_configuration = {"next_page": reverse_lazy("home")}
 
-password_reset_configuration = {
-    'post_reset_redirect': 'password_reset_done'
-}
+password_reset_configuration = {"post_reset_redirect": "password_reset_done"}
 
-password_done_configuration = {
-    'post_reset_redirect': 'password_reset_complete'
-}
+password_done_configuration = {"post_reset_redirect": "password_reset_complete"}
 
+# TODO: Clean out old auth urls
+# fmt: off
 urlpatterns = [
-    url(r'^' + BASE_URL + 'password-reset/$', auth_views.PasswordResetView.as_view(), password_reset_configuration, name='password_reset'),
-    url(r'^' + BASE_URL + 'password-reset/done/$', auth_views.PasswordChangeView.as_view(), name='password_reset_done'),
-    url(r'^' + BASE_URL + 'password-reset/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$', auth_views.PasswordResetConfirmView.as_view(), password_done_configuration, name='password_reset_confirm'),
-    url(r'^' + BASE_URL + 'password-reset/completed/$', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    url(r'^' + BASE_URL + 'admin/', admin.site.urls),
-    url(r'^' + BASE_URL + 'login/$', auth_views.LoginView.as_view(), login_configuration, name='login'),
-    url(r'^' + BASE_URL + 'logout/$', logout_view, name='logout'),
-    url(r'^' + BASE_URL + 'register/$', UserRegistrationView.as_view(), name='user_registration'),
-    url(r'^' + BASE_URL + 'account/$', UserUpdateView.as_view(), name='user_account'),
-    url(r'^' + BASE_URL + 'api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^' + BASE_URL + 'hydroshare/', include('hydroshare.urls', namespace='hydroshare')),
-    url(BASE_URL, include('dataloaderinterface.urls')),
-    url(BASE_URL, include('dataloaderservices.urls')),
-    url(BASE_URL, include('timeseries_visualization.urls'))
-] + static(settings.STATIC_URL,document_root=settings.STATIC_ROOT)
-
-# if settings.DEBUG:
-#     import debug_toolbar
-#     urlpatterns = [
-#         url(r'^__debug__/', include(debug_toolbar.urls)),
-#     ] + urlpatterns
+    url(r"^" + BASE_URL + "admin/", admin.site.urls),
+    url( r"^" + BASE_URL + "api-auth/", include("rest_framework.urls", namespace="rest_framework"),),
+    url( r"^" + BASE_URL + "hydroshare/", include("hydroshare.urls", namespace="hydroshare"),),
+    url(BASE_URL, include("dataloaderinterface.urls")),
+    url(BASE_URL, include("dataloaderservices.urls")),
+    url(BASE_URL, include("timeseries_visualization.urls")),
+    url(BASE_URL, include("accounts.urls")),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# fmt: on

@@ -18,13 +18,26 @@
              id="banner-image-container">
             <div class="legend-container" {% if user.is_authenticated %}style="height: 400px;"{% endif %}>
                 <div class="row logos-row">
-                    <div class="col-6 col-sm-3 offset-sm-3">
-                        <img class="img-fluid" src="{% static "dataloaderinterface/images/envirodiy_logo.png" %}" alt="EnviroDIY Logo">
+                    <div class="col-4 col-sm-3 offset-sm-2">
+                        <a href="/#EnviroDIY">
+                            <img class="img-fluid" src="{% static "dataloaderinterface/images/envirodiy_logo.png" %}" alt="EnviroDIY Logo">
+                        </a>
                     </div>
-                    <div class="col-6 col-sm-3">
-                        <img class="img-fluid"
-                             src="{% static "dataloaderinterface/images/Leaf-Pack-Network-logo_horiz.png" %}"
-                             alt="Leaf Pack Network Logo">
+                    <div class="col-4 col-sm-3">
+                        <a href="/#LeafPack">
+                            <img class="img-fluid"
+                            src="{% static "dataloaderinterface/images/Leaf-Pack-Network-logo_horiz.png" %}"
+                            alt="Leaf Pack Network Logo">
+                        </a>
+                    </div>
+                    <div class="col-4 col-sm-3">
+                        <a href="/#StreamWatch">
+                            <img class="img-fluid"
+                            src="{% static "dataloaderinterface/images/SWSchools_NO_TWI_logo.png" %}"
+                            alt="StreamWatch Schools Logo"
+                            style="max-height:96px;"
+                            >
+                        </a>
                     </div>
                 </div>
                 <div class="banner-legend text-center">
@@ -47,6 +60,7 @@
 {% block content %}
     <div class="container-fluid content-section">
         <div class="container shadow" id="how-it-works-section">
+            <a id="EnviroDIY"></a>
             <div class="row">
                 <section class="col-sm-12">
                     <div class="text-center section-title">How It Works</div>
@@ -109,9 +123,10 @@
                             </div>
                         </div>
                     </div>
-
+                    
+                    
+                    <a id="LeafPack"></a>
                     <br><br><br>
-
                     <div class="row">
                         <div class="col-sm-8 offset-sm-2 col-md-4 offset-md-2 col-8 offset-2">
                             <br><br>
@@ -169,25 +184,28 @@
                         </div>
                     </div>
 
-                    
-                    <br><br><br>
 
+                    <a id="StreamWatch"></a>
+                    <br><br><br>
                     <div class="row">
                         <div class="col-sm-8 offset-sm-2 col-md-4 offset-md-2 col-8 offset-2">
                             <br><br>
                             <span class="img-row">
-                                <img class="img-fluid"
-                                     src="{% static 'dataloaderinterface/images/WSI_logo_blue_no_circle.png' %}"
-                                     alt="Watershed Institute logo">
+                                <a href="https://thewatershed.org/streamwatch_schools/">
+                                    <img class="img-fluid"
+                                    src="{% static "dataloaderinterface/images/SWSchools_NO_TWI_logo.png" %}"
+                                    alt="Watershed Institute logo">
+                                </a>
                             </span>
                         </div>
                         <div class="col-sm-12 col-md-4">
                             <div class="mdl-card card-border-left" style="min-height: initial;">
                                 <div class="mdl-card__title">
-                                    Share and Explore StreamWatch Datasets
+                                    Share and Explore StreamWatch Schools Datasets
                                 </div>
                                 <div class="mdl-card__supporting-text">
-                                    <p class="lead"><a href="https://thewatershed.org/" target="_blank">The Watershed Institute</a> is a team focused on keeping water clean, safe and healthy through conservation, advocacy, science and education.
+                                    <p class="lead">
+                                        StreamWatch Schools, a program of <a href="https://thewatershed.org">The Watershed Institute</a>, engages students in water quality monitoring, data collection and data analysis.
                                     </p>
                                 </div>
                             </div>
@@ -199,30 +217,33 @@
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
                                         <h3 class="step-number bg-light-teal">1</h3>
-                                        <i class="fa fa-search step-icon bg-dark-teal" aria-hidden="true"></i>
-                                        <h4>Conduct your <a href="https://thewatershed.org/streamwatch/"
-                                                            target="_blank">StreamWatch Assessment</a> and enter your data.</h4>
+                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4>
+                                        {% if not user.is_authenticated %}
+                                            First 
+                                            <a href="{% url 'login' %}">Log In</a> or <a href="{% url 'user_registration' %}">Sign Up</a>.
+                                        {% else %}
+                                            <a href="{% url 'site_registration' %}">Register</a> a StreamWatch Schools site
+                                            or find your <a href="{% url 'sites_list' %}">sites</a>.
+                                        {% endif %}
+                                        </h4>
                                     </div>
                                 </div>
 
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
                                         <h3 class="step-number bg-light-teal">2</h3>
-                                        <i class="fa fa-laptop step-icon bg-dark-teal" aria-hidden="true"></i>
-                                        {% if user.is_authenticated %}
-                                            <h4><a href="{% url 'site_registration' %}">Register</a>
-                                        {% else %}
-                                            <h4><a href="{% url 'login' %}">Register</a>
-                                        {% endif %}
-                                            or find your site.</h4>
+                                        <i class="fa fa-search step-icon bg-dark-teal" aria-hidden="true"></i>
+                                        <h4>Conduct your <a href="https://thewatershed.org/sws-field-methods-and-data-sheets/"
+                                                            target="_blank">StreamWatch Schools Assessment</a> and collect your data.</h4>
                                     </div>
                                 </div>
-
+                                        
                                 <div class="col-sm-12 col-md-4 text-center row-eq-height">
                                     <div class="card">
                                         <h3 class="step-number bg-light-teal">3</h3>
                                         <i class="fa fa-map step-icon bg-dark-teal" aria-hidden="true"></i>
-                                        <h4><a href="{% url 'browse_sites' %}">Explore</a> your data and those contributed by others.</h4>
+                                        <h4><a href="/browse/?dataTypes=StreamWatch Schools">Explore</a> your data and those contributed by others.</h4>
                                     </div>
                                 </div>
                             </div>
@@ -302,6 +323,13 @@
             </div>
         </div>
     {% endif %}
+
+{% endblock %}
+
+{% block popups %}
+    <div id="subscription-dialog" class="popup" style="display: none;">
+        {% include "dataloaderinterface/subscriptions_faq_content.html" %}
+    </div>
 {% endblock %}
 
 {% block scripts %}
@@ -318,5 +346,6 @@
         }
     </script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="{% static 'dataloaderinterface/js/index.js' %}"></script>
 
 {% endblock %}

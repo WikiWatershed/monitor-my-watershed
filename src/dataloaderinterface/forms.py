@@ -51,11 +51,11 @@ class SampledMediumField(forms.ModelChoiceField):
 
 
 class SiteRegistrationForm(forms.ModelForm):
-    affiliation_id = forms.ModelChoiceField(
-        queryset=Affiliation.objects.filter(affiliation_id__in=(get_user_model().objects.filter(affiliation_id__isnull=False).values_list('affiliation_id', flat=True))).for_display(),
-        required=False,
-        help_text='Select the user that deployed or manages the site',
-        label='Deployed By'
+    organization_id = forms.ChoiceField(
+        choices = [],
+        required=True,
+        help_text="Select the organization that deployed or manages the site",
+        label="Deploy Site For",
     )
     site_type = forms.ModelChoiceField(
         queryset=SiteType.objects.filter(name__in=allowed_site_types),

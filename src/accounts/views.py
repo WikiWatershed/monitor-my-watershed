@@ -1,96 +1,89 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-from django.contrib import messages
-from django.contrib.auth import login, get_user_model
-from django.contrib.auth.decorators import login_required
-from django.http.response import HttpResponseRedirect
+from django.conf import settings
+from django.contrib.auth import logout as django_logout
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect
 from django.shortcuts import render
-from django.urls.base import reverse, reverse_lazy
-from django.utils.decorators import method_decorator
-from django.views.generic.edit import UpdateView, CreateView
-from django.core.exceptions import ObjectDoesNotExist
 
-from accounts.forms import UserUpdateForm, UserRegistrationForm
+
+from datetime import datetime
+
+from accounts.backend import CognitoBackend
 from dataloaderinterface.forms import OrganizationForm
 
+_cognitobackend = CognitoBackend()
 
-class UserUpdateView(UpdateView):
-    form_class = UserUpdateForm
-    template_name = 'registration/account.html'
-    model = get_user_model()
+_SESSION_KEY = settings.SESSION_KEY
+_BACKEND_SESSION_KEY = settings.BACKEND_SESSION_KEY
+_HASH_SESSION_KEY = settings.HASH_SESSION_KEY
 
-    def get_object(self, queryset=None):
-        return self.request.user
+def login(request:HttpRequest) -> HttpResponse:
+    return (redirect (settings.COGNITO_SIGNIN_URL))
 
-    def get_hydroshare_account(self):
-        return self.request.user.hydroshare_account
+def logout(request:HttpRequest) -> HttpResponse: 
+    django_logout(request)
+    return redirect('home')
 
-    def get_context_data(self, **kwargs):
-        context = super(UserUpdateView, self).get_context_data(**kwargs)
+def signup(request:HttpRequest) -> HttpResponse:
+    return redirect (settings.COGNITO_SIGNUP_URL)
 
-        try:
-            context['hs_account'] = self.request.user.hydroshare_account
-        except ObjectDoesNotExist:
-            pass
+def reset_password(request:HttpRequest) -> HttpResponse:
+    return redirect (settings.COGNITO_RESET_URL)
 
-        context['organization_form'] = OrganizationForm()
-        return context
-
-    @method_decorator(login_required)
-    def get(self, request, *args, **kwargs):
-        return super(UserUpdateView, self).get(request, *args, **kwargs)
-
-    @method_decorator(login_required)
-    def post(self, request, *args, **kwargs):
-
-        if request.POST.get('disconnect-hydroshare-account'):
-            request.user.hydroshare_account.delete()
-            form = self.get_form_class()(request.POST, instance=request.user)
-
-            context = {
-                'form': form,
-                'organization_form': OrganizationForm(),
-                'hs_accounts': None
-            }
-            return render(request, self.template_name, context=context)
-        else:
-            form = self.get_form_class()(request.POST, instance=request.user)
-
-            if form.is_valid():
-                form.instance.save(update_fields=form.changed_data)
-                messages.success(request, 'Your information has been updated successfully.')
-                return HttpResponseRedirect(reverse('user_account'))
-            else:
-                messages.error(request, 'There were some errors in the form.')
-                return render(request, self.template_name, {'form': form, 'organization_form': OrganizationForm()})
-
-
-class UserRegistrationView(CreateView):
-    template_name = 'registration/register.html'
-    form_class = UserRegistrationForm
-    success_url = reverse_lazy('home')
-    model = get_user_model()
-
-    def get_context_data(self, **kwargs):
-        context = super(UserRegistrationView, self).get_context_data(**kwargs)
-        context['organization_form'] = OrganizationForm()
-        return context
-
-    def post(self, request, *args, **kwargs):
-        response = super(UserRegistrationView, self).post(request, *args, **kwargs)
-        form = self.get_form()
-
-        if form.instance.id:
-            login(request, form.instance)
-
-        return response
-
-def logout_view(request):
-     # use django to log user out, and render a custom logout page to fix issue #558
-     from django.contrib.auth import logout
-     logout(request)
-     return render (
+def login_failed(request:HttpRequest) -> HttpResponse:
+    """Placeholder authorization failed endpoint"""
+    return render(
         request,
-        'registration/logout.html'
+        'auth/login_failed.html',
+        {
+            'title':'Login Failed',
+            'year':datetime.now().year,
+        }
     )
+
+def _login_success(request:HttpRequest) -> HttpResponse:    
+    """post login placeholder for more advanced rerouting - e.g. organziation specific page"""
+    return redirect('home')
+
+def oauth2_cognito(request:HttpRequest) -> HttpResponse:
+    try: 
+        auth_code = request.GET['code']
+        user = _cognitobackend.authenticate(code=auth_code)
+        _cognitobackend.login(request, user)
+        return _login_success(request)
+    except Exception as e:
+        return redirect(login_failed)
+ 
+def account(request:HttpRequest) -> HttpResponse:
+    return render(
+        request,
+        "auth/account.html",
+        {
+            'organization_form': OrganizationForm()
+        },
+    )
+
+def update_account(request:HttpRequest) -> HttpResponse:
+    form_data = request.POST.dict()
+    user = request.user
+    user._set_access_token(request.session['TOKEN'])
+    try:
+        for key, value in form_data.items():
+            current_value = getattr(user, key)
+            if current_value != value:
+                setattr(user, key, value)       
+        return HttpResponse(
+            content='updates accepted',
+            status=201,
+        )
+    except AttributeError as e:
+        #TODO this needs to return error code, butt I've not implemented organization update yet
+        return HttpResponse(
+            content=f"Unknown attribute: '{e.name}'",
+            status=400,
+        )
+    except Exception as e:
+        return HttpResponse(
+            content='updates failed',
+            status=500,
+        )
+

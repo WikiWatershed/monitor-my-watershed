@@ -4,21 +4,19 @@
     <br>
     <div class="row">
         <div class="form-group col-sm-12 col-md-6 sampling-feature-fields">
-            {% if user.is_staff %}
-            <div class="form-field {% if form.affiliation_id.field.required %} required-field{% endif %}{% if form.affiliation_id.errors %} has-error{% endif %}"
-                 data-field="{{ form.affiliation_id.name }}">
+            <div class="form-field {% if form.organization_id.field.required %} required-field{% endif %}{% if form.organization_id.errors %} has-error{% endif %}"
+                 data-field="{{ form.organization_id.display_name }}">
                 <label class="control-label"
-                       for="{{ form.affiliation_id.id_for_label }}">{{ form.affiliation_id.label }}</label>
-                <i id="affiliation-help"
+                       for="{{ form.organization_id.id_for_label }}">{{ form.organization_id.label }}</label>
+                <i id="organization-help"
                    class="material-icons text-muted help-icon">help</i>
-                {{ form.affiliation_id.errors }}
+                {{ form.organization_id.errors }}
                 <div class="mdl-tooltip mdl-tooltip--large mdl-tooltip--left"
-                     data-mdl-for="affiliation-help">
-                    {{ form.affiliation_id.help_text }}
+                     data-mdl-for="organization-help">
+                    {{ form.organization_id.help_text }}
                 </div>
-                {{ form.affiliation_id|add_class:"form-control input-sm" }}
+                {{ form.organization_id|add_class:"form-control input-sm" }}
             </div>
-            {% endif %}
 
             <div class="form-field {% if form.sampling_feature_code.field.required %} required-field{% endif %}{% if form.sampling_feature_code.errors %} has-error{% endif %}"
                  data-field="{{ form.sampling_feature_code.name }}">

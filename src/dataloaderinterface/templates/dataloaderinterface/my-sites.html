@@ -1,6 +1,7 @@
 {% extends 'dataloaderinterface/base.html' %}
 {% load static %}
 {% load helpers %}
+{% load get_attr %}
 
 {% block page_title %}
     <title>My Sites</title>
@@ -29,35 +30,49 @@
                     <br><br>
                 </div>
             </div>
-
+            
             <div class="row">
+                {% for organization in organizations %}
                 <div class="col-sm-12">
                     <div class="row" style="margin-top: 20px;">
-                        <div class="col-md-6 col-sm-12">
-                            <h4 data-toggle="collapse" href="#mySitesCollapse"
-                            aria-expanded="true" aria-controls="mySitesCollapse"
-                                style="cursor: pointer;  display: inline-block;"
-                            ><i class="material-icons icon-arrow">keyboard_arrow_down</i> My Registered Sites <span class="badge badge-secondary">{{ sites|length }}</span></h4>
-                        </div>
-                        <div class="col-md-6 col-sm-12 text-right">
-                            <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
-                               class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--colored mdl-js-ripple-effect">
-                                <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
-                            </a>
-                        </div>
+                            <div class="col-md-6 col-sm-12">
+                                <h4 data-toggle="collapse" href="#sitesCollapse-{{organization.organization_id}}"
+                                    aria-expanded="true" aria-controls="mySitesCollapse"
+                                    style="cursor: pointer;  display: inline-block;"
+                                >
+                                    <i class="material-icons icon-arrow">keyboard_arrow_down</i> 
+                                    {% if organization.organization_type.name == "Individual" %}
+                                        My Registered Sites
+                                    {% else %}
+                                        {{ organization.display_name }} Sites
+                                    {% endif %}
+                                    <span class="badge badge-secondary">{{ organization_site_counts|get_dict_attr:organization.organization_id }}
+                                    </span>
+                                </h4>
+                            </div>
+
+                            <!--We only need to include this once, so put it at the top of personal organization -->
+                            {% if organization.organization_type.name == "Individual" %}
+                                <div class="col-md-6 col-sm-12 text-right">
+                                    <a href="{% url 'site_registration' %}" id="btn-new-site" style="margin-top:20px;"
+                                    class="button-link mdl-button mdl-button--raised mdl-js-button mdl-button--colored mdl-js-ripple-effect">
+                                    <i class="material-icons center-icon">add_circle_outline</i> Register A New Site
+                                    </a>
+                                </div>
+                            {% endif %}
                     </div>
                     <hr>
                 </div>
                 {% if sites %}
-                    <div class="col-12 collapse show" id="mySitesCollapse" >
-                        <button id="btnOrderMySites"
+                    <div class="col-13 collapse show" id="sitesCollapse-{{organization.organization_id}}" style="width:100%;">
+                        <button id="btnOrderMySites-{{organization.organization_id}}"
                                 class="mdl-button mdl-js-button">
                             Order <i class="material-icons">arrow_drop_down</i>
                         </button>
 
                         <ul class="mdl-menu mdl-menu--bottom-left mdl-js-menu menu-order"
-                            data-sort-target="#mySites"
-                            for="btnOrderMySites">
+                            data-sort-target="#mySites-{{organization.organization_id}}"
+                            for="btnOrderMySites-{{organization.organization_id}}">
                             <li class="mdl-menu__item" data-sort-by="sitecode">
                                 <i class="material-icons center-icon">sort_by_alpha</i> Alphabetically
                             </li>
@@ -75,14 +90,15 @@
                             </li>
                         </ul>
 
-                        <div class="row" id="mySites">
+                        <div class="row mySites" id="mySites-{{ organization.organization_id }}">
                             {% for site in sites %}
-                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 site sortable"
+                                {% if site.organization_id == organization.organization_id %}
+                                <div class="col-xs-13 col-sm-6 col-md-6 col-lg-4 col-xl-3 site sortable"
                                      data-site="{{ site.sampling_feature_id }}"
                                      data-siteCode="{{ site.sampling_feature_code }}"
                                      data-registrationDate="{{ site.registration_date|date:"U" }}"
                                      data-lastUpdated="{{ site.latest_measurement.value_datetime|date:"U" }}">
-                                    <div class="mdl-card mdl-shadow--2dp site-card">
+                                    <div class="mdl-card mdl-shadow--3dp site-card">
                                         <div class="mdl-card__title">
                                             <div class="mdl-card__title-text" id="mySite{{ forloop.counter }}">
                                                 <a href="{% autoescape off %}{% url 'site_detail' site.sampling_feature_code %}{% endautoescape %}">{{ site.sampling_feature_code }}</a>
@@ -126,13 +142,13 @@
                                                 <table>
                                                     <tbody>
                                                     <tr>
-                                                        <td><i class="material-icons site-card-icon">query_builder</i></td>
                                                         <td>
+                                                            <i class="material-icons site-card-icon">query_builder</i>
                                                             <span> Latest Measurement</span>
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td colspan="2">{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }}<br>
+                                                        <td colspan="1">{{ site.latest_measurement.value_local_datetime }} {{ site.latest_measurement.utc_offset_hours_display }}<br>
                                                             <i>(<span {% if site.latest_measurement.value_datetime|is_stale:site.alerts.first %}
                                                                 class="text-danger"{% endif %}>{{ site.latest_measurement.value_datetime|utc_timesince }} ago</span>)</i>
                                                         </td>
@@ -142,27 +158,19 @@
                                             {% endif %}
                                         </div>
 
-                                        <div class="mdl-card__menu">
-                                            <!-- Right aligned menu below button -->
-                                            <button id="my-sites-map-{{ forloop.counter0 }}"
-                                                    class="mdl-button mdl-js-button mdl-button--icon view-on-map">
-                                                <i class="material-icons">map</i>
-                                            </button>
-                                            <div class="mdl-tooltip" data-mdl-for="my-sites-map-{{ forloop.counter0 }}">
-                                                View on map
-                                            </div>
-                                        </div>
                                     </div>
                                 </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                 {% else %}
-                    <div class="col-sm-12">
+                    <div class="col-sm-13">
                         <p class="text-muted"><i class="material-icons no-data-icon center-icon" style=" align-self: center">cloud_off</i>
                             No sites to display</p>
                     </div>
                 {% endif %}
+                {% endfor %}
 
                 <div class="col-sm-12">
                     <h4 style="margin-top: 40px; cursor: pointer; display: inline-block;" data-toggle="collapse" href="#followedSitesCollapse"
@@ -377,5 +385,5 @@
     <script src="{% static 'dataloaderinterface/js/marker-icons.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/my-sites.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/vendor/oms.min.js' %}"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={% get_settings_attr "MAP_API_KEY" %}&callback=initMap"></script>
 {% endblock %}

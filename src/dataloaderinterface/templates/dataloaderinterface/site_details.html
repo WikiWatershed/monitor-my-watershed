@@ -2,6 +2,7 @@
 {% load static %}
 {% load site %}
 {% load helpers %}
+{% load get_attr %}
 
 {% block styles %}
     {{ block.super }}
@@ -89,16 +90,15 @@
                             <table class="mdl-data-table mdl-js-data-table mdl-data-table-no-hover full-width shade-first-col">
                                 <tr>
                                     <td class="mdl-data-table__cell--non-numeric">
-                                        <i class="fa fa-user-o" aria-hidden="true"></i> Deployment By
-                                    </td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ site.django_user.get_full_name }}</td>
-                                </tr>
-
-                                <tr>
-                                    <td class="mdl-data-table__cell--non-numeric">
                                         <i class="fa fa-building-o" aria-hidden="true"></i> Organization
                                     </td>
-                                    <td class="mdl-data-table__cell--non-numeric">{{ site.organization_name }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">
+                                        {% if site.organization.organizationtypecv == 'Individual' or site.organization.organization_type_id == 'Individual' %} 
+                                            Individual
+                                        {% else %}
+                                            {{ site.organization.organization_name }}
+                                        {% endif %}
+                                    </td>
                                 </tr>
 
                                 <tr>
@@ -539,23 +539,30 @@
                     <h5 class="page-title grid" style="grid-template-columns: auto auto;">
                         <span>StreamWatch Assessments at this Site</span>
                         <img class="img-fluid img-branding"
-                             src="{% static 'dataloaderinterface/images/WSI_logo_blue_no_circle.png' %}"
-                             alt="Leaf Pack Network logo">
+                            src="{% static "dataloaderinterface/images/SWSchools_NO_TWI_logo.png" %}"
+                            alt="Leaf Pack Network logo">
                     </h5>
 
-                    {% if can_administer_site %}
                     <div class="buttons-toolbar row">
-                        <div class="col-12 text-right">
-                            <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'streamwatches' site.sampling_feature_code %}">
+                        <div class="col-12 text-right" style="margin-top:0px;">
+                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                            href="{% url 'streamwatch:csv' site.sampling_feature.sampling_feature_code streamwatch_actionids %}"
+                            download>
+                            <i class="material-icons center-icon">cloud_download</i>
+                            Download Assessment Data
+                            </a>
+                            {% if can_administer_site %}
+                                <a class="button-link mdl-button mdl-button--colored mdl-js-button mdl-button--raised mdl-js-ripple-effect"
+                                href="{% url 'streamwatches' site.sampling_feature_code %}">
                                 <i class="material-icons center-icon">assignment</i>
                                 Manage Assessments
                             </a>
+                            {% endif %}
                         </div>
-                        <br>
                     </div>
-                    {% endif %}
+                    
                 </div>
+
 
                 <div class="col-12 streamwatch-site-summary">
                     {% if streamwatch %}
@@ -563,7 +570,10 @@
                             <thead>
                                 <tr>                               
                                     <th>Date</th>
-                                    <th>Assessment Type</th>
+                                    <th>Water Temp (°C)</th>
+                                    <th>DO (ppm)</th>
+                                    <th>pH</th>
+                                    <th>Macro Count</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -572,8 +582,10 @@
 
                                 <tr class="bg-white leafpack-form" data-id="{{ assessment.actionid }}">
                                     <td class="mdl-data-table__cell--non-numeric">{{ assessment.begindatetime }}</td>
-                                    {#<td class="mdl-data-table__cell--non-numeric">{{ survey.actiontypecv|default:"NA" }}</td>#}
-                                    <td>{{assessment.actiondescription}}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_water_temperature|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_dissolved_oxygen|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter_attributes.simple_ph|default:"Unknown" }}</td>
+                                    <td class="mdl-data-table__cell--non-numeric">{{ assessment.adapter.count_total_macros|add:0|default:"Unknown" }}</td>
                                     <td class="mdl-data-table__cell--non-numeric">
                                         <a class="mdl-button mdl-js-button button-link mdl-button--primary"
                                            href="{% url 'streamwatch:view' site.sampling_feature.sampling_feature_code assessment.actionid %}">
@@ -668,12 +680,12 @@
                     <div class="modal-body">
 
                                 <pre class="form-control" id="code-output">
-                                const char *UUIDs[] =                                                      // UUID array for device sensors
-                                {{% for sensor in site.sensors.all %}
-                                    "{{ sensor.result_uuid }}"{% if not forloop.last %},  {% else %}   {% endif %} // {{ sensor.sensor_output.variable_name }} ({{ sensor.sensor_output.variable_code }}){% endfor %}
-                                };
-                                const char *registrationToken = "{{ site.registration_token }}";   // Device registration token
-                                const char *samplingFeature = "{{ site.sampling_feature.sampling_feature_uuid }}";     // Sampling feature UUID</pre>
+const char *UUIDs[] =                                                      // UUID array for device sensors
+{{% for sensor in site.sensors.all %}
+    "{{ sensor.result_uuid }}"{% if not forloop.last %},  {% else %}   {% endif %} // {{ sensor.sensor_output.variable_name }} ({{ sensor.sensor_output.variable_code }}){% endfor %}
+};
+const char *registrationToken = "{{ site.registration_token }}";   // Device registration token
+const char *samplingFeature = "{{ site.sampling_feature.sampling_feature_uuid }}";     // Sampling feature UUID</pre>
 
                     </div>
                     <div class="modal-footer">
@@ -708,7 +720,7 @@
     <script src="{% static 'dataloaderinterface/js/site-detail.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/dialog-polyfill.js' %}"></script>
     <script src="{% static 'dataloaderinterface/js/copyToClipboard.js' %}"></script>
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAiUxiuZaPEPtB4EhAquguz7kNzYU7bnnc&callback=initMap"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key={% get_settings_attr "MAP_API_KEY" %}&callback=initMap"></script>
 
     {% if is_site_owner and hydroshare_account%}
     <script src="{% static 'dataloaderinterface/js/hydroshare/settings-form-dialog.js' %}"></script>

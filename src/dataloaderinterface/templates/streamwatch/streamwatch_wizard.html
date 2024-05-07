@@ -38,7 +38,9 @@
                   action="{% url 'streamwatch:create' sampling_feature_code %}"
                     {% else %}
                   action="{% url 'streamwatch:update' sampling_feature_code action_id %}"
-                    {% endif %}>
+                    {% endif %}
+                  enctype="multipart/form-data"
+                >
                 {% csrf_token %}
 
                 <table>
@@ -53,6 +55,10 @@
                         {% include 'streamwatch/subforms/simple_waterquality.html' with wizard=wizard %}
                     {% elif wizard.form.prefix == 'simplehabitat' %}
                         {% include 'streamwatch/subforms/simple_habitat.html' with wizard=wizard %}  
+                    {% elif wizard.form.prefix == 'macros' %}
+                        {% include 'streamwatch/subforms/macros.html' with wizard=wizard %}  
+                    {% elif wizard.form.prefix == 'photos' %}
+                        {% include 'streamwatch/subforms/photos.html' with wizard=wizard %}  
                     {% else %}
                         {{wizard.form.as_p}}
                     {% endif %}

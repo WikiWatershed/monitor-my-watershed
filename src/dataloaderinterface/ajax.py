@@ -56,8 +56,8 @@ def get_sampling_feature_metadata(request_data:Dict[str,Any]) -> str:
 			"LEFT JOIN odm2.units AS un ON un.unitsid = rs.unitsid " \
 			f"LEFT JOIN odm2.timeseriesresults AS tsr ON tsr.resultid = rs.resultid " \
 			f"LEFT JOIN odm2.units AS untrs ON untrs.unitsid = tsr.zlocationunitsid "\
-			f"WHERE sf.samplingfeaturecode = '{sampling_feature_code}'; " 
-		df = pd.read_sql(query, session.bind)
+			f"WHERE sf.samplingfeaturecode = %(sf_id)s ;" 
+		df = pd.read_sql(query, session.bind, params={'sf_id':sampling_feature_code})
 		return df.to_json(orient='records', default_handler=str)
 
 def get_sampling_features(request_data:Dict[str,Any]) -> str:
