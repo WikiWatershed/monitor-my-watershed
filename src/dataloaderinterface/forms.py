@@ -72,7 +72,7 @@ class SiteRegistrationForm(forms.ModelForm):
     class Meta:
         model = SiteRegistration
         fields = [
-            'affiliation_id', 'sampling_feature_code', 'sampling_feature_name', 'latitude', 'longitude', 'elevation_m',
+            'organization_id', 'sampling_feature_code', 'sampling_feature_name', 'latitude', 'longitude', 'elevation_m',
             'elevation_datum', 'site_type', 'stream_name', 'major_watershed', 'sub_basin', 'closest_town', 'site_notes'
         ]
         labels = {
