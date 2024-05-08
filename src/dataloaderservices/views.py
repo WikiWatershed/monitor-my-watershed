@@ -724,14 +724,14 @@ class TimeSeriesValuesApi(APIView):
         if not all(key in request.data for key in ("timestamp", "sampling_feature")):
             raise exceptions.ParseError("Required data not found in request.")
         
-        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data.pop("sampling_feature")).first()
+        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data.get("sampling_feature")).first()
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
         
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
 
         measurement_datetimes = []
-        timestamps = request.data.pop("timestamp")
+        timestamps = request.data.get("timestamp")
         if not isinstance(timestamps, list):
             timestamps = [timestamps]
         for timestamp in timestamps:
