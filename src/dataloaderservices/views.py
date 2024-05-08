@@ -1,9 +1,8 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import csv
 from datetime import timedelta, datetime
 from io import StringIO
 import os
-from typing import Union, Dict, Any, Iterable, List, Tuple
+from typing import Union, Dict, Iterable, List, Tuple, Iterator
 
 from django.conf import settings
 from django.forms.models import model_to_dict
@@ -13,7 +12,6 @@ from django.db.models import QuerySet
 from django.shortcuts import reverse
 from django.utils.dateparse import parse_datetime
 from django.core.handlers.wsgi import WSGIRequest
-from django.conf import settings
 
 from rest_framework import exceptions
 from rest_framework import status
@@ -25,7 +23,6 @@ import pandas as pd
 import sqlalchemy
 import sqlalchemy.exc
 from sqlalchemy.sql import text
-import psycopg2
 
 from dataloader.models import SamplingFeature, Unit, EquipmentModel, TimeSeriesResult
 from dataloaderinterface.forms import SiteSensorForm, SensorDataForm
@@ -239,7 +236,7 @@ class SensorDataUploadView(APIView):
         if row[0].startswith(self.header_row_indicators):
             return True
 
-    def decode_utf8_sig(self, input_iterator: Iterable) -> str:
+    def decode_utf8_sig(self, input_iterator: Iterable[bytes]) -> Iterator[str]:
         for item in input_iterator:
             yield item.decode("utf-8-sig")
 
@@ -793,12 +790,6 @@ class TimeSeriesValuesApi(APIView):
         return Response({}, status.HTTP_201_CREATED)
 
 
-#######################################################
-### Temporary HOT fix to address model performance
-#######################################################
-# PRT - the code in this block is meant as a hot fix to address poor model performance
-# the long term goal is to refactor the application models to make them more performant.
-
 def get_result_UUIDs(sampling_feature_id:str, connection) -> Union[Dict[str, str],None]:
     try:
         query = text("SELECT r.resultuuid, r.resultid FROM odm2.results AS r " \
@@ -873,6 +864,7 @@ def sync_result_table(result_values: TimeseriesResultValueTechDebt, num_measurem
     )
     return result
 
+
 def insert_timeseries_result_values(result_values : TimeseriesResultValueTechDebt, connection=None) -> None:
     try:
         query = text("INSERT INTO odm2.timeseriesresultvalues " \
@@ -923,6 +915,7 @@ def insert_timeseries_result_values_bulk(result_values, connection):
         "censorcodecv, qualitycodecv, timeaggregationinterval, "
         "timeaggregationintervalunitsid) "
         "(select * from upload) on conflict do nothing;"))
+
 
 class Organizations(APIView):
     def get(self, request: HttpRequest) -> Response:
