@@ -23,6 +23,7 @@ from rest_framework.views import APIView
 
 import pandas as pd
 import sqlalchemy
+import sqlalchemy.exc
 from sqlalchemy.sql import text
 import psycopg2
 
@@ -890,11 +891,8 @@ def insert_timeseries_result_values(result_values : TimeseriesResultValueTechDeb
             [vars(v) for v in result_values]
         )
         return None
-    except Exception as e:
-        return f"Failed to INSERT data for uuid('{result_value.result_uuid}')"
-
-
-
+    except sqlalchemy.exc.SQLAlchemyError as e:
+        return f"Failed to INSERT data"
 
 
 def insert_timeseries_result_values_bulk(result_values, connection):
