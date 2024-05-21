@@ -51,7 +51,7 @@ function initSubscriptionDialog(width=550, height=350) {
         close: function() {
             //disable scrolling (hide overflow) 
             $('body').css({overflow: 'auto'});
-            document.cookie = "popupSeen=true; max-age=86400;"
+            document.cookie = "popupSeen=true; max-age=86400*30;"
 
         },
         buttons: [
