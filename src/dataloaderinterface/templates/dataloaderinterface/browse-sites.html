@@ -71,7 +71,7 @@
                     "detail_link": "{% url 'site_detail' site.sampling_feature_code %}",
                     "dataType": "{% if site.latest_measurement%}EnviroDIY,{% endif %}{% if site.leafpack_count > 0 %}Leaf Pack,{% endif %}{% if site.streamwatch_count > 0 %}StreamWatch Schools,{% endif %}",
                     "status": "{{ site.ownership_status }}",
-                    "dataAge":"{{ site.latest_measurement|data_age }}"
+                    "dataAge":"{{ site.latest_measurement_utc|data_age }}"
                     }{% if not forloop.last %},{% endif %}
                 {% endfor %}
                 ]

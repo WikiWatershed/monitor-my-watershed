@@ -183,7 +183,7 @@ class DetailView(django.views.generic.detail.DetailView):
         ] = user.is_authenticated and user.can_administer_site(
             registration.sampling_feature_id
         )
-        context["is_site_owner"] = user.id == registration.django_user
+        context["is_site_owner"] = registration.organization_id in user.organization_id
         context["sampling_feature_code"] = self.kwargs[self.slug_field]
         context["action_id"] = int(self.kwargs["pk"])
         return context

@@ -40,6 +40,8 @@ import accounts
 
 from odm2 import odm2datamodels
 from sqlalchemy import text
+from odm2.crud.organization import read_organization_names 
+from odm2 import create_session
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -129,7 +131,7 @@ class StatusListView(ListView):
             super(StatusListView, self)
             .get_queryset()
             .with_status_sensors()
-            .deployed_by(self.request.user.id)
+            .deployed_by(self.request.user.organization_id)
             .with_latest_measurement_id()
             .order_by("sampling_feature_code")
         )
@@ -140,7 +142,7 @@ class StatusListView(ListView):
             super(StatusListView, self)
             .get_queryset()
             .with_status_sensors()
-            .followed_by(user_id=self.request.user.id)
+            .followed_by(user_id=self.request.user.user_id)
             .with_latest_measurement_id()
             .order_by("sampling_feature_code")
         )
@@ -185,9 +187,9 @@ class BrowseSitesListView(ListView):
             WITH last_measurement AS (
                 SELECT 
                     ss."RegistrationID" 
-                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasure
-                    ,MAX(sm.value_datetime) AS latestmeasure_utc
-                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasure_utc_offset
+                    ,MAX(sm.value_datetime + sm.value_datetime_utc_offset) AS latestmeasurement
+                    ,MAX(sm.value_datetime) AS latestmeasurement_utc
+                    ,MAX(sm.value_datetime_utc_offset) AS latestmeasurement_utc_offset
                 FROM dataloaderinterface_sensormeasurement AS sm
                 JOIN dataloaderinterface_sitesensor AS ss 
                     ON sm.sensor_id = ss.id 
@@ -215,9 +217,9 @@ class BrowseSitesListView(ListView):
                 ,sr."Latitude" AS latitude
                 ,sr."Longitude" AS longitude
                 ,sr."Elevation" AS elevation
-                ,lm.latestmeasure_utc AS latest_measurement_utc
-                ,lm.latestmeasure_utc_offset AS latest_measurement_utcoffset
-                ,lm.latestmeasure AS latest_measurement
+                ,lm.latestmeasurement_utc AS latest_measurement_utc
+                ,lm.latestmeasurement_utc_offset AS latest_measurement_utcoffset
+                ,lm.latestmeasurement AS latest_measurement
                 ,lp.leafpack_count AS leafpack_count
                 ,sr.streamwatch_assessments AS streamwatch_count
 
@@ -409,12 +411,10 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         user = self.request.user
         organization_ids = [a.organization.organization_id for a in user.affiliation]
         #for staff/admins if users is site admin they should see all organizations 
-        if not user.is_staff:
+        if user.is_staff:
             organization_ids = None
 
         choices = []
-        from odm2.crud.organizations import read_organization_names 
-        from odm2 import create_session
         session = create_session()
         organizations = read_organization_names(session, organization_ids)
 
