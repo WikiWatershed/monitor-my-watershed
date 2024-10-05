@@ -745,7 +745,9 @@ class TimeSeriesValuesApi(APIView):
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
 
         measurement_datetimes = []
-        for timestamp in timestamps:
+        latest_measurement_idx = None
+        latest_measurement_datetime = None # does not include timezone!
+        for ti, timestamp in enumerate(timestamps):
             try:
                 measurement_datetime = parse_datetime(timestamp)
             except ValueError:
@@ -756,6 +758,9 @@ class TimeSeriesValuesApi(APIView):
                 raise exceptions.ParseError('The timestamp value requires timezone information.')
             utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
             measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
+            if latest_measurement_datetime is None or measurement_datetime > latest_measurement_datetime:
+                latest_measurement_idx = ti
+                latest_measurement_datetime = measurement_datetime
             measurement_datetimes.append((measurement_datetime, utc_offset))
 
         with _db_engine.begin() as connection:
@@ -764,7 +769,7 @@ class TimeSeriesValuesApi(APIView):
                 raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{sampling_feature.sampling_feature_uuid}'")
 
             result_values = [] # values for all times
-            latest_values = [] # values for only the latest time (i.e. last)
+            latest_values = [] # values for only the latest time
             for key, values in measurement_data.items():
                 try:
                     result_id = result_uuids[key]
@@ -782,9 +787,8 @@ class TimeSeriesValuesApi(APIView):
                         time_aggregation_interval=1,
                         time_aggregation_interval_unit=unit_id
                     ))
-                # nab latest value as that was the one we (by assumption)
-                # generated last in the loop
-                latest_values.append(result_values[-1])
+                    if vi == latest_measurement_idx:
+                        latest_values.append(result_values[-1])
 
             # earliest measurement is the date of deployment
             set_deployment_date(sampling_feature.sampling_feature_id, min(v[0] for v in measurement_datetimes), connection)
