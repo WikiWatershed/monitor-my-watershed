@@ -719,19 +719,29 @@ class TimeSeriesValuesApi(APIView):
     authentication_classes = (UUIDAuthentication,)
 
     def post(self, request, format=None):
-        if not all(key in request.data for key in ("timestamp", "sampling_feature")):
+        # list-ify all request data
+        measurement_data = {k: v if isinstance(v, list) else [v]
+            for k, v in request.data.items()}
+        # remove non-UUID keys and process now, leaving measurement UUID keys for later
+        try:
+            sampling_feature = measurement_data.pop("sampling_feature")[0]
+            timestamps = measurement_data.pop("timestamp")
+        except (KeyError, IndexError):
             raise exceptions.ParseError("Required data not found in request.")
-        
-        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data.get("sampling_feature")).first()
+
+        # ensure each measurement has the same number of data points. there's
+        # one timestamp per point so we use that as the expected number.
+        num_measurements = len(timestamps)
+        if not all(len(m) == num_measurements for m in measurement_data.values()):
+            raise exceptions.ParseError("unequal number of data points")
+
+        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=sampling_feature).first()
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
         
         unit_id = Unit.objects.get(unit_name='hour minute').unit_id
 
         measurement_datetimes = []
-        timestamps = request.data.get("timestamp")
-        if not isinstance(timestamps, list):
-            timestamps = [timestamps]
         for timestamp in timestamps:
             try:
                 measurement_datetime = parse_datetime(timestamp)
@@ -744,13 +754,6 @@ class TimeSeriesValuesApi(APIView):
             utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
             measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
             measurement_datetimes.append((measurement_datetime, utc_offset))
-
-        num_measurements = len(measurement_datetimes)
-        measurement_data = {k: v if isinstance(v, list) else [v]
-            for k, v in request.data.items()}
-
-        if not all(len(m) == num_measurements for m in measurement_data.values()):
-            raise exceptions.ParseError("unequal number of data points")
 
         with _db_engine.begin() as connection:
             result_uuids = get_result_UUIDs(sampling_feature.sampling_feature_id, connection)
