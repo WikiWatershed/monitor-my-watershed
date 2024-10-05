@@ -735,6 +735,9 @@ class TimeSeriesValuesApi(APIView):
         if not all(len(m) == num_measurements for m in measurement_data.values()):
             raise exceptions.ParseError("unequal number of data points")
 
+        if num_measurements == 0:
+            return Response({}, status.HTTP_201_CREATED) # vacuous but correct
+
         sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=sampling_feature).first()
         if not sampling_feature:
             raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
