@@ -786,8 +786,8 @@ class TimeSeriesValuesApi(APIView):
                 # generated last in the loop
                 latest_values.append(result_values[-1])
 
-            # assume the last measurement datetime is the latest
-            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetimes[-1][0], connection)
+            # earliest measurement is the date of deployment
+            set_deployment_date(sampling_feature.sampling_feature_id, min(v[0] for v in measurement_datetimes), connection)
 
             insert_timeseries_result_values(result_values, connection)
             update_sensormeasurements(latest_values, connection)
