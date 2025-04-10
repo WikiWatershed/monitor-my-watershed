@@ -415,10 +415,37 @@ class SensorDataUploadView(APIView):
         )
 
 
-class CSVDataApi(View):
+class CSVDataApi(APIView):
     authentication_classes = ()
 
     date_format = "%Y-%m-%d %H:%M:%S"
+
+    @staticmethod
+    def extract_and_parse_datetime(request: WSGIRequest, field: str) -> datetime | None:
+        datetime_value = request.GET.get(field, None)
+        if not datetime_value:
+            return None
+        try:
+            return pd.to_datetime(datetime_value)
+        except ValueError:
+            raise exceptions.ValidationError(
+                detail=f"Invalid date format for parameter {field}.",
+                code=400,
+            )
+
+    @staticmethod
+    def extract_and_parse_resultid(request: WSGIRequest) -> List[int]:
+        result_ids = request.GET.get("result_ids", request.GET.get("result_id", None))
+        if not result_ids:
+            raise exceptions.ValidationError(
+                {"message": "result_id(s) not provided."}, code=400
+            )
+        try:
+            return [int(r) for r in result_ids.split(",")]
+        except ValueError:
+            raise exceptions.ValidationError(
+                {"message": "result_id(s) must be a list of integers."}, code=400
+            )
 
     def get(self, request: WSGIRequest, *args, **kwargs) -> HttpResponse:
         """
@@ -430,17 +457,25 @@ class CSVDataApi(View):
         example request to download csv data for multiple series:
                 curl -X GET http://localhost:8000/api.csv-values/?result_ids=100,101,102
         """
-        result_ids = []
-        if "result_id" in request.GET:
-            result_ids = [request.GET.get("result_id", [])]
-        elif "result_ids" in request.GET:
-            result_ids = request.GET["result_ids"].split(",")
 
-        if not len(result_ids):
-            return Response({"error": "Result ID(s) not found."})
+        result_ids = self.extract_and_parse_resultid(request)
+
+        # optional date range
+        max_datetime = self.extract_and_parse_datetime(request, "max_datetime")
+        min_datetime = self.extract_and_parse_datetime(request, "min_datetime")
+        if max_datetime and min_datetime and max_datetime < min_datetime:
+            return Response(
+                {"message": "Invalid date range: max_datetime is before min_datetime."},
+                code=400,
+            )
 
         try:
-            filename, csv_file = CSVDataApi.get_csv_file(result_ids, request=request)
+            filename, csv_file = CSVDataApi.get_csv_file(
+                result_ids,
+                request=request,
+                max_datetime=max_datetime,
+                min_datetime=min_datetime,
+            )
         except ValueError as e:
             return Response({"error": e.message})  # Time Series Result not found.
 
@@ -450,7 +485,10 @@ class CSVDataApi(View):
 
     @staticmethod
     def get_csv_file(
-        result_ids: List[str], request: WSGIRequest = None
+        result_ids: List[str],
+        request: WSGIRequest = None,
+        max_datetime=None,
+        min_datetime=None,
     ) -> Tuple[str, StringIO]:
         """
         Gathers time series data for the passed in result id's to generate a csv file for download
@@ -496,7 +534,9 @@ class CSVDataApi(View):
             CSVDataApi.generate_metadata(time_series_result, request=request)
         )
         csv_writer.writerow(CSVDataApi.get_csv_headers(time_series_result))
-        csv_writer.writerows(CSVDataApi.get_data_values(time_series_result))
+        csv_writer.writerows(
+            CSVDataApi.get_data_values(result_ids, max_datetime, min_datetime)
+        )
 
         result = time_series_result.first().result
 
@@ -547,11 +587,11 @@ class CSVDataApi(View):
         return varcodes
 
     @staticmethod
-    def get_data_values(time_series_results: QuerySet) -> object:
-        result_ids = [
-            result_id[0] for result_id in time_series_results.values_list("pk")
-        ]
-
+    def get_data_values(
+        result_ids: list[int],
+        max_datetime: datetime | None,
+        min_datetime: datetime | None,
+    ) -> object:
         query = (
             sqlalchemy.select(
                 odm2_models.TimeSeriesResultValues.resultid,
@@ -565,6 +605,15 @@ class CSVDataApi(View):
                 odm2_models.TimeSeriesResultValues.resultid,
             )
         )
+        if max_datetime:
+            query = query.filter(
+                odm2_models.TimeSeriesResultValues.valuedatetime <= max_datetime
+            )
+        if min_datetime:
+            query = query.filter(
+                odm2_models.TimeSeriesResultValues.valuedatetime >= min_datetime
+            )
+
         df = odm2_engine.read_query(query, output_format="dataframe")
 
         # convert into datetime for vector calculation to utc datetime
