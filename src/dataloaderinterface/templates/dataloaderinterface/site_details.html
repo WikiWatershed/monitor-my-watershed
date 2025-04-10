@@ -270,8 +270,9 @@
                 {% if can_administer_site or site.sensors.all %}
                     <div class="buttons-toolbar col-12 text-right">
                         {% if site.sensors.all %}
-                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect"
-                               href="{% url 'csv_data_service' %}?result_ids={{ site.sensors.all|join_sensor__result_ids }}"
+                            <a class="button-link mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect csv-download"
+                               result-ids="{{ site.sensors.all|join_sensor__result_ids }}"
+                               recent-date="{{ latest_measurement|date:'Y-m-d' }}"
                                download>
                                 <i class="material-icons center-icon">cloud_download</i>
                                 Download Sensor Data
@@ -362,7 +363,11 @@
                                                 </div>
 
                                                 {#  Download data button  #}
-                                                <a href="{% url 'csv_data_service' %}?result_id={{ sensor.result_id }}" download>
+                                                <a class="csv-download" 
+                                                    result-ids="{{ sensor.result_id }}" 
+                                                    recent-date="{{ sensor.last_measurement.value_datetime|date:'Y-m-d' }}"
+                                                    download
+                                                >
                                                     <span id="download-trigger-{{ forloop.counter0 }}"
                                                           class="fa fa-cloud-download download-trigger pull-right text-black"></span>
                                                 </a>
@@ -668,6 +673,24 @@
             </div>
         </div>
     </div>
+
+    <div id="csv-export-dialog" role="dialog" aria-hidden="true">
+        <div class="date-picker-container">
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="csv-min-datetime" class="datepicker">
+        </div>
+        <div class="date-picker-container">
+            <label for="endDate">End Date:</label>
+            <input type="date" id="csv-max-datetime" class="datepicker">
+        </div>
+        <div id="csv-export-instructions">
+            <ul>
+            <li>Dates for download filter are in UTC.</ui>
+            <li>You can set a field blank to no apply lower and/or update date filter.<ui>
+            </ul>
+        </div>
+    </div>
+
 
     {% if can_administer_site %}
     <div id="code-output-modal" class="modal fade" role="dialog" aria-hidden="true">
