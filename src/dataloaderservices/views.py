@@ -437,11 +437,15 @@ class CSVDataApi(APIView):
     def extract_and_parse_resultid(request: WSGIRequest) -> List[int]:
         result_ids = request.GET.get("result_ids", request.GET.get("result_id", None))
         if not result_ids:
-            return Response("result_id(s) not provided.", code=400)
+            raise exceptions.ValidationError(
+                {"message": "result_id(s) not provided."}, code=400
+            )
         try:
             return [int(r) for r in result_ids.split(",")]
         except ValueError:
-            return Response("result_id(s) must be a list of integers.", code=400)
+            raise exceptions.ValidationError(
+                {"message": "result_id(s) must be a list of integers."}, code=400
+            )
 
     def get(self, request: WSGIRequest, *args, **kwargs) -> HttpResponse:
         """

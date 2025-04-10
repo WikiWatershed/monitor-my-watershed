@@ -275,6 +275,17 @@ class SiteDetailView(DetailView):
                 [str(a["actionid"]) for a in context["streamwatch"]]
             )
 
+        #Get lastest measurement date to populate download csv feature 
+        latest_datetime = None
+        for sensor in context["site"].sensors.all():
+            if sensor.last_measurement.value_datetime is not None:
+                latest_datetime = (
+                    max(latest_datetime, sensor.last_measurement.value_datetime) 
+                    if latest_datetime is not None 
+                    else sensor.last_measurement.value_datetime
+                )
+        context["latest_measurement"] = latest_datetime
+
         try:
             context["hydroshare_account"] = self.request.user.hydroshare_account
         except AttributeError:
