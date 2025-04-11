@@ -47,6 +47,7 @@ odm2_models = odm2datamodels.models
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
 
+
 class ModelVariablesApi(APIView):
     authentication_classes = (SessionAuthentication,)
 
@@ -354,19 +355,19 @@ class SensorDataUploadView(APIView):
                         # this would allow us to return warning that result uuid is not recognized.
                         continue
 
-                    data_value = row[results_mapping['results'][uuid]['index']]
+                    data_value = row[results_mapping["results"][uuid]["index"]]
                     if len(data_value) == 0:
                         continue
                     result_value = TimeseriesResultValueTechDebt(
-                            result_id=sensor.result_id,
-                            data_value=data_value,
-                            utc_offset=results_mapping['utc_offset'],
-                            value_datetime=measurement_datetime,
-                            censor_code='Not censored',
-                            quality_code='None',
-                            time_aggregation_interval=1,
-                            time_aggregation_interval_unit=data_value_units.unit_id,
-                            ) 
+                        result_id=sensor.result_id,
+                        data_value=data_value,
+                        utc_offset=results_mapping["utc_offset"],
+                        value_datetime=measurement_datetime,
+                        censor_code="Not censored",
+                        quality_code="None",
+                        time_aggregation_interval=1,
+                        time_aggregation_interval_unit=data_value_units.unit_id,
+                    )
                     result_values.append(result_value)
 
             if len(result_values) > 100000:
@@ -562,7 +563,7 @@ class CSVDataApi(APIView):
 
     @staticmethod
     def get_csv_headers(ts_results: List[TimeSeriesResult]) -> None:
-        headers = ["DateTimeUTC", "TimeOffset", "DateTimeLocalStandard"]
+        headers = ["DateTimeUTC", "UTCOffset", "DateTimeLocalized"]
         var_codes = [
             ts_result.result.variable.variable_code for ts_result in ts_results
         ]
@@ -608,15 +609,17 @@ class CSVDataApi(APIView):
             )
         )
 
-        #the data is store relateive UTC time, we want to filter date relative to local time
-        #just pull and extra day on either side and then we can subset the data further down
+        # the data is store relateive UTC time, we want to filter date relative to local time
+        # just pull and extra day on either side and then we can subset the data further down
         if max_datetime:
             query = query.filter(
-                odm2_models.TimeSeriesResultValues.valuedatetime <= max_datetime + timedelta(days=1)
+                odm2_models.TimeSeriesResultValues.valuedatetime
+                <= max_datetime + timedelta(days=1)
             )
         if min_datetime:
             query = query.filter(
-                odm2_models.TimeSeriesResultValues.valuedatetime >= min_datetime - timedelta(days=1)
+                odm2_models.TimeSeriesResultValues.valuedatetime
+                >= min_datetime - timedelta(days=1)
             )
 
         df = odm2_engine.read_query(query, output_format="dataframe")
@@ -627,7 +630,7 @@ class CSVDataApi(APIView):
             df["valuedatetimeutcoffset"], unit="hours"
         )
 
-        #filter data based on filters
+        # filter data based on filters
         if max_datetime:
             df = df[df["valuedatetime_local"] <= max_datetime]
         if min_datetime:
@@ -779,12 +782,16 @@ class TimeSeriesValuesApi(APIView):
     def post(self, request, format=None):
         if not all(key in request.data for key in ("timestamp", "sampling_feature")):
             raise exceptions.ParseError("Required data not found in request.")
-        
-        sampling_feature = SamplingFeature.objects.filter(sampling_feature_uuid__exact=request.data.get("sampling_feature")).first()
+
+        sampling_feature = SamplingFeature.objects.filter(
+            sampling_feature_uuid__exact=request.data.get("sampling_feature")
+        ).first()
         if not sampling_feature:
-            raise exceptions.ParseError('Sampling Feature code does not match any existing site.')
-        
-        unit_id = Unit.objects.get(unit_name='hour minute').unit_id
+            raise exceptions.ParseError(
+                "Sampling Feature code does not match any existing site."
+            )
+
+        unit_id = Unit.objects.get(unit_name="hour minute").unit_id
 
         measurement_datetimes = []
         timestamps = request.data.get("timestamp")
@@ -794,29 +801,43 @@ class TimeSeriesValuesApi(APIView):
             try:
                 measurement_datetime = parse_datetime(timestamp)
             except ValueError:
-                raise exceptions.ParseError('The timestamp value is not valid.')
+                raise exceptions.ParseError("The timestamp value is not valid.")
             if not measurement_datetime:
-                raise exceptions.ParseError('The timestamp value is not well formatted.')
+                raise exceptions.ParseError(
+                    "The timestamp value is not well formatted."
+                )
             if measurement_datetime.utcoffset() is None:
-                raise exceptions.ParseError('The timestamp value requires timezone information.')
-            utc_offset = int(measurement_datetime.utcoffset().total_seconds() / timedelta(hours=1).total_seconds())
-            measurement_datetime = measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)
+                raise exceptions.ParseError(
+                    "The timestamp value requires timezone information."
+                )
+            utc_offset = int(
+                measurement_datetime.utcoffset().total_seconds()
+                / timedelta(hours=1).total_seconds()
+            )
+            measurement_datetime = measurement_datetime.replace(
+                tzinfo=None
+            ) - timedelta(hours=utc_offset)
             measurement_datetimes.append((measurement_datetime, utc_offset))
 
         num_measurements = len(measurement_datetimes)
-        measurement_data = {k: v if isinstance(v, list) else [v]
-            for k, v in request.data.items()}
+        measurement_data = {
+            k: v if isinstance(v, list) else [v] for k, v in request.data.items()
+        }
 
         if not all(len(m) == num_measurements for m in measurement_data.values()):
             raise exceptions.ParseError("unequal number of data points")
 
         with _db_engine.begin() as connection:
-            result_uuids = get_result_UUIDs(sampling_feature.sampling_feature_id, connection)
+            result_uuids = get_result_UUIDs(
+                sampling_feature.sampling_feature_id, connection
+            )
             if not result_uuids:
-                raise exceptions.ParseError(f"No results_uuids matched to sampling_feature '{sampling_feature.sampling_feature_uuid}'")
+                raise exceptions.ParseError(
+                    f"No results_uuids matched to sampling_feature '{sampling_feature.sampling_feature_uuid}'"
+                )
 
-            result_values = [] # values for all times
-            latest_values = [] # values for only the latest time (i.e. last)
+            result_values = []  # values for all times
+            latest_values = []  # values for only the latest time (i.e. last)
             for key, values in measurement_data.items():
                 try:
                     result_id = result_uuids[key]
@@ -824,50 +845,63 @@ class TimeSeriesValuesApi(APIView):
                     continue
 
                 for vi, value in enumerate(values):
-                    result_values.append(TimeseriesResultValueTechDebt(
-                        result_id=result_id,
-                        data_value=value,
-                        value_datetime=measurement_datetimes[vi][0],
-                        utc_offset=measurement_datetimes[vi][1],
-                        censor_code='Not censored',
-                        quality_code='None',
-                        time_aggregation_interval=1,
-                        time_aggregation_interval_unit=unit_id
-                    ))
+                    result_values.append(
+                        TimeseriesResultValueTechDebt(
+                            result_id=result_id,
+                            data_value=value,
+                            value_datetime=measurement_datetimes[vi][0],
+                            utc_offset=measurement_datetimes[vi][1],
+                            censor_code="Not censored",
+                            quality_code="None",
+                            time_aggregation_interval=1,
+                            time_aggregation_interval_unit=unit_id,
+                        )
+                    )
                 # nab latest value as that was the one we (by assumption)
                 # generated last in the loop
                 latest_values.append(result_values[-1])
 
             # assume the last measurement datetime is the latest
-            set_deployment_date(sampling_feature.sampling_feature_id, measurement_datetimes[-1][0], connection)
+            set_deployment_date(
+                sampling_feature.sampling_feature_id,
+                measurement_datetimes[-1][0],
+                connection,
+            )
 
             insert_timeseries_result_values(result_values, connection)
             update_sensormeasurements(latest_values, connection)
             sync_result_table(latest_values, num_measurements, connection)
-           
+
         return Response({}, status.HTTP_201_CREATED)
 
 
-def get_result_UUIDs(sampling_feature_id:str, connection) -> Union[Dict[str, str],None]:
+def get_result_UUIDs(
+    sampling_feature_id: str, connection
+) -> Union[Dict[str, str], None]:
     try:
-        query = text("SELECT r.resultuuid, r.resultid FROM odm2.results AS r " \
-                    "JOIN odm2.featureactions AS fa ON r.featureactionid = fa.featureactionid "\
-                    "WHERE fa.samplingfeatureid = ':sampling_feature_id';")
+        query = text(
+            "SELECT r.resultuuid, r.resultid FROM odm2.results AS r "
+            "JOIN odm2.featureactions AS fa ON r.featureactionid = fa.featureactionid "
+            "WHERE fa.samplingfeatureid = ':sampling_feature_id';"
+        )
         result = connection.execute(query, sampling_feature_id=sampling_feature_id)
         return {str(ruuid): rid for ruuid, rid in result}
     except:
         return None
 
-class TimeseriesResultValueTechDebt():
-    def __init__(self, 
-            result_id:str,
-            data_value:float, 
-            value_datetime:datetime, 
-            utc_offset:int, 
-            censor_code:str,
-            quality_code:str, 
-            time_aggregation_interval:int, 
-            time_aggregation_interval_unit:int) -> None:
+
+class TimeseriesResultValueTechDebt:
+    def __init__(
+        self,
+        result_id: str,
+        data_value: float,
+        value_datetime: datetime,
+        utc_offset: int,
+        censor_code: str,
+        quality_code: str,
+        time_aggregation_interval: int,
+        time_aggregation_interval_unit: int,
+    ) -> None:
         self.result_id = result_id
         self.data_value = data_value
         self.utc_offset = utc_offset
@@ -877,102 +911,135 @@ class TimeseriesResultValueTechDebt():
         self.time_aggregation_interval = time_aggregation_interval
         self.time_aggregation_interval_unit = time_aggregation_interval_unit
 
-#dataloader utility function
-def update_sensormeasurements(result_values:TimeseriesResultValueTechDebt, connection) -> None:
-    query = text('INSERT INTO public.dataloaderinterface_sensormeasurement as m '
-        'VALUES ((select id from public.dataloaderinterface_sitesensor '
+
+# dataloader utility function
+def update_sensormeasurements(
+    result_values: TimeseriesResultValueTechDebt, connection
+) -> None:
+    query = text(
+        "INSERT INTO public.dataloaderinterface_sensormeasurement as m "
+        "VALUES ((select id from public.dataloaderinterface_sitesensor "
         'where "ResultID" = :result_id limit 1), :datetime, :utc_offset, :data_value) '
-        'on conflict (sensor_id) do update set '
-        'value_datetime = excluded.value_datetime, '
-        'value_datetime_utc_offset = excluded.value_datetime_utc_offset, '
-        'data_value = excluded.data_value '
-        'where m.value_datetime < excluded.value_datetime;')
-    result = connection.execute(query, 
-        [{
-            "result_id": result_value.result_id,
-            "datetime": result_value.value_datetime,
-            "utc_offset": timedelta(hours=result_value.utc_offset),
-            "data_value": result_value.data_value,
-        } for result_value in result_values]
+        "on conflict (sensor_id) do update set "
+        "value_datetime = excluded.value_datetime, "
+        "value_datetime_utc_offset = excluded.value_datetime_utc_offset, "
+        "data_value = excluded.data_value "
+        "where m.value_datetime < excluded.value_datetime;"
+    )
+    result = connection.execute(
+        query,
+        [
+            {
+                "result_id": result_value.result_id,
+                "datetime": result_value.value_datetime,
+                "utc_offset": timedelta(hours=result_value.utc_offset),
+                "data_value": result_value.data_value,
+            }
+            for result_value in result_values
+        ],
     )
 
-#dataloader utility function
-def set_deployment_date(sample_feature_id:int, date_time:datetime, connection) -> None:
-    query = text('UPDATE public.dataloaderinterface_siteregistration '\
-        'SET "DeploymentDate"=:date_time '\
-        'WHERE "DeploymentDate" IS NULL AND ' \
-        '"SamplingFeatureID"=:sample_feature_id'                )
-    result = connection.execute(query, 
-        sample_feature_id=sample_feature_id,
-        date_time=date_time
-        )
+
+# dataloader utility function
+def set_deployment_date(
+    sample_feature_id: int, date_time: datetime, connection
+) -> None:
+    query = text(
+        "UPDATE public.dataloaderinterface_siteregistration "
+        'SET "DeploymentDate"=:date_time '
+        'WHERE "DeploymentDate" IS NULL AND '
+        '"SamplingFeatureID"=:sample_feature_id'
+    )
+    result = connection.execute(
+        query, sample_feature_id=sample_feature_id, date_time=date_time
+    )
     return None
 
 
-def sync_result_table(result_values: TimeseriesResultValueTechDebt, num_measurements, connection) -> None:
-    query = text("UPDATE odm2.results SET valuecount = valuecount + :num_measurements, " \
-        "resultdatetime = GREATEST(:result_datetime, resultdatetime)" \
-        "WHERE resultid=:result_id; ")
-    result = connection.execute(query, 
-        [{
-            "result_id": result_value.result_id,
-            "result_datetime": result_value.value_datetime,
-            "num_measurements": num_measurements,
-        } for result_value in result_values]
+def sync_result_table(
+    result_values: TimeseriesResultValueTechDebt, num_measurements, connection
+) -> None:
+    query = text(
+        "UPDATE odm2.results SET valuecount = valuecount + :num_measurements, "
+        "resultdatetime = GREATEST(:result_datetime, resultdatetime)"
+        "WHERE resultid=:result_id; "
+    )
+    result = connection.execute(
+        query,
+        [
+            {
+                "result_id": result_value.result_id,
+                "result_datetime": result_value.value_datetime,
+                "num_measurements": num_measurements,
+            }
+            for result_value in result_values
+        ],
     )
     return result
 
 
-def insert_timeseries_result_values(result_values : TimeseriesResultValueTechDebt, connection=None) -> None:
+def insert_timeseries_result_values(
+    result_values: TimeseriesResultValueTechDebt, connection=None
+) -> None:
     try:
-        query = text("INSERT INTO odm2.timeseriesresultvalues " \
-            "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, " \
-            "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) " \
-            "VALUES ( " \
-                ":result_id, " \
-                ":data_value, " \
-                ":value_datetime, " \
-                ":utc_offset, " \
-                ":censor_code, " \
-                ":quality_code, " \
-                ":time_aggregation_interval, " \
-                ":time_aggregation_interval_unit) on conflict do nothing;")
-        result = connection.execute(query,
-            [vars(v) for v in result_values]
+        query = text(
+            "INSERT INTO odm2.timeseriesresultvalues "
+            "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, "
+            "censorcodecv, qualitycodecv, timeaggregationinterval, timeaggregationintervalunitsid) "
+            "VALUES ( "
+            ":result_id, "
+            ":data_value, "
+            ":value_datetime, "
+            ":utc_offset, "
+            ":censor_code, "
+            ":quality_code, "
+            ":time_aggregation_interval, "
+            ":time_aggregation_interval_unit) on conflict do nothing;"
         )
+        result = connection.execute(query, [vars(v) for v in result_values])
         return None
     except sqlalchemy.exc.SQLAlchemyError as e:
         return f"Failed to INSERT data"
 
 
 def insert_timeseries_result_values_bulk(result_values, connection):
-    connection.execute(text("create temporary table upload "
-        "(resultid bigint  NOT NULL,"
-        "datavalue double precision  NOT NULL,"
-        "valuedatetime timestamp  NOT NULL,"
-        "valuedatetimeutcoffset integer  NOT NULL,"
-        "censorcodecv varchar (255) NOT NULL,"
-        "qualitycodecv varchar (255) NOT NULL,"
-        "timeaggregationinterval double precision  NOT NULL,"
-        "timeaggregationintervalunitsid integer  NOT NULL) on commit drop;"))
+    connection.execute(
+        text(
+            "create temporary table upload "
+            "(resultid bigint  NOT NULL,"
+            "datavalue double precision  NOT NULL,"
+            "valuedatetime timestamp  NOT NULL,"
+            "valuedatetimeutcoffset integer  NOT NULL,"
+            "censorcodecv varchar (255) NOT NULL,"
+            "qualitycodecv varchar (255) NOT NULL,"
+            "timeaggregationinterval double precision  NOT NULL,"
+            "timeaggregationintervalunitsid integer  NOT NULL) on commit drop;"
+        )
+    )
 
     result_data = StringIO()
     for rv in result_values:
-        result_data.write(f"{rv.result_id}\t{rv.data_value}\t"
+        result_data.write(
+            f"{rv.result_id}\t{rv.data_value}\t"
             f"{rv.value_datetime}\t{rv.utc_offset}\t{rv.censor_code}\t"
             f"{rv.quality_code}\t{rv.time_aggregation_interval}\t"
-            f"{rv.time_aggregation_interval_unit}\n")
+            f"{rv.time_aggregation_interval_unit}\n"
+        )
     result_data.seek(0)
 
     cursor = connection.connection.cursor()
     cursor.copy_from(result_data, "upload")
     cursor.close()
 
-    connection.execute(text("insert into odm2.timeseriesresultvalues "
-        "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, "
-        "censorcodecv, qualitycodecv, timeaggregationinterval, "
-        "timeaggregationintervalunitsid) "
-        "(select * from upload) on conflict do nothing;"))
+    connection.execute(
+        text(
+            "insert into odm2.timeseriesresultvalues "
+            "(resultid, datavalue, valuedatetime, valuedatetimeutcoffset, "
+            "censorcodecv, qualitycodecv, timeaggregationinterval, "
+            "timeaggregationintervalunitsid) "
+            "(select * from upload) on conflict do nothing;"
+        )
+    )
 
 
 class Organizations(APIView):
