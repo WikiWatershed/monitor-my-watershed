@@ -560,7 +560,7 @@ class CSVDataApi(APIView):
 
     @staticmethod
     def get_csv_headers(ts_results: List[TimeSeriesResult]) -> None:
-        headers = ["DateTime", "TimeOffset", "DateTimeUTC"]
+        headers = ["DateTimeUTC", "TimeOffset", "DateTimeLocalStandard"]
         var_codes = [
             ts_result.result.variable.variable_code for ts_result in ts_results
         ]
