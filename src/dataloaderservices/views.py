@@ -562,7 +562,7 @@ class CSVDataApi(APIView):
 
     @staticmethod
     def get_csv_headers(ts_results: List[TimeSeriesResult]) -> None:
-        headers = ["DateTime", "TimeOffset", "DateTimeUTC"]
+        headers = ["DateTimeUTC", "TimeOffset", "DateTimeLocalStandard"]
         var_codes = [
             ts_result.result.variable.variable_code for ts_result in ts_results
         ]
@@ -607,27 +607,36 @@ class CSVDataApi(APIView):
                 odm2_models.TimeSeriesResultValues.resultid,
             )
         )
+
+        #the data is store relateive UTC time, we want to filter date relative to local time
+        #just pull and extra day on either side and then we can subset the data further down
         if max_datetime:
             query = query.filter(
-                odm2_models.TimeSeriesResultValues.valuedatetime <= max_datetime
+                odm2_models.TimeSeriesResultValues.valuedatetime <= max_datetime + timedelta(days=1)
             )
         if min_datetime:
             query = query.filter(
-                odm2_models.TimeSeriesResultValues.valuedatetime >= min_datetime
+                odm2_models.TimeSeriesResultValues.valuedatetime >= min_datetime - timedelta(days=1)
             )
 
         df = odm2_engine.read_query(query, output_format="dataframe")
 
         # convert into datetime for vector calculation to utc datetime
         df["valuedatetime"] = pd.to_datetime(df["valuedatetime"])
-        df["valuedatetime_utc"] = df["valuedatetime"] + pd.to_timedelta(
+        df["valuedatetime_local"] = df["valuedatetime"] + pd.to_timedelta(
             df["valuedatetimeutcoffset"], unit="hours"
         )
+
+        #filter data based on filters
+        if max_datetime:
+            df = df[df["valuedatetime_local"] <= max_datetime]
+        if min_datetime:
+            df = df[df["valuedatetime_local"] >= min_datetime]
 
         piv = pd.pivot_table(
             df,
             ["datavalue"],
-            ["valuedatetime", "valuedatetimeutcoffset", "valuedatetime_utc"],
+            ["valuedatetime", "valuedatetimeutcoffset", "valuedatetime_local"],
             ["resultid"],
         )
 
