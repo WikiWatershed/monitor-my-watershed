@@ -780,11 +780,28 @@ class TimeSeriesValuesApi(APIView):
     authentication_classes = (UUIDAuthentication,)
 
     def post(self, request, format=None):
-        if not all(key in request.data for key in ("timestamp", "sampling_feature")):
+        # list-ify all request data
+        measurement_data = {
+            k: v if isinstance(v, list) else [v] for k, v in request.data.items()
+        }
+        # remove non-UUID keys and process now, leaving measurement UUID keys for later
+        try:
+            sampling_feature = measurement_data.pop("sampling_feature")[0]
+            timestamps = measurement_data.pop("timestamp")
+        except (KeyError, IndexError):
             raise exceptions.ParseError("Required data not found in request.")
 
+        # ensure each measurement has the same number of data points. there's
+        # one timestamp per point so we use that as the expected number.
+        num_measurements = len(timestamps)
+        if not all(len(m) == num_measurements for m in measurement_data.values()):
+            raise exceptions.ParseError("unequal number of data points")
+
+        if num_measurements == 0:
+            return Response({}, status.HTTP_201_CREATED)  # vacuous but correct
+
         sampling_feature = SamplingFeature.objects.filter(
-            sampling_feature_uuid__exact=request.data.get("sampling_feature")
+            sampling_feature_uuid__exact=sampling_feature
         ).first()
         if not sampling_feature:
             raise exceptions.ParseError(
@@ -794,10 +811,9 @@ class TimeSeriesValuesApi(APIView):
         unit_id = Unit.objects.get(unit_name="hour minute").unit_id
 
         measurement_datetimes = []
-        timestamps = request.data.get("timestamp")
-        if not isinstance(timestamps, list):
-            timestamps = [timestamps]
-        for timestamp in timestamps:
+        latest_measurement_idx = None
+        latest_measurement_datetime = None  # does not include timezone!
+        for ti, timestamp in enumerate(timestamps):
             try:
                 measurement_datetime = parse_datetime(timestamp)
             except ValueError:
@@ -817,15 +833,13 @@ class TimeSeriesValuesApi(APIView):
             measurement_datetime = measurement_datetime.replace(
                 tzinfo=None
             ) - timedelta(hours=utc_offset)
+            if (
+                latest_measurement_datetime is None
+                or measurement_datetime > latest_measurement_datetime
+            ):
+                latest_measurement_idx = ti
+                latest_measurement_datetime = measurement_datetime
             measurement_datetimes.append((measurement_datetime, utc_offset))
-
-        num_measurements = len(measurement_datetimes)
-        measurement_data = {
-            k: v if isinstance(v, list) else [v] for k, v in request.data.items()
-        }
-
-        if not all(len(m) == num_measurements for m in measurement_data.values()):
-            raise exceptions.ParseError("unequal number of data points")
 
         with _db_engine.begin() as connection:
             result_uuids = get_result_UUIDs(
@@ -837,7 +851,7 @@ class TimeSeriesValuesApi(APIView):
                 )
 
             result_values = []  # values for all times
-            latest_values = []  # values for only the latest time (i.e. last)
+            latest_values = []  # values for only the latest time
             for key, values in measurement_data.items():
                 try:
                     result_id = result_uuids[key]
@@ -857,14 +871,13 @@ class TimeSeriesValuesApi(APIView):
                             time_aggregation_interval_unit=unit_id,
                         )
                     )
-                # nab latest value as that was the one we (by assumption)
-                # generated last in the loop
-                latest_values.append(result_values[-1])
+                    if vi == latest_measurement_idx:
+                        latest_values.append(result_values[-1])
 
-            # assume the last measurement datetime is the latest
+            # earliest measurement is the date of deployment
             set_deployment_date(
                 sampling_feature.sampling_feature_id,
-                measurement_datetimes[-1][0],
+                min(v[0] for v in measurement_datetimes),
                 connection,
             )
 
