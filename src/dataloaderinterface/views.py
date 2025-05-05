@@ -40,8 +40,9 @@ import accounts
 
 from odm2 import odm2datamodels
 from sqlalchemy import text
-from odm2.crud.organization import read_organization_names 
+from odm2.crud.organization import read_organization_names
 from odm2 import create_session
+
 
 class LoginRequiredMixin(object):
     @classmethod
@@ -100,23 +101,23 @@ class SitesListView(LoginRequiredMixin, ListView):
             .with_latest_measurement_id()
             .followed_by(user_id=self.request.user.id)
         )
-        #we want to preorder affiliations 
+        # we want to preorder affiliations
         affiliated_orgs = {}
         for affiliation in self.request.user.affiliation:
             org = affiliation.organization
             if org.organization_type.name == "Individual":
-                affiliated_orgs[' '] = org
+                affiliated_orgs[" "] = org
                 continue
             affiliated_orgs[org.organization_name] = org
         context["organizations"] = dict(sorted(affiliated_orgs.items())).values()
-        
+
         organization_site_counts = {}
-        for site in context['sites']:
+        for site in context["sites"]:
             try:
                 organization_site_counts[site.organization_id] += 1
             except KeyError:
                 organization_site_counts[site.organization_id] = 1
-        context['organization_site_counts'] = organization_site_counts        
+        context["organization_site_counts"] = organization_site_counts
 
         return context
 
@@ -165,13 +166,15 @@ class BrowseSitesListView(ListView):
             filters[f] = val
         context["filters"] = json.dumps(filters)
 
-        #pull data from database
+        # pull data from database
         context["data"] = self.get_site_data()
 
-        #set ownership status
-        organization_ids = request.user.organization_id 
+        # set ownership status
+        organization_ids = request.user.organization_id
         for d in context["data"]:
-            d["ownership_status"] = 'affiliated' if d["organization_id"] in organization_ids else ''
+            d["ownership_status"] = (
+                "affiliated" if d["organization_id"] in organization_ids else ""
+            )
 
         return context
 
@@ -180,10 +183,10 @@ class BrowseSitesListView(ListView):
         context = self.get_context_data(request)
         return self.render_to_response(context)
 
-    #TODO: move to crud endpoint that uses SQLAlchemy models
+    # TODO: move to crud endpoint that uses SQLAlchemy models
     def get_site_data(self):
         """Method to fetch site data required for template"""
-        sql = '''
+        sql = """
             WITH last_measurement AS (
                 SELECT 
                     ss."RegistrationID" 
@@ -227,13 +230,12 @@ class BrowseSitesListView(ListView):
             JOIN odm2.organizations AS org ON sr."OrganizationID" = org.organizationid
             LEFT JOIN last_measurement AS lm ON lm."RegistrationID" = sr."RegistrationID"
             LEFT JOIN leafpack AS lp ON lp.site_registration_id = sr."RegistrationID"
-        '''
+        """
 
         with odm2datamodels.odm2_engine.session_maker() as session:
             result = session.execute(text(sql)).mappings().all()
 
         return [dict(d) for d in result]
-
 
 
 class SiteDetailView(DetailView):
@@ -275,13 +277,15 @@ class SiteDetailView(DetailView):
                 [str(a["actionid"]) for a in context["streamwatch"]]
             )
 
-        #Get lastest measurement date to populate download csv feature 
+        # Get lastest measurement date to populate download csv feature
         latest_datetime = None
         for sensor in context["site"].sensors.all():
-            if sensor.last_measurement.value_datetime is not None:
+            if hasattr(sensor, "last_measurement") and hasattr(
+                sensor.last_measurement, "value_datetime"
+            ):
                 latest_datetime = (
-                    max(latest_datetime, sensor.last_measurement.value_datetime) 
-                    if latest_datetime is not None 
+                    max(latest_datetime, sensor.last_measurement.value_datetime)
+                    if latest_datetime is not None
                     else sensor.last_measurement.value_datetime
                 )
         context["latest_measurement"] = latest_datetime
@@ -414,14 +418,14 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         data = self.request.POST or None
         site_registration = self.get_object()
-        
+
         form = self.get_form_class()(data=data, instance=site_registration)
-        
-        #choices should be a list of tuples with org and org name
-        #for general user, we need to filter to only the organizations affiliated with the account
+
+        # choices should be a list of tuples with org and org name
+        # for general user, we need to filter to only the organizations affiliated with the account
         user = self.request.user
         organization_ids = [a.organization.organization_id for a in user.affiliation]
-        #for staff/admins if users is site admin they should see all organizations 
+        # for staff/admins if users is site admin they should see all organizations
         if user.is_staff:
             organization_ids = None
 
@@ -429,17 +433,20 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         session = create_session()
         organizations = read_organization_names(session, organization_ids)
 
-        #process organization records into a displayable name
+        # process organization records into a displayable name
         for org in organizations:
             display_name = org.organizationname
-            #if this is an individual account we will want to display their name instead
+            # if this is an individual account we will want to display their name instead
             if org.organizationtypecv == "Individual":
-                prefix = '(Individual - Myself)' if org.accountid == user.id else '(Individual)'
-                display_name = f'{prefix} {org.accountfirstname} {org.accountlastname}'
-            choices.append((org.organizationid,display_name))
+                prefix = (
+                    "(Individual - Myself)"
+                    if org.accountid == user.id
+                    else "(Individual)"
+                )
+                display_name = f"{prefix} {org.accountfirstname} {org.accountlastname}"
+            choices.append((org.organizationid, display_name))
         form.fields["organization_id"].choices = choices
         return form
-        
 
     def get_queryset(self):
         return super(SiteUpdateView, self).get_queryset().with_sensors()
@@ -488,9 +495,7 @@ class SiteUpdateView(LoginRequiredMixin, UpdateView):
         notify_form = SiteAlertForm(request.POST)
 
         if form.is_valid() and notify_form.is_valid():
-            form.instance.organization_id = (
-                form.cleaned_data["organization_id"]
-            )
+            form.instance.organization_id = form.cleaned_data["organization_id"]
 
             account = accounts.models.Account.objects.get(pk=self.request.user.user_id)
             site_alert = account.site_alerts.filter(
@@ -547,13 +552,15 @@ class SiteRegistrationView(LoginRequiredMixin, CreateView):
     def get_form(self, form_class=None):
         data = self.request.POST or None
         form = self.get_form_class()(initial=self.get_default_data(), data=data)
-        
-        #set list of affiliation to only those of the user
+
+        # set list of affiliation to only those of the user
         choices = []
         for a in self.request.user.affiliation:
-            choices.append((a.organization.organization_id,a.organization.display_name))
+            choices.append(
+                (a.organization.organization_id, a.organization.display_name)
+            )
         form.fields["organization_id"].choices = choices
-        
+
         return form
 
     def get_context_data(self, **kwargs):
