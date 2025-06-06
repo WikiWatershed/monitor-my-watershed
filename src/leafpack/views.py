@@ -17,6 +17,8 @@ from django.core.management import call_command
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 
+from accounts.models import Account
+
 from .models import LeafPack, Macroinvertebrate, LeafPackType, LeafPackSensitivityGroup
 from .forms import LeafPackForm, LeafPackBugForm, LeafPackBugFormFactory, LeafPackBug
 
@@ -94,7 +96,9 @@ class LeafPackUpdateCreateMixin(LeafPackViewMixin):
                 _ = LeafPackType.objects.get(name=other_type.strip())
             except ObjectDoesNotExist:
                 LeafPackType.objects.create(
-                    name=other_type.strip(), created_by=self.request.user
+                    name=other_type.strip(),
+                    # created_by is expecting a Account object from the Django Models
+                    created_by=Account.objects.get(accountid=self.request.user.id),
                 )
 
 
