@@ -36,6 +36,7 @@ from dataloaderservices.auth import UUIDAuthentication
 from dataloaderservices.serializers import OrganizationSerializer
 from leafpack.models import LeafPack
 from odm2 import odm2datamodels
+from odm2.crud.public import site_registration_followed_by as srfb_crud
 
 _dbsettings = settings.DATABASES["default"]
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
@@ -213,10 +214,15 @@ class FollowSiteApi(APIView):
         sampling_feature_code = request.data["sampling_feature_code"]
         site = SiteRegistration.objects.get(sampling_feature_code=sampling_feature_code)
 
+        user = request.user
         if action == "follow":
-            request.user.followed_sites.add(site)
+            srfb_crud.create_site_registration_followed_by(
+                site.registration_id, user.id
+            )
         elif action == "unfollow":
-            request.user.followed_sites.remove(site)
+            srfb_crud.delete_site_registration_followed_by(
+                site.registration_id, user.id
+            )
 
         return Response({}, status.HTTP_200_OK)
 
