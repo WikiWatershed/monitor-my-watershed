@@ -47,7 +47,7 @@ class Command(BaseCommand):
         api_url = '/api/v1'
         request_uri = '%s%s/{cv}/?format=json' % (base_url, api_url)
 
-        for cv_name in vocabularies_map.iterkeys():
+        for cv_name in vocabularies_map.keys():
             vocabulary_model = vocabularies_map[cv_name]
             print('Getting %s vocabulary' % vocabulary_model._meta.verbose_name)
 
@@ -65,6 +65,16 @@ class Command(BaseCommand):
             if not len(to_add):
                 print('- Nothing to add here.')
                 continue
+
+            # remove duplicates to avoid the database insert failing due
+            # to a unique constraint violation
+            seen_names = set()
+            deduplicated_add = []
+            for concept in response['objects']:
+                if concept['name'] not in seen_names:
+                    seen_names.add(concept['name'])
+                    deduplicated_add.append(concept)
+            to_add = deduplicated_add
 
             vocabulary_objects = [vocabulary_model(
                 term=vocabulary['term'],

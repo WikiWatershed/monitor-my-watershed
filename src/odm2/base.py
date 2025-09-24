@@ -26,6 +26,7 @@ from .automap_models import simulation
 from .automap_models import auth
 
 from odm2.models import results as _results
+from odm2.models import public as _public
 
 OUTPUT_FORMATS = ("json", "dataframe", "dict", "records")
 
@@ -225,8 +226,9 @@ class Models:
         self._base_model = base_model
 
         # models that are declaratively mapped.
-        self.__add_model(_results.TimeSeriesResults),
+        (self.__add_model(_results.TimeSeriesResults),)
         self.__add_model(_results.TimeSeriesResultValues)
+        self.__add_model(_public.SiteRegisteredFollowedBy)
 
         self.__process_schema(annotations)
         self.__process_schema(core)
@@ -278,7 +280,10 @@ class ODM2DataModels:
         self._model_base = self._prepare_model_base()
         self.models = Models(self._model_base)
         if not self._cached:
-            self._prepare_automap_models()
+            try:
+                self._prepare_automap_models()
+            except sqlalchemy.exc.OperationalError:
+                warnings.warn('Unable to prepare models, is database up?', RuntimeWarning)
 
     def _prepare_model_base(self):
         try:
