@@ -42,6 +42,19 @@
 
     {% endblock %}
 
+    {% block google_analytics %}
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-W3HB190PJJ"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-W3HB190PJJ');
+        </script>
+    {% endblock google_analytics %}
+
+
 </head>
 
 <body>
