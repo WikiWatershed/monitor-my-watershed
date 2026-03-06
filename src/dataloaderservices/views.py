@@ -46,7 +46,9 @@ from dataloaderservices.serializers import OrganizationSerializer
 from leafpack.models import LeafPack
 from odm2 import odm2datamodels
 from odm2.crud.public import site_registration_followed_by as srfb_crud
+from accounts.base_user import User
 
+# TODO: Dependency injection?
 _dbsettings = settings.DATABASES["default"]
 _connection_str = f"postgresql://{_dbsettings['USER']}:{_dbsettings['PASSWORD']}@{_dbsettings['HOST']}:{_dbsettings['PORT']}/{_dbsettings['NAME']}"
 _db_engine = sqlalchemy.create_engine(_connection_str, pool_size=10, pool_recycle=1800)
@@ -56,6 +58,8 @@ odm2_models = odm2datamodels.models
 
 # TODO: Check user permissions to edit, add, or remove stuff with a permissions class.
 # TODO: Use generic api views for create, edit, delete, and list.
+
+ADMIN_ORG_ID = getattr(settings, "ADMIN_ORG_ID", -1)
 
 
 class ModelVariablesApi(APIView):
@@ -113,17 +117,13 @@ class RegisterSensorApi(APIView):
             action = self.__create_missing_action(registration.sampling_feature)
 
         # create action-by record
-        affiliation = None
-        for a in self.request.user.affiliation:
-            if a.organization_id == registration.organization_id:
-                affiliation = a
-                break
-
-        # TODO: we have another edge case here. If an admin registers a sensor on behalf of another user
-        # There may not be an affiliation record for the admin user with the organization that owns the site.
-        # For now, we skip creating the action-by record.
-        if affiliation:
-            action.action_by.create(affiliation=affiliation, is_action_lead=True)
+        try:
+            self.__set_action_by(action, self.request.user, registration)
+        except exceptions.PermissionDenied:
+            return Response(
+                {"error": "Unable to associate action with user."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         site_sensor = SiteSensor.objects.create(
             registration=registration,
@@ -156,6 +156,36 @@ class RegisterSensorApi(APIView):
         feature_action.save()
 
         return action
+
+    def __set_action_by(
+        self, action: Action, user: User, registration: SiteRegistration
+    ) -> None:
+        # try to identify the affiliation for the user that is associated with the organization that owns the site.
+        for affiliation in user.affiliation:
+            if affiliation.organization_id == registration.organization_id:
+                action.action_by.create(affiliation=affiliation, is_action_lead=True)
+                return
+
+        # if we failed to find an affiliation record for the user that matched the organization that owns the site,
+        # then the user is likely an site-admin and would have permissions to modify the site, but may not
+        # have an affiliation record with the organization that owns the site.
+        # In this case, we'll validate that the user is an admin, and then get admin's affiliation with
+        # the site admins organization.
+
+        # TODO: we have another edge case here. If an admin registers a sensor on behalf of another user
+        # There may not be an affiliation record for the admin user with the organization that owns the site.
+        # For now, we skip creating the action-by record.
+        if user.is_active:
+            for affiliation in user.affiliation:
+                if affiliation.organization_id == ADMIN_ORG_ID:
+                    action.action_by.create(
+                        affiliation=affiliation, is_action_lead=True
+                    )
+                    return
+
+        # If we made it this far, something is wrong and have not accounted for this edge case.
+        # raise exception, and main method should return a 403 - Forbidden.
+        raise exceptions.PermissionDenied("Unable to create action-by record.")
 
 
 class EditSensorApi(APIView):

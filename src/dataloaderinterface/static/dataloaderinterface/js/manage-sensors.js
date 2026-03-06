@@ -210,9 +210,11 @@ function initializeResultsForm() {
 
                 message = "Failed to add sensor.";
             }
-
             $("#add-sensor-button").prop("disabled", false).text("ADD NEW SENSOR");
             snackbarMsg(message);
+        }).fail(function(error){
+            $("#add-sensor-button").prop("disabled", false).text("ADD NEW SENSOR");
+            snackbarMsg(`Failed to add sensor with error status '${error.statusText}'. Please try again or contact support.`);
         });
     });
 
