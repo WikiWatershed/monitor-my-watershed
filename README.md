@@ -18,15 +18,20 @@ The main instance of this application is currently hosted at http://monitormywat
 A guide for deploying the data sharing portal is available [here](https://github.com/ODM2/ODM2DataSharingPortal/blob/master/doc/deployment_guide.md).
 
 ## Example POST Requests for Streaming Data
-The ODM2DataSharingPortal relies on devices that can push data to the web using HTTP POST requests. We've included some documentation where you can view [example POST requests](https://github.com/ODM2/ODM2WebSDL/blob/master/doc/example_rest_requests.md) to learn the syntax.
+The ODM2DataSharingPortal relies on devices that can push data to the web using HTTP POST requests. 
+We've included some documentation where you can view [example POST requests](https://github.com/ODM2/ODM2WebSDL/blob/master/doc/example_rest_requests.md) to learn the syntax.
 
 ## Accessing Data
 There are example notebooks for accessing data stored within Monitor My Watershed using both [R](https://github.com/WikiWatershed/MonitorMW-Client/blob/main/GetMonitorMyWatershed_R.ipynb) and [python](https://github.com/WikiWatershed/MonitorMW-Client/blob/main/GetMonitorMyWatershedData_Python.ipynb).
 These notebooks use the time series visualization (TSV) endpoint to access the data.
 Once a more formal API is developed, a python client to access that API will be in the [MonitorMW-Client repo](https://github.com/WikiWatershed/MonitorMW-Client).
 
-## EnviroDIY Datalogger Code and Libraries
-The source code for the EnviroDIY Mayfly loggers, examples, and libraries are hosted in GitHub within the EnviroDIY organization at https://github.com/EnviroDIY.
+## Creating a Logging Device
+Any device that can connect to the internet and make a HTTP POST request can publish data to Monitor My Watershed using the syntax linked to above.
+The primary firmware library developed for the EnviroDIY Mayfly, Stonefly, and other Arduino-based devices to collect sensor data and post it to Monitor My Watershed is [Modular Sensors](https://github.com/EnviroDIY/ModularSensors/).
+The Modular Sensors library supports is designed for low-power environmental data loggers.
+It supports dozens of different sensors.
+In addition to Monitor My Watershed, Modular Sensors can also be used to publish data to AWS IoT Core, ThingSpeak, and several other endpoints.
 
 ## Credits
 Funding for this work was provided by the William Penn Foundation under grant 158-15.
