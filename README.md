@@ -1,7 +1,10 @@
 # ODM2DataSharingPortal
-This repository contains the code for a Python-Django web application enabling users to upload, share, and display data from their environmental monitoring sites. Data can either be automatically streamed from Internet of Things (IoT) devices, manually uploaded via CSV files, or manually entered into forms.
+This repository contains the code for a Python-Django web application enabling users to upload, share, and display data from their environmental monitoring sites.
+Data can either be automatically streamed from Internet of Things (IoT) devices, manually uploaded via CSV files, or manually entered into forms.
 
-The ODM2 Data Sharing Portal is built on the [Observations Data Model Version 2 (ODM2)](http://www.odm2.org) information model and supporting software ecosystem, includuing an ODM2 database instance in PostgreSQL for data storage in the backend. Any environmental IoT device or computer can upload data to the web app via HTTP POST. Complete documentation is available in our open-access journal article ["Low-Cost, Open-Source, and Low-Power: But What to Do With the Data?"](https://doi.org/10.3389/feart.2019.00067).
+The ODM2 Data Sharing Portal is built on the [Observations Data Model Version 2 (ODM2)](http://www.odm2.org) information model and supporting software ecosystem, includuing an ODM2 database instance in PostgreSQL for data storage in the backend. \
+Any environmental IoT device or computer can upload data to the web app via HTTP POST.
+Complete documentation is available in our open-access journal article ["Low-Cost, Open-Source, and Low-Power: But What to Do With the Data?"](https://doi.org/10.3389/feart.2019.00067).
 
 ![Data Sharing Portal Architecture](https://github.com/ODM2/ODM2DataSharingPortal/blob/master/doc/ArchitectureDiagram/Data%20Sharing%20Portal%20Architecture%20with%20Logos%20-%20Copy.png)
 
@@ -17,8 +20,13 @@ A guide for deploying the data sharing portal is available [here](https://github
 ## Example POST Requests for Streaming Data
 The ODM2DataSharingPortal relies on devices that can push data to the web using HTTP POST requests. We've included some documentation where you can view [example POST requests](https://github.com/ODM2/ODM2WebSDL/blob/master/doc/example_rest_requests.md) to learn the syntax.
 
+## Accessing Data
+There are example notebooks for accessing data stored within Monitor My Watershed using both [R](https://github.com/WikiWatershed/MonitorMW-Client/blob/main/GetMonitorMyWatershed_R.ipynb) and [python](https://github.com/WikiWatershed/MonitorMW-Client/blob/main/GetMonitorMyWatershedData_Python.ipynb).
+These notebooks use the time series visualization (TSV) endpoint to access the data.
+Once a more formal API is developed, a python client to access that API will be in the [MonitorMW-Client repo](https://github.com/WikiWatershed/MonitorMW-Client).
+
 ## EnviroDIY Datalogger Code and Libraries
-The source code for the EnviroDIY Mayfly loggers, examples, and libraries are hosted in GitHub at https://github.com/EnviroDIY.
+The source code for the EnviroDIY Mayfly loggers, examples, and libraries are hosted in GitHub within the EnviroDIY organization at https://github.com/EnviroDIY.
 
 ## Credits
 Funding for this work was provided by the William Penn Foundation under grant 158-15.
