@@ -24,7 +24,16 @@ import sqlalchemy
 import sqlalchemy.exc
 from sqlalchemy.sql import text
 
-from dataloader.models import SamplingFeature, Unit, EquipmentModel, TimeSeriesResult
+from dataloader.models import (
+    Action,
+    ActionType,
+    FeatureAction,
+    Method,
+    SamplingFeature,
+    Unit,
+    EquipmentModel,
+    TimeSeriesResult,
+)
 from dataloaderinterface.forms import SiteSensorForm, SensorDataForm
 from dataloaderinterface.models import (
     SiteSensor,
@@ -89,10 +98,19 @@ class RegisterSensorApi(APIView):
             error_data = dict(form.errors)
             return Response(error_data, status=status.HTTP_206_PARTIAL_CONTENT)
 
-        registration = form.cleaned_data["registration"]
+        registration: SiteRegistration = form.cleaned_data["registration"]
         sensor_output = form.cleaned_data["output_variable"]
         height = form.cleaned_data["height"]
         notes = form.cleaned_data["sensor_notes"]
+
+        # TODO: Is first() safe here? What if there are multiple actions associated with a sampling feature?
+        action = registration.sampling_feature.actions.first()
+        # Handle edge case where site was created but actions failed.
+        if not action:
+            # Actions should be created by a Pub/Sub mechanism, that is call when the site registration was completed.
+            # See dataloaderinterface/signals.py for more details.
+            # If that failed, we need to create an action here to tie it to the new sensor/result record.
+            action = self.__create_missing_action(registration.sampling_feature)
 
         # create action-by record
         affiliation = None
@@ -101,8 +119,11 @@ class RegisterSensorApi(APIView):
                 affiliation = a
                 break
 
-        action = registration.sampling_feature.actions.first()
-        action.action_by.create(affiliation=affiliation, is_action_lead=True)
+        # TODO: we have another edge case here. If an admin registers a sensor on behalf of another user
+        # There may not be an affiliation record for the admin user with the organization that owns the site.
+        # For now, we skip creating the action-by record.
+        if affiliation:
+            action.action_by.create(affiliation=affiliation, is_action_lead=True)
 
         site_sensor = SiteSensor.objects.create(
             registration=registration,
@@ -116,6 +137,25 @@ class RegisterSensorApi(APIView):
             ),
             status=status.HTTP_201_CREATED,
         )
+
+    def __create_missing_action(self, sampling_feature: SamplingFeature):
+        # create the missing action
+        action: Action = Action(
+            action_type=ActionType.objects.get(name="Instrument deployment"),
+            method=Method.objects.get(method_id=2),
+            begin_datetime=datetime.utcnow(),
+            begin_datetime_utc_offset=0,
+        )
+        action.save()
+
+        # create a featureaction and assoicate with a the sampling_feature
+        feature_action: FeatureAction = FeatureAction(
+            sampling_feature=sampling_feature,
+            action=action,
+        )
+        feature_action.save()
+
+        return action
 
 
 class EditSensorApi(APIView):
