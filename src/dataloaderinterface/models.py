@@ -47,8 +47,8 @@ class SiteRegistration(models.Model):
     organization_id = models.IntegerField(db_column="OrganizationID", null=True)
 
     sampling_feature_id = models.IntegerField(db_column="SamplingFeatureID", null=True)
-    #TODO: We should deprecate sampling_feature_code and sampling_feature_name in favor of 
-    #storing that information in the odm2.samplingfeatures table and then accessing via foreign key
+    # TODO: We should deprecate sampling_feature_code and sampling_feature_name in favor of
+    # storing that information in the odm2.samplingfeatures table and then accessing via foreign key
     sampling_feature_code = models.CharField(
         max_length=50, unique=True, db_column="SamplingFeatureCode"
     )
@@ -82,9 +82,11 @@ class SiteRegistration(models.Model):
         db_column="streamwatch_assessments", blank=True, null=True, default=0
     )
 
+    block_datastream = models.BooleanField(db_column="block_datastream", default=False)
+
     # TODO: VERIFY THIS BEHAVIOR
     followed_by = models.ManyToManyField(
-        accounts.models.Account, related_name="followed_sites"
+        accounts.models.Account, related_name="followed_sites", null=True, blank=True
     )
     alert_listeners = models.ManyToManyField(
         accounts.models.Account, related_name="+", through="SiteAlert"

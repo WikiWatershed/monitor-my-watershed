@@ -314,6 +314,15 @@ class SensorDataUploadView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        if _is_site_data_blocked(registration.sampling_feature_id):
+            return Response(
+                {
+                    "error": "This site has not paid for a subscription and exceeds the allowed data upload "
+                    + "limit for the free tier. Data upload not allowed without payment. Please contact support."
+                },
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         form = SensorDataForm(request.POST, request.FILES)
 
         if not form.is_valid():
@@ -814,6 +823,19 @@ class TimeSeriesValuesApi(APIView):
                 "Sampling Feature code does not match any existing site."
             )
 
+        # Verify this site is not delinquent before allowing data upload
+        # This is a temporary check until we have a more robust solution for handling
+        # sites that have not kept up with the subscription.
+        # Longer term this should be handled at a higher level and not by the endpoints.
+        if _is_site_data_blocked(sampling_feature.sampling_feature_id):
+            return Response(
+                {
+                    "error": "This site has not paid for a subscription and exceeds the allowed data upload "
+                    + "limit for the free tier. Data upload not allowed without payment. Please contact support."
+                },
+                status=status.HTTP_402_PAYMENT_REQUIRED,
+            )
+
         unit_id = Unit.objects.get(unit_name="hour minute").unit_id
 
         measurement_datetimes = []
@@ -1070,3 +1092,23 @@ class Organizations(APIView):
             df = pd.read_sql(query, connection)
             data_dict = df.to_dict(orient="records")
             return Response(data_dict, status.HTTP_200_OK)
+
+
+def _is_site_data_blocked(sampling_feature_id: int) -> bool:
+    """
+    Checks if site is delinquent on data upload. A site is considered delinquent if it has not uploaded data in the last 30 days.
+    """
+    # site registration (which is linked to the sampling feature) and store additional
+    # application specific information that was mapped in the ODM2 schema during app development
+    site_registration = SiteRegistration.objects.filter(
+        sampling_feature_id=sampling_feature_id
+    ).first()
+
+    # There should always be a site registration for a sampling feature,
+    # but lets not have poor creation coupling logic breaking the datastream endpoint.
+    if not site_registration:
+        # Returning that it is delinquent seem like the correct behavior.
+        # This would at least help flag there is an issue that need to be addressed with the site.
+        return True
+
+    return site_registration.block_datastream
