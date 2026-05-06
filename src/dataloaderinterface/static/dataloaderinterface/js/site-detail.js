@@ -4,26 +4,6 @@ const STALE_DATA_CUTOFF = new Date(new Date() - 1000 * 60 * 60 * EXTENT_HOURS);
 
 const LOCAL_UTC_OFFSET = new Date().getTimezoneOffset() / 60; //in hours
 
-function initMap() {
-  var defaultZoomLevel = 18;
-  var latitude = parseFloat($("#site-latitude").val());
-  var longitude = parseFloat($("#site-longitude").val());
-  var sitePosition = { lat: latitude, lng: longitude };
-
-  var map = new google.maps.Map(document.getElementById("map"), {
-    center: sitePosition,
-    gestureHandling: "greedy",
-    zoom: defaultZoomLevel,
-    mapTypeId: google.maps.MapTypeId.HYBRID,
-  });
-
-  map.setOptions({ minZoom: 3, maxZoom: 18 });
-
-  var marker = new google.maps.Marker({
-    position: sitePosition,
-    map: map,
-  });
-}
 
 function format_date(date) {
   year = String(date.getFullYear()).padStart(4, "0");
