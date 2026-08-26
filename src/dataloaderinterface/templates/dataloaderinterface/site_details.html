@@ -314,7 +314,7 @@
 
                 <div class="col-sm-12 col-lg-5">
                     <a class="link-card" style="margin-bottom: 1em;"
-                       href="/tsv/{{site.sampling_feature_code}}"
+                       href="/tsv/{{site.sampling_feature_code|urlencode}}"
                        target="_blank">
                         <div class="mdl-card mdl-shadow--2dp mdl-js-ripple-effect" style="width: 260px;">
                             <span class="mdl-ripple"></span>
@@ -383,7 +383,7 @@
 
                                                 {#  View in TSV button  #}
                                                 <a target="_blank"
-                                                   href="/tsv/{{site.sampling_feature_code}}/{{sensor.result_id}}">
+                                                   href="/tsv/{{site.sampling_feature_code|urlencode}}/{{sensor.result_id}}">
                                                     <span id="tsa-trigger-{{ forloop.counter0 }}"
                                                           class="fa fa-external-link tsa-trigger pull-right text-black"
                                                           aria-hidden="false"></span>
@@ -407,7 +407,7 @@
                                                     <span class="last-observation">{{ sensor.last_measurement.value_local_datetime|default:"-" }} {{ sensor.last_measurement.utc_offset_hours_display }}</span>
                                                 </div>
                                                 <div class="text-right">
-                                                    <h3 style="margin: 0; color: steelblue;">{{ sensor.last_measurement.data_value|roundfloat:4|default_if_none:" - " }}</h3>
+                                                    <h3 style="margin: 0; color: steelblue;">{{ sensor.last_measurement.data_value|roundfloat:4|default:" - " }}</h3>
                                                     <h6 style="margin-top: 0;" class="unit">
                                                         ({{ sensor.sensor_output.unit_abbreviation }})</h6>
                                                 </div>
@@ -679,7 +679,7 @@
         </div>
     </div>
 
-    <div id="csv-export-dialog" role="dialog" aria-hidden="true">
+    <div id="csv-export-dialog" role="dialog" aria-hidden="true" style="display:none;">
         <div class="date-picker-container">
             <label for="startDate">Start Date:</label>
             <input type="date" id="csv-min-datetime" class="datepicker">

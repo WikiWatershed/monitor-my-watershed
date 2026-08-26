@@ -8,7 +8,7 @@ function initChart(target_element) {
 
 
 function createChart(renderTo) {
-    return new Highcharts.chart(renderTo, {
+    return new Highcharts.Chart(renderTo, {
         chart: {
             plotBorderColor: '#CCC',
             plotBorderWidth: 2,

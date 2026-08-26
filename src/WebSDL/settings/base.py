@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     "timeseries_visualization",
     "formtools",
     "accounts.apps.AccountsConfig",
-    "csp",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +82,6 @@ MIDDLEWARE = [
     # 'debug_toolbar.middleware.DebugToolbarMiddleware',
     "django_cprofile_middleware.middleware.ProfilerMiddleware",
     "accounts.user_middleware.UserMiddleware",
-    "csp.middleware.CSPMiddleware",
 ]
 
 DJANGO_CPROFILE_MIDDLEWARE_REQUIRE_STAFF = False
@@ -209,7 +207,7 @@ GOOGLE_API_CONF = data.get("google_api_conf", None)
 
 # AUTH_USER_MODEL = 'cognito.User'
 
-# AWS Cognito
+# AWS Congnito
 COGNITO_SIGNUP_URL = data["cognito_signup_url"]
 COGNITO_SIGNIN_URL = data["cognito_signin_url"]
 COGNITO_RESET_URL = data["cognito_reset_url"]
@@ -237,24 +235,6 @@ MEDIA_ROOT = data["MEDIA_ROOT"] if "MEDIA_ROOT" in data else "./local_media"
 
 DEBUG = True if "debug_mode" in data and data["debug_mode"] == "True" else False
 
-# google map API KEY
-MAP_API_CONF = data.get("google_api_conf", {})
+#google map API KEY
+MAP_API_CONF = data.get("google_api_conf",{})
 MAP_API_KEY = MAP_API_CONF.get("api_key", "")
-
-# Content Security Policy settings
-# Ensures that we don't break anything while we set up a CSP.
-CSP_REPORT_ONLY = True
-CONTEXT_SECURITY_POLICY = {
-    "DIRECTIVES": {
-        "default-src": ["self"],
-        "script-src": ["self"],
-        "style-src": [
-            "self",
-            "strict-dynamic",
-        ],
-        "font-src": [
-            "self",
-            "strict-dynamic",
-        ],
-    }
-}
