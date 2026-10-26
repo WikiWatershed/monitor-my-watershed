@@ -29,14 +29,16 @@ database. The terms used are defined [below](#terms).
   uses it [V]. On 2.21 the access method can be switched back to PostgreSQL's standard heap
   without rewriting the data, which stays compressed in the columnstore [V], so the #744
   columnstore settings stay too [I]. The in-place upgrade to 2.21.4 is cheap; the switch should
-  be too, but locks the table while it runs and is untimed [I]. The faster conflict checks of
-  2.20–2.21 only apply after the switch [V for the code; I for the effect].
-- **With 8–16 hours** ([plan](#with-only-816-hours)) [I]: read the crash evidence; set Linux's
-  strict memory overcommit, which PostgreSQL's documentation recommends and which turns most
-  memory kills, each of which restarts the whole database server, into one failed statement
-  [V for the documentation; I for the effect]; drop a duplicate unique index; upgrade to 2.21.4
-  keeping the TAM, which brings the #8074 fix; and time the switch on staging, a recent full
-  copy of production, doing it on production too if it is quick.
+  be too, but locks each chunk while it switches and is untimed [I]. The faster conflict checks
+  of 2.20–2.21 only apply after the switch [V for the code; I for the effect].
+- **With 8–16 hours** ([plan](#with-only-816-hours), 8–15 hours as listed) [I]: read the crash
+  evidence; set Linux's strict memory overcommit, which PostgreSQL's documentation recommends
+  and which turns most memory kills, each of which restarts the whole database server, into one
+  failed statement [V for the documentation; I for the effect]; drop a duplicate unique index;
+  if the logs point at the compression job, upgrade to 2.21.4 keeping the TAM, which brings the
+  #8074 fix, and time the switch on staging, doing it on production too if it is quick and hours
+  remain; if they point at the upload's insert, make the insert's statements smaller and ordered
+  instead.
 - **For re-uploads, the biggest saving is to check what is already stored before inserting**
   [I]: read the stored timestamps for each sensor and chunk, and send only new values. pyarrow
   or the pandas 1.x already in the app can do this [V for the functions]. Neither library helps
@@ -78,7 +80,7 @@ design of the new upload path, which belongs in a later spec.
 | Hypercore table access method (TAM) | an experimental access method (2.18–2.21) that kept B-tree indexes over compressed rows. #744 enabled it with `SET ACCESS METHOD hypercore` [V]. Removed in 2.22.0 [V]. Not the same thing as the Hypercore engine, which continues |
 | Switching back to heap | `ALTER TABLE … SET ACCESS METHOD heap`. From 2.21 the data stays compressed in the columnstore [V, PR #8341] |
 | OOM killer | the Linux kernel's out-of-memory killer, which ends a process when memory and swap run out [V][^pg17-overcommit] |
-| Staging | a separate database server holding a very recent full copy of production [V, Anthony Aufdenkampe, 2026-10-25] |
+| Staging | the staging database, which holds a very recent full copy of production [V that Anthony Aufdenkampe said so, 2026-10-25; the fact U]. Its instance size, and the absence of device posts there, limit how well its timings and blocking predict production's [I] |
 
 ## The system today
 
@@ -89,7 +91,7 @@ design of the new upload path, which belongs in a later spec.
 | Database server size | 6 CPU, 16 GB RAM in 2018 notes; current size not recorded | LimnoTech's private config wiki, "Server Architecture"[^config-wiki] [U for today] |
 | Table | `odm2.timeseriesresultvalues`: a PRIMARY KEY on (`resultid`, `valuedatetime`) and a second, separate UNIQUE index on the same two columns | #744[^mmw-issues] [V] |
 | Storage | Hypercore engine: 30-day chunks; columnstore with `segmentby = 'resultid'`, `orderby = 'valuedatetime'`; columnstore policy after 7 days; Hypercore TAM enabled | #744 [V] |
-| Staging | a staging database server with a very recent full copy of production | Anthony Aufdenkampe, 2026-10-25 [V that the requester said so] |
+| Staging | a staging database with a very recent full copy of production | Anthony Aufdenkampe, 2026-10-25 [V that the requester said so; the fact U] |
 | Size | more than 1 billion values; 10–15 million added a month (#740, opened 2025-03-18), more than 15 million (#744, opened a week later); this document needs only the order of magnitude | #740, #744[^mmw-issues] [V] |
 | Upload parse | Python `csv.reader`, row by row; values held as Python objects; rows whose first cell starts with a header label are skipped wherever they appear | `views.py` lines 312–314, 419–456[^upload-code] [V] |
 | Upload timestamps | shifted to UTC before storing: `measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)`, the offset read from the file's `Date and Time in UTC±N` header | `views.py` lines 353–357, 432–434[^upload-code] [V] |
@@ -155,7 +157,7 @@ any source found [U].
 
 Each version's `.so` library is versioned, so stepping to 2.21.x probably means installing that
 release's package alongside the newer one [U]. How long the switch takes on a billion-row table
-is not documented [U]; staging, a recent full copy, can measure it.
+is not documented [U]; staging, a recent full copy, can estimate it [I].
 
 ### Moving off the Hypercore TAM
 
@@ -188,11 +190,13 @@ measurement separates the TAM's share [V for the report; I for the attribution].
 **Locks.** `ALTER TABLE` takes an ACCESS EXCLUSIVE lock "unless explicitly noted", and
 `SET ACCESS METHOD` is not noted otherwise[^pg17-alter-table] [V], so each relation is locked
 while it switches. The release notes' loop runs inside one `DO` block, a single transaction,
-so it holds every lock until it ends, and inserts into the table, including device posts, wait
-for the whole run [I]. Switching one chunk per transaction keeps each lock short [I]; whether
+so it holds every lock until it ends, and reads and writes on the table, including device
+posts, CSV downloads and plots, wait for the whole run [I]. Switching one chunk per transaction keeps each lock short [I]; whether
 the hypertable itself should be switched before or after its chunks is not documented [U].
 
-**Steps, on staging first** (staging is a recent full copy, so its timings carry over)
+**Steps, on staging first** (a recent full copy, so its timings should approximate
+production's, allowing for instance size [I]; with no device posts there, blocking is judged
+from how long each lock is held rather than from waiting traffic [I])
 [V for each command's source; I for the sequence]:
 
 1. Confirm PostgreSQL 17 is at 17.2 or newer (`SELECT version();`), and make sure a current
@@ -223,7 +227,8 @@ the hypertable itself should be switched before or after its chunks is not docum
      'timeseriesresultvalues' GROUP BY 1;` matches the count recorded in step 3 [I];
    - note how long step 4 took and what it blocked.
 6. Resume the policy (`scheduled => true`).
-7. If staging's timing and blocking are acceptable, repeat steps 1–6 on production.
+7. If staging's total time and longest single lock are acceptable, repeat steps 1–6 on
+   production, at a quiet time [I].
 
 ### What the upgrade would change for uploads
 
@@ -237,7 +242,7 @@ the hypertable itself should be switched before or after its chunks is not docum
 | In-memory recompression (#8569) | 2.24.0, extended in 2.25.0 and 2.30.0 | on by default (`timescaledb.enable_in_memory_recompression`, boot value `true`); "4-5x" faster recompression. Its peak memory on a 30-day chunk is not documented [U], which matters in a memory-crash document; the setting is the off switch | CHANGELOG; 2.31.0 `guc.c` line 1202[^tsdb-changelog][^tsdb-2310-source] [V] |
 | `move_to_columnstore()` (#10632) with `timescaledb.move_to_columnstore_tuple_sort_limit` ("limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage"; default 0, no limit) | 2.31.0 | an incremental, interruptible alternative to `compress_chunk` that takes a lock which "does not conflict with the RowExclusiveLock of INSERT, UPDATE and DELETE". The 7-day policy still calls `compress_chunk`; the function is in the internal `_timescaledb_functions` schema, so it is a tool for an operator recompressing backfilled chunks by hand or from a custom job, and may change between releases | CHANGELOG; PR #10632; `sql/policy_internal.sql` line 211, `sql/maintenance_utils.sql` line 67, `compression.c` line 3781 at 2.31.0[^tsdb-changelog][^tsdb-pr10632][^tsdb-2310-source] [V]; use and stability [I] |
 | Bloom filters prune upsert decompression (#9374) | 2.26.0/2.27.0 | probably none: the defaults build no bloom filter for a key of a `segmentby` column plus a timestamp `orderby` column | CHANGELOG; `tsl/src/compression/create.c` at 2.31.0[^tsdb-changelog][^tsdb-2310-source] [V for the code]; effect [I] |
-| "Direct compress" for inserts, with its own memory fixes (#10119 in 2.29.0) | 2.21 onward | none: disabled for tables with a primary key or unique index | `src/nodes/modify_hypertable.c` line 60 (INSERT) and `src/copy.c` lines 843–846 (COPY) at 2.31.0[^tsdb-2310-source] [V] |
+| "Direct compress", with its own memory fixes (#10119 in 2.29.0) | COPY from 2.21, INSERT from 2.23 | none: disabled for tables with a primary key or unique index | `src/nodes/modify_hypertable.c` line 60 (INSERT) and `src/copy.c` lines 843–846 (COPY) at 2.31.0[^tsdb-2310-source] [V] |
 
 ### The value of stopping at 2.21
 
@@ -299,7 +304,7 @@ Steps 1–3 and 5 are server work; steps 4 and 6 are code.
 | [2. Turn memory kills into failed statements](#2-turn-memory-kills-into-failed-statements) | a few hours, plus a staging test | most out-of-memory events fail one statement instead of restarting the server |
 | [3. Drop the duplicate unique index](#3-drop-the-duplicate-unique-index) | an hour, plus a staging test | probably half the conflict-check and index work per inserted value |
 | [4. One upload at a time, in smaller ordered statements](#4-one-upload-at-a-time-in-smaller-ordered-statements) | a day or two | no overlapping uploads; smaller statements |
-| [5. Upgrade to 2.21.4 and switch to heap](#5-upgrade-to-2214-and-switch-to-heap) | several days, with staging | the #8074 fix, faster conflict checks, off the removed TAM |
+| [5. Upgrade to 2.21.4 and switch to heap](#5-upgrade-to-2214-and-switch-to-heap) | 5–10 hours on staging and production if the switch is quick; more if it needs its own window | the #8074 fix, faster conflict checks, off the removed TAM |
 | [6. Check what is already stored before inserting](#6-check-what-is-already-stored-before-inserting) | several days of code and tests | repeated values never reach the insert |
 | [7. Later](#7-later) | as budget allows | 2.31, a job queue, pandas and SQLAlchemy modernisation |
 
@@ -318,15 +323,16 @@ All figures here are estimates [I].
 | 2 | Step 2, strict overcommit and the main-process OOM score, staging then production | 2–4 | worth doing whatever the logs show |
 | 3 | Step 3, drop the duplicate index | about 1 | |
 | 4 | Upgrade to 2.21.4 **keeping the TAM** ([steps](#moving-off-the-hypercore-tam) 1–2), staging then production, including the PostgreSQL version check, a current backup or snapshot, and installing the package | 3–6 | worth it if the logs point at the compression job (the #8074 fix); brings nothing for the insert itself, since the 2.20–2.21 conflict-check speedups are skipped under the TAM |
-| 5 | On staging, time the switch to heap (steps 3–6) | 1–2 | staging is a recent full copy, so the timing carries over |
+| 5 | On staging, time the switch to heap (steps 3–6) | 1–2 | staging is a recent full copy, so the timing should approximate production's [I] |
 | 6 | Only if item 5 was quick and hours remain: the switch on production | 1–2 | otherwise schedule it |
 
-Keeping the TAM on 2.21.4 is a valid interim state: 2.21.4 still supports it [V]. It postpones
-the switch rather than avoiding it, because 2.22 and later refuse to install while the TAM is in
-use [V], and 2.21.4 will get no further fixes [I]. If the logs instead point at the upload's
-insert, spend item 4's hours on the SQL-only part of step 4 (a smaller flush size and
-`ORDER BY resultid, valuedatetime`, about 2–4 hours), and leave the one-upload-at-a-time lock
-for the next budget [I].
+Items 1–5 total 8–15 hours; item 6 runs only if the budget allows. Keeping the TAM on 2.21.4 is
+a valid interim state: 2.21.4 still supports it [V]. It postpones the switch rather than
+avoiding it, because 2.22 and later refuse to install while the TAM is in use [V], and 2.21.4
+will get no further fixes [I]. If the logs instead point at the upload's insert, spend the
+hours of items 4–6 (which need item 4's upgrade) on the SQL-only part of step 4 (a smaller
+flush size and `ORDER BY resultid, valuedatetime`, about 2–4 hours), and leave the upgrade and
+the one-upload-at-a-time lock for the next budget [I].
 
 ### 1. Read the crash evidence
 
@@ -469,6 +475,7 @@ keep today's "Unrecognized date format" warnings [I].
 | Does anything refer to the duplicate unique index by name? | A search of the code, jobs and SQL scripts | MMW developers |
 | Must the 2.21.4 package be installed to step through it? [U] | Timescale's package repository for the server's OS; a dry run on staging | MMW developers |
 | How long does the switch to heap take, and what does it block, on this table? [U] | [Moving off the Hypercore TAM](#moving-off-the-hypercore-tam), steps 3–6, on staging | MMW developers |
+| Does staging run on the same instance size as production? [U] | The two servers' EC2 instance types | MMW developers |
 | Should the hypertable be switched before or after its chunks? [U] | Timescale's support, or a trial on staging | MMW developers |
 | Does step 6's read query cost less than the conflict checks it replaces? | A timed staging upload of a mostly repeated file, with and without step 6 | MMW developers |
 | Does Django 3.2 run on Python 3.11 in this stack (pyarrow ships Python 3.11 wheels)? [U] | A test environment build | MMW developers |
@@ -491,8 +498,8 @@ keep today's "Unrecognized date format" warnings [I].
     aufdenkampe, 2025-09-24) and
     [#769](https://github.com/WikiWatershed/monitor-my-watershed/issues/769). Read with
     `gh issue view`. Accessed 2026-10-25.
-[^upload-code]: WikiWatershed. `src/dataloaderservices/views.py`, `src/dataloaderservices/urls.py`
-    and `environment.yml`, commit `82baf4d`.
+[^upload-code]: WikiWatershed. `src/dataloaderservices/views.py`, `src/dataloaderservices/urls.py`,
+    `src/odm2/base.py`, `src/dataloaderinterface/ajax.py` and `environment.yml`, commit `82baf4d`.
     https://github.com/WikiWatershed/monitor-my-watershed/blob/82baf4d/src/dataloaderservices/views.py
     Accessed 2026-10-25.
 [^config-wiki]: LimnoTech. ODM2DataSharingPortalConfig wiki, "Server Architecture" (private;

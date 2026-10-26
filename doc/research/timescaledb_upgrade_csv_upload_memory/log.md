@@ -277,3 +277,10 @@ fresh review subagent. **Document:**
   at `a28536b`: "a hybrid row-columnar storage engine"; "new data is initially written to the
   rowstore" — Terms now define the Hypercore engine as rowstore plus columnstore. PR #8196 body:
   "adds a warning when enabling the access method" — wording fixed.
+- Scoped re-review (fresh Opus): 0C/2I/7M; 16 of 17 earlier findings resolved, M6 partly. All
+  fixed: staging facts marked [V that the requester said so; fact U], "separate server"
+  removed, timing carry-over marked [I] with instance-size and no-device-posts caveats and an
+  open question on instance size; step 5 effort made consistent with the 8–16 h plan; Summary
+  lock wording per chunk, plan totals and the logs condition and fallback; ACCESS EXCLUSIVE
+  blocks reads too; `[^upload-code]` lists base.py and ajax.py; direct compress "COPY from 2.21,
+  INSERT from 2.23" (CHANGELOG 2.21.0 #8209, 2.23.0 #8637, per return A and the reviewer).
