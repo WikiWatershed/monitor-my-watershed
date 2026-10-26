@@ -216,3 +216,32 @@ fresh review subagent. **Document:**
   kept [I; PR #8341 says data stays in the columnstore], only the TAM's B-tree coverage of
   compressed rows goes; #744's reported gains followed the whole 2.7→2.19 + PG17 +
   reconfiguration, with no measurement of the TAM's share.
+- Anthony Aufdenkampe asked for more on the Hypercore reversion in this revision. Controller
+  checked: CHANGELOG `## 2.18.0 (2025-01-23)` (TAM introduced, per the 2.21.0 note), `## 2.21.0
+  (2025-07-08)` "Sunsetting of the hypercore access method … will be sunsetted in TimescaleDB
+  2.22.0, scheduled for September 2025" with the migration DO block; `## 2.22.0 (2025-09-02)`
+  #8364 "Remove hypercore table access method". TimescaleDB 2.21.4 `sql/views.sql` line 369
+  `timescaledb_information.hypertable_compression_settings` (columns hypertable, segmentby,
+  orderby, compress_interval_length); line 418 `hypertable_columnstore_settings`. Pending for
+  the review-fix wave: expand the reversion section (timeline, procedure on staging, checks
+  afterwards).
+- Anthony Aufdenkampe: the columnstore-engine vs TAM distinction belongs in the Summary;
+  "Production uses the Hypercore storage method" is not correct as written. Asked for a full
+  pass clarifying such statements. Pending for the review-fix wave: define "columnstore
+  (Hypercore engine)" and "Hypercore table access method (TAM)" once near the top; rewrite the
+  Summary with them; replace "Hypercore storage", "standard storage", "convert to standard
+  storage", "Hypercore tables/chunks" throughout with precise terms (switching the access
+  method to heap keeps data compressed in the columnstore). Then a fresh full-document review.
+  Still Revision 2 (not yet handed back).
+- Review of Revision 2 draft (fresh Opus): 0C/7I/22M; all applied in a full rewrite with the
+  terminology pass and the expanded TAM reversion section. Controller re-checked: 2.31.0
+  `src/guc.c` line 1202 `enable_in_memory_recompression` boot `true`; 2.19.3 `src/bgw/job.c`
+  line 1470 `"%s [%d]"`; 2.31.0 `src/nodes/modify_hypertable.c` line 60 unique-index check;
+  pyarrow apache-arrow-25.0.1 `table.pxi`, `compute.rst`, `_csv.pyx`, `options.h` line 153
+  have the same APIs; 2.21.4 `views.sql` `chunks` has `hypertable_schema`, `jobs` has
+  `application_name`, `hypertable_name`; `views.py` lines 353–357, 432–434 (UTC shift),
+  312–314 (header rows skipped anywhere). Ruling on M22: the config repo's name is already
+  public in `doc/deployment_guide.md` line 14, and a 2018 server size is not sensitive; kept,
+  flagged to the requester.
+- Anthony Aufdenkampe: what about 2.21.4 keeping the TAM; budget 8–16 hours. Added "With only
+  8–16 hours" under Recommendations.
