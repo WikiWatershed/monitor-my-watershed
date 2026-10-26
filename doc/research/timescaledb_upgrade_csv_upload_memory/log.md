@@ -245,3 +245,35 @@ fresh review subagent. **Document:**
   flagged to the requester.
 - Anthony Aufdenkampe: what about 2.21.4 keeping the TAM; budget 8–16 hours. Added "With only
   8–16 hours" under Recommendations.
+- Anthony Aufdenkampe: the in-place upgrade to 2.21 looks cheap; the switch from the TAM looks
+  expensive. Controller checked PostgreSQL REL_17_STABLE `doc/src/sgml/ref/alter_table.sgml`:
+  "An ACCESS EXCLUSIVE lock is acquired unless explicitly noted" (SET ACCESS METHOD not noted
+  otherwise); SET ACCESS METHOD "changes the access method of the table by rewriting it". PR
+  #8341: TimescaleDB 2.21+ avoids the rewrite for TAM→heap ("no data is rewritten. Only indexes
+  need to be rebuilt, which should be fast if most data is in the columnstore (since the indexes
+  are mostly empty)"). Pending for the review-fix wave: in "Moving off the Hypercore TAM", say
+  each switch takes an ACCESS EXCLUSIVE lock and the release notes' DO block holds all locks to
+  the end, blocking inserts; recommend switching chunk by chunk in separate transactions [I];
+  order of hypertable vs chunks undocumented [U]; the cost to learn is the staging timing, which
+  depends on staging holding a full copy (open question for the requester).
+- Anthony Aufdenkampe: there is a staging database server (there was not before about 2018).
+  Pending for the review-fix wave: state that a staging database server exists [V, the requester,
+  2026-10-25]; change the open question to whether its data matches production in size; note that
+  without a data rewrite the switch's time should scale with chunk count and uncompressed data,
+  not total rows [I], with a chunk-count comparison query.
+- Anthony Aufdenkampe: the staging database server holds the full datasets. Pending item
+  amended: staging timing is representative of production [I]; drop the open question on staging
+  size and the chunk-count scaling note; the 8–16 hour plan's item 5 becomes "on staging, upgrade
+  then switch chunk by chunk, timed; if quick, repeat both on production in one window".
+- Anthony Aufdenkampe: staging is a very recent full copy of the production database. Pending:
+  record this in "The system today" [V, the requester, 2026-10-25]; name staging as the place for
+  the switch timing, the step 1 replay and the step 6 measurement.
+- Review of rewritten Revision 2 (fresh Opus): 0C/5I/12M; all 29 earlier findings resolved. All
+  applied, together with the pending locking and staging items. Controller re-checked: 2.20.0
+  `sql/updates/2.19.3--2.20.0.sql` line 61 renames "Compression Policy" jobs to "Columnstore
+  Policy"; 2.21.4 `compression_api.c` line 274 names new jobs "Columnstore Policy"; proc_name
+  `policy_compression` (`policies_v2.h` line 26 at 2.19.3; `policy_internal.sql` line 182 at
+  2.21.4) — pause query now filters on proc_name. Timescale docs `_partials/_hypercore-intro.md`
+  at `a28536b`: "a hybrid row-columnar storage engine"; "new data is initially written to the
+  rowstore" — Terms now define the Hypercore engine as rowstore plus columnstore. PR #8196 body:
+  "adds a warning when enabling the access method" — wording fixed.

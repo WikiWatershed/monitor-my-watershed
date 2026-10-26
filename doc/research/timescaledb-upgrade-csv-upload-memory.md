@@ -22,18 +22,21 @@ database. The terms used are defined [below](#terms).
   code that recompresses chunks after an upload (#8074, in 2.20.0) [V], but no release note
   claims lower memory for the upload's insert itself [V]. Whether that leak is the cause
   depends on which process the crash logs show dying ([step 1](#1-read-the-crash-evidence)) [I].
-- **What the upgrade involves.** Production stores its data in TimescaleDB's columnstore, which
-  Timescale also calls the "Hypercore engine", and since #744 it has also used the
-  experimental Hypercore *table access method* (TAM) [V]. TimescaleDB removed only the TAM, in
-  2.22.0, and refuses upgrades past 2.21 while any table uses it [V]. On 2.21 the access method
-  can be switched back to PostgreSQL's standard heap without rewriting the data, which stays
-  compressed in the columnstore [V], so the #744 columnstore settings stay too [I]. 2.21.4 with
-  that switch is the best-value TimescaleDB step [I]; the faster conflict checks of 2.20–2.21
-  only apply after the switch [V for the code; I for the effect].
-- **Cheapest first** [I]: read the crash evidence; then set Linux's strict memory overcommit,
-  which PostgreSQL's documentation recommends and which turns most memory kills, which restart
-  the whole database server, into one failed statement [V for the documentation; I for the
-  effect]; then drop a duplicate unique index and let only one upload run at a time.
+- **What the upgrade involves.** Production stores its data with TimescaleDB's Hypercore
+  engine, which keeps recent data in row form and compresses older chunks into a columnstore;
+  since #744 it has also used the experimental Hypercore *table access method* (TAM) [V].
+  TimescaleDB removed only the TAM, in 2.22.0, and refuses upgrades past 2.21 while any table
+  uses it [V]. On 2.21 the access method can be switched back to PostgreSQL's standard heap
+  without rewriting the data, which stays compressed in the columnstore [V], so the #744
+  columnstore settings stay too [I]. The in-place upgrade to 2.21.4 is cheap; the switch should
+  be too, but locks the table while it runs and is untimed [I]. The faster conflict checks of
+  2.20–2.21 only apply after the switch [V for the code; I for the effect].
+- **With 8–16 hours** ([plan](#with-only-816-hours)) [I]: read the crash evidence; set Linux's
+  strict memory overcommit, which PostgreSQL's documentation recommends and which turns most
+  memory kills, each of which restarts the whole database server, into one failed statement
+  [V for the documentation; I for the effect]; drop a duplicate unique index; upgrade to 2.21.4
+  keeping the TAM, which brings the #8074 fix; and time the switch on staging, a recent full
+  copy of production, doing it on production too if it is quick.
 - **For re-uploads, the biggest saving is to check what is already stored before inserting**
   [I]: read the stored timestamps for each sensor and chunk, and send only new values. pyarrow
   or the pandas 1.x already in the app can do this [V for the functions]. Neither library helps
@@ -44,7 +47,7 @@ database. The terms used are defined [below](#terms).
 The biggest uncertainty is the cause itself: no upstream bug report matches this setup, so it
 is not known whether the crash comes during the upload's insert or later, when the
 compression job recompresses what the upload touched [I]. The crash logs can show which process
-died and when; if they do not show what used the memory, a replay on a staging copy can
+died and when; if they do not show what used the memory, a replay on staging can
 ([step 1](#1-read-the-crash-evidence)).
 
 ## Question and scope
@@ -68,11 +71,14 @@ design of the new upload path, which belongs in a later spec.
 | Term | Meaning |
 | --- | --- |
 | Hypertable, chunk | TimescaleDB splits `odm2.timeseriesresultvalues` into chunks of 30 days each [V, #744] |
-| Rowstore | ordinary PostgreSQL rows; new data lands here |
-| Columnstore ("Hypercore engine") | TimescaleDB's compressed, column-oriented form. Chunks older than 7 days move into it, grouped by sensor (`segmentby = 'resultid'`) and sorted by time (`orderby = 'valuedatetime'`) [V, #744]. Timescale's release notes call it the "Hypercore engine" and keep developing it, e.g. 2.27.0: "The Hypercore engine now supports a vectorized implementation of filters"[^tsdb-changelog] [V] |
-| Access method | PostgreSQL's pluggable layer for how a table's rows are stored; the standard one is `heap` |
-| Hypercore table access method (TAM) | an experimental access method (2.18–2.21) that kept B-tree indexes over compressed rows. #744 enabled it with `SET ACCESS METHOD hypercore` [V]. Removed in 2.22.0 [V] |
+| Hypercore (engine) | TimescaleDB's "hybrid row-columnar storage engine"[^tsdb-docs-hypercore] [V]: new data goes into the rowstore, older chunks are compressed into the columnstore. Timescale keeps developing it, e.g. 2.27.0: "The Hypercore engine now supports a vectorized implementation of filters"[^tsdb-changelog] [V] |
+| Rowstore | ordinary PostgreSQL rows, uncompressed; new data lands here [V][^tsdb-docs-hypercore] |
+| Columnstore | the compressed, column-oriented form. A chunk moves into it once its whole 30-day range ended more than 7 days ago, so data up to about 37 days old can still be in the rowstore [I from #744's policy]. Data is grouped by sensor (`segmentby = 'resultid'`) and sorted by time (`orderby = 'valuedatetime'`) [V, #744] |
+| Access method | PostgreSQL's pluggable layer for how a table's rows are stored on disk; the standard one is `heap`. Rowstore and columnstore are how TimescaleDB lays data out; without the TAM, both live in heap tables [I] |
+| Hypercore table access method (TAM) | an experimental access method (2.18–2.21) that kept B-tree indexes over compressed rows. #744 enabled it with `SET ACCESS METHOD hypercore` [V]. Removed in 2.22.0 [V]. Not the same thing as the Hypercore engine, which continues |
 | Switching back to heap | `ALTER TABLE … SET ACCESS METHOD heap`. From 2.21 the data stays compressed in the columnstore [V, PR #8341] |
+| OOM killer | the Linux kernel's out-of-memory killer, which ends a process when memory and swap run out [V][^pg17-overcommit] |
+| Staging | a separate database server holding a very recent full copy of production [V, Anthony Aufdenkampe, 2026-10-25] |
 
 ## The system today
 
@@ -82,7 +88,8 @@ design of the new upload path, which belongs in a later spec.
 | Database and web app hosts | separate servers | [deployment guide](../deployment_guide.md) [V] |
 | Database server size | 6 CPU, 16 GB RAM in 2018 notes; current size not recorded | LimnoTech's private config wiki, "Server Architecture"[^config-wiki] [U for today] |
 | Table | `odm2.timeseriesresultvalues`: a PRIMARY KEY on (`resultid`, `valuedatetime`) and a second, separate UNIQUE index on the same two columns | #744[^mmw-issues] [V] |
-| Storage | columnstore with `segmentby = 'resultid'`, `orderby = 'valuedatetime'`; 30-day chunks; chunks move to the columnstore after 7 days; Hypercore TAM enabled | #744 [V] |
+| Storage | Hypercore engine: 30-day chunks; columnstore with `segmentby = 'resultid'`, `orderby = 'valuedatetime'`; columnstore policy after 7 days; Hypercore TAM enabled | #744 [V] |
+| Staging | a staging database server with a very recent full copy of production | Anthony Aufdenkampe, 2026-10-25 [V that the requester said so] |
 | Size | more than 1 billion values; 10–15 million added a month (#740, opened 2025-03-18), more than 15 million (#744, opened a week later); this document needs only the order of magnitude | #740, #744[^mmw-issues] [V] |
 | Upload parse | Python `csv.reader`, row by row; values held as Python objects; rows whose first cell starts with a header label are skipped wherever they appear | `views.py` lines 312–314, 419–456[^upload-code] [V] |
 | Upload timestamps | shifted to UTC before storing: `measurement_datetime.replace(tzinfo=None) - timedelta(hours=utc_offset)`, the offset read from the file's `Date and Time in UTC±N` header | `views.py` lines 353–357, 432–434[^upload-code] [V] |
@@ -126,8 +133,8 @@ which place fails:
 Two candidates remain [I]. One is memory that grows during the upload's insert. The other is
 the compression job that runs after it, which must recompress every chunk the upload touched
 and, on 2.19, carries the #8074 leak. Timescale's troubleshooting page also warns of running
-out of memory when the columnstore policy has a large backlog of chunks to
-convert.[^tsdb-docs-troubleshooting] [V] The size of the #8074 leak per batch is not stated in
+out of memory when the columnstore policy has a large backlog of chunks to move into the
+columnstore.[^tsdb-docs-troubleshooting] [V] The size of the #8074 leak per batch is not stated in
 any source found [U].
 
 ## Question 1: would upgrading TimescaleDB solve it?
@@ -147,8 +154,8 @@ any source found [U].
 | One-off cautions on the way | 2.24.0 disables bloom-filter sparse indexes on chunks compressed before it (likely nothing to act on here: no bloom indexes are built for this table, see below [I]); 2.31.0 renames `timescaledb.enable_columnarscan` | CHANGELOG[^tsdb-changelog] [V] |
 
 Each version's `.so` library is versioned, so stepping to 2.21.x probably means installing that
-release's package alongside the newer one [U]. The time and locks the switch takes on a
-billion-row table are not documented [U].
+release's package alongside the newer one [U]. How long the switch takes on a billion-row table
+is not documented [U]; staging, a recent full copy, can measure it.
 
 ### Moving off the Hypercore TAM
 
@@ -158,7 +165,7 @@ billion-row table are not documented [U].
 | --- | --- |
 | 2025-01-23 | TimescaleDB 2.18.0 introduces the Hypercore TAM |
 | 2025-05-01 | Production enables it (#744), with TimescaleDB 2.19 |
-| 2025-07-08 | 2.21.0 deprecates it, prints a warning (#8196), and adds the fast switch back to heap (#8341) |
+| 2025-07-08 | 2.21.0 deprecates it, warns when a table is set to use it (#8196), and adds the fast switch back to heap (#8341) |
 | 2025-09-02 | 2.22.0 removes it (#8364) |
 | 2025-09-25 | 2.21.4, the last 2.21 release |
 
@@ -178,16 +185,32 @@ improvements" in RAM use, faster device posts, CSV downloads about 4.5 times fas
 the whole upgrade from 2.7 to 2.19, PostgreSQL 17 and the reconfiguration together; no
 measurement separates the TAM's share [V for the report; I for the attribution].
 
-**Steps, on a staging copy first** [V for each command's source; I for the sequence]:
+**Locks.** `ALTER TABLE` takes an ACCESS EXCLUSIVE lock "unless explicitly noted", and
+`SET ACCESS METHOD` is not noted otherwise[^pg17-alter-table] [V], so each relation is locked
+while it switches. The release notes' loop runs inside one `DO` block, a single transaction,
+so it holds every lock until it ends, and inserts into the table, including device posts, wait
+for the whole run [I]. Switching one chunk per transaction keeps each lock short [I]; whether
+the hypertable itself should be switched before or after its chunks is not documented [U].
 
-1. Confirm PostgreSQL 17 is at 17.2 or newer (`SELECT version();`), and back up.
+**Steps, on staging first** (staging is a recent full copy, so its timings carry over)
+[V for each command's source; I for the sequence]:
+
+1. Confirm PostgreSQL 17 is at 17.2 or newer (`SELECT version();`), and make sure a current
+   backup or snapshot exists.
 2. Install the 2.21.4 package and run `psql -X -c "ALTER EXTENSION timescaledb UPDATE TO '2.21.4';"`.[^tsdb-docs-upgrade]
-3. Pause the columnstore policy for the duration (`SELECT alter_job(<job_id>, scheduled => false);`;
-   find the job with `SELECT job_id FROM timescaledb_information.jobs WHERE hypertable_name =
-   'timeseriesresultvalues' AND application_name LIKE 'Compression Policy%';`). This is a
-   precaution, not a documented requirement [I].[^tsdb-views]
-4. Run the release notes' loop, which switches every relation using the TAM, the hypertable and
-   its chunks, to heap.[^tsdb-changelog]
+   Stopping here keeps the TAM, which 2.21.4 still supports.
+3. Record `SELECT is_compressed, count(*) FROM timescaledb_information.chunks WHERE
+   hypertable_schema = 'odm2' AND hypertable_name = 'timeseriesresultvalues' GROUP BY 1;`.
+   Pause the columnstore policy for the duration with `SELECT alter_job(<job_id>, scheduled =>
+   false);`, finding the job with `SELECT job_id FROM timescaledb_information.jobs WHERE
+   hypertable_name = 'timeseriesresultvalues' AND proc_name = 'policy_compression';` (the job's
+   name changes from "Compression Policy" to "Columnstore Policy" in the 2.20.0 update, so filter
+   on the procedure, not the name). The pause is a precaution, not a documented requirement
+   [I].[^tsdb-views][^tsdb-update-2200]
+4. Switch each relation that uses the TAM to heap, one per transaction: have psql generate one
+   `ALTER TABLE … SET ACCESS METHOD heap;` per relation from the release notes' query
+   (`pg_class` joined to `pg_am` where `amname = 'hypercore'`) and run them in autocommit mode
+   [I].[^tsdb-changelog] Time it, and watch what waits on its locks (`pg_stat_activity`).
 5. Check the result:
    - no relation still uses the TAM: `SELECT count(*) FROM pg_class c JOIN pg_am a ON a.oid =
      c.relam WHERE a.amname = 'hypercore';` returns 0 [I];
@@ -197,9 +220,10 @@ measurement separates the TAM's share [V for the report; I for the attribution].
      `valuedatetime`[^tsdb-views] [I for the expected result];
    - chunks are still compressed: `SELECT is_compressed, count(*) FROM
      timescaledb_information.chunks WHERE hypertable_schema = 'odm2' AND hypertable_name =
-     'timeseriesresultvalues' GROUP BY 1;` matches the count taken before step 4 [I];
+     'timeseriesresultvalues' GROUP BY 1;` matches the count recorded in step 3 [I];
    - note how long step 4 took and what it blocked.
 6. Resume the policy (`scheduled => true`).
+7. If staging's timing and blocking are acceptable, repeat steps 1–6 on production.
 
 ### What the upgrade would change for uploads
 
@@ -210,10 +234,10 @@ measurement separates the TAM's share [V for the report; I for the attribution].
 | Vectorised constraint checks on backfill (#7972) | 2.20.0 | "up to 10x faster" upserts; the blog's test is 3,000 rows, all conflicting, 17 s → 1.7 s. Only after the switch: 2.21.4 still skips this step under the TAM (`chunk_dispatch.c` line 393) | CHANGELOG; 2.20 blog; `chunk_dispatch.c` at 2.21.4[^tsdb-changelog][^blog-220][^tsdb-dispatch] [V]; no memory claim |
 | Cached scan keys for repeated upserts into one compressed chunk (#8182) | 2.21.0 | 1.7 s → 0.7 s on the same test; only after the switch, as above | CHANGELOG; 2.21 blog[^tsdb-changelog][^blog-221] [V]; no memory claim |
 | "Fix memory leak in ColumnarScan" (#9455) | 2.26.1 | the read path: CSV downloads, and the read query in [step 6](#6-check-what-is-already-stored-before-inserting) | CHANGELOG[^tsdb-changelog] [V]; relevance [I] |
-| In-memory recompression (#8569) | 2.24.0, extended to 2.30 | on by default (`timescaledb.enable_in_memory_recompression`, boot value `true`); "4-5x" faster recompression. Its peak memory on a 30-day chunk is not documented [U], which matters in a memory-crash document; the setting is the off switch | CHANGELOG; 2.31.0 `guc.c` line 1202[^tsdb-changelog][^tsdb-2310-source] [V] |
+| In-memory recompression (#8569) | 2.24.0, extended in 2.25.0 and 2.30.0 | on by default (`timescaledb.enable_in_memory_recompression`, boot value `true`); "4-5x" faster recompression. Its peak memory on a 30-day chunk is not documented [U], which matters in a memory-crash document; the setting is the off switch | CHANGELOG; 2.31.0 `guc.c` line 1202[^tsdb-changelog][^tsdb-2310-source] [V] |
 | `move_to_columnstore()` (#10632) with `timescaledb.move_to_columnstore_tuple_sort_limit` ("limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage"; default 0, no limit) | 2.31.0 | an incremental, interruptible alternative to `compress_chunk` that takes a lock which "does not conflict with the RowExclusiveLock of INSERT, UPDATE and DELETE". The 7-day policy still calls `compress_chunk`; the function is in the internal `_timescaledb_functions` schema, so it is a tool for an operator recompressing backfilled chunks by hand or from a custom job, and may change between releases | CHANGELOG; PR #10632; `sql/policy_internal.sql` line 211, `sql/maintenance_utils.sql` line 67, `compression.c` line 3781 at 2.31.0[^tsdb-changelog][^tsdb-pr10632][^tsdb-2310-source] [V]; use and stability [I] |
 | Bloom filters prune upsert decompression (#9374) | 2.26.0/2.27.0 | probably none: the defaults build no bloom filter for a key of a `segmentby` column plus a timestamp `orderby` column | CHANGELOG; `tsl/src/compression/create.c` at 2.31.0[^tsdb-changelog][^tsdb-2310-source] [V for the code]; effect [I] |
-| "Direct compress" for inserts, with its own memory fixes (#10119) | 2.21–2.29 | none: disabled for tables with a primary key or unique index | `src/nodes/modify_hypertable.c` line 60 (INSERT) and `src/copy.c` lines 843–846 (COPY) at 2.31.0[^tsdb-2310-source] [V] |
+| "Direct compress" for inserts, with its own memory fixes (#10119 in 2.29.0) | 2.21 onward | none: disabled for tables with a primary key or unique index | `src/nodes/modify_hypertable.c` line 60 (INSERT) and `src/copy.c` lines 843–846 (COPY) at 2.31.0[^tsdb-2310-source] [V] |
 
 ### The value of stopping at 2.21
 
@@ -254,7 +278,7 @@ pandas 3 does not require pyarrow; it uses it for the new default string type wh
 installed.[^pandas-versions] [V] The app calls `read_sql` with a SQLAlchemy engine or connection
 at four call sites in three files: `src/odm2/base.py` lines 102 and 104,
 `src/dataloaderservices/views.py` line 1162 and `src/dataloaderinterface/ajax.py` line 60
-[V, grep at `e04806c`]. So pandas ≥ 2.2 means moving to SQLAlchemy 2 [I]. Python 3.11 is past
+[V, grep at `82baf4d`[^upload-code]]. So pandas ≥ 2.2 means moving to SQLAlchemy 2 [I]. Python 3.11 is past
 the newest Python that Django 3.2 lists on PyPI (3.10) [V for the classifiers; whether it runs
 is U]. Upgrading pandas is worth doing as tech debt, but it is not needed to fix the upload
 memory problem [I].
@@ -266,8 +290,8 @@ affected [I].
 
 ## Recommendations, in order of return on effort
 
-Effort figures are rough estimates for someone who knows the servers [I]. Steps 1–3 and 5 are
-server work; steps 4 and 6 are code.
+Effort figures, and what each step buys, are estimates for someone who knows the servers [I].
+Steps 1–3 and 5 are server work; steps 4 and 6 are code.
 
 | Step | Effort | What it buys |
 | --- | --- | --- |
@@ -282,7 +306,7 @@ server work; steps 4 and 6 are code.
 Step 5 ranks above step 6 because its benefits are documented and it is needed anyway to stay
 on a supported path, while step 6's saving is unmeasured and its read query is best designed
 against the access method production will keep [I]. Different people can work on them at the
-same time.
+same time [I].
 
 ### With only 8–16 hours
 
@@ -293,14 +317,16 @@ All figures here are estimates [I].
 | 1 | Step 1, the logs only (no staging replay) | 1–2 | already under way |
 | 2 | Step 2, strict overcommit and the main-process OOM score, staging then production | 2–4 | worth doing whatever the logs show |
 | 3 | Step 3, drop the duplicate index | about 1 | |
-| 4 | Upgrade to 2.21.4 **keeping the TAM**, staging then production | 3–6 | worth it if the logs point at the compression job (the #8074 fix); brings nothing for the insert itself, since the 2.20–2.21 conflict-check speedups are skipped under the TAM |
-| 5 | On staging only, time the switch to heap | 1–2 | if quick, do it on production in the same window and get the speedups; otherwise schedule it |
+| 4 | Upgrade to 2.21.4 **keeping the TAM** ([steps](#moving-off-the-hypercore-tam) 1–2), staging then production, including the PostgreSQL version check, a current backup or snapshot, and installing the package | 3–6 | worth it if the logs point at the compression job (the #8074 fix); brings nothing for the insert itself, since the 2.20–2.21 conflict-check speedups are skipped under the TAM |
+| 5 | On staging, time the switch to heap (steps 3–6) | 1–2 | staging is a recent full copy, so the timing carries over |
+| 6 | Only if item 5 was quick and hours remain: the switch on production | 1–2 | otherwise schedule it |
 
-Keeping the TAM on 2.21.4 is a valid interim state: 2.21.4 still supports it, with a deprecation
-warning (#8196) [V]. It postpones the switch rather than avoiding it, because 2.22 and later
-refuse to install while the TAM is in use [V], and 2.21.4 will get no further fixes [I]. If the
-logs instead point at the upload's insert, spend the hours of item 4 on step 4's code changes
-(one upload at a time, smaller ordered statements) [I].
+Keeping the TAM on 2.21.4 is a valid interim state: 2.21.4 still supports it [V]. It postpones
+the switch rather than avoiding it, because 2.22 and later refuse to install while the TAM is in
+use [V], and 2.21.4 will get no further fixes [I]. If the logs instead point at the upload's
+insert, spend item 4's hours on the SQL-only part of step 4 (a smaller flush size and
+`ORDER BY resultid, valuedatetime`, about 2–4 hours), and leave the one-upload-at-a-time lock
+for the next budget [I].
 
 ### 1. Read the crash evidence
 
@@ -310,15 +336,15 @@ which have different fixes [I]. What to look for:
 | Where | Look for | What it tells you | Source |
 | --- | --- | --- | --- |
 | Kernel log (`journalctl -k`, `dmesg -T` or `/var/log/kern.log`) | `Killed process <pid> (postgres)`, case-insensitive (the PostgreSQL docs show `Out of Memory: Killed process 12345 (postgres).`) | the OOM killer acted, and which process it chose | PostgreSQL 17 docs[^pg17-overcommit] [V]; log locations are Ubuntu defaults [U] |
-| PostgreSQL log, same time | `<process> (PID <pid>) was terminated by signal 9: Killed`, then `Failed process was running: <SQL>` | `server process` is a client connection such as an upload; `background worker "Compression Policy [<job id>]"` is the compression job. The SQL shows the upload's `… (select * from upload) on conflict do nothing` or a compression call | `postmaster.c` (REL_17_STABLE)[^pg17-source]; `compression_api.c` line 289 and `job.c` line 1470 at 2.19.3[^tsdb-2193-source] [V]; reading [I] |
+| PostgreSQL log, same time | `<process> (PID <pid>) was terminated by signal 9: Killed`, then `Failed process was running: <SQL>` | `server process` is a client connection such as an upload; `background worker "Compression Policy [<job id>]"` is the compression job on 2.19 (renamed "Columnstore Policy" from 2.20[^tsdb-update-2200]). The SQL shows the upload's `… (select * from upload) on conflict do nothing` or a compression call | `postmaster.c` (REL_17_STABLE)[^pg17-source]; `compression_api.c` line 289 and `job.c` line 1470 at 2.19.3[^tsdb-2193-source] [V]; reading [I] |
 | PostgreSQL log | `terminating any other active server processes`, then `all server processes terminated; reinitializing` | the whole-server restart users see | `postmaster.c` lines 2879, 3360[^pg17-source] [V] |
 | PostgreSQL log | `out of memory` with `Failed on request of size N in memory context "…"` and a dump beginning `TopMemoryContext:` | where memory went, when an allocation failed without a kill. A kill leaves no such dump | `mcxt.c`[^pg17-source] [V]; the last sentence [I] |
 | Database | `SELECT * FROM timescaledb_information.job_errors ORDER BY start_time DESC;` and `job_stats` | a row `job crash detected, see server logs` marks a job that died with the server | `sql/views.sql` at 2.19.3[^tsdb-views] [V] |
 | nginx or gunicorn logs | `POST /api/data-file-upload/<id>` near each crash | crash during the request → the insert; minutes or hours later → the compression job | `urls.py`[^upload-code] [V]; reading [I] |
 | Server and database | `free -h`; instance type; `SHOW shared_buffers, work_mem, maintenance_work_mem, max_connections, restart_after_crash`; `SELECT count(*) FROM pg_stat_activity`; `SELECT version()`; swap; `sysctl vm.overcommit_memory` | headroom, connection load, and the PostgreSQL 17 minor needed for step 5 | [I] |
 
-**If the logs show which process died but not what grew**, replay one large upload on a staging
-copy and run `SELECT pg_log_backend_memory_contexts(<pid>);` on the uploading connection, and on
+**If the logs show which process died but not what grew**, replay one large upload on staging
+and run `SELECT pg_log_backend_memory_contexts(<pid>);` on the uploading connection, and on
 the compression job's worker when it runs; each call writes that process's memory contexts to
 the server log [I].
 
@@ -358,7 +384,7 @@ code or job refers to it by name (`timeseriesresultvalues_resultid_valuedatetime
 
 ### 5. Upgrade to 2.21.4 and switch to heap
 
-Follow [Moving off the Hypercore TAM](#moving-off-the-hypercore-tam), on a staging copy first.
+Follow [Moving off the Hypercore TAM](#moving-off-the-hypercore-tam), on staging first.
 Keep `max_tuples_decompressed_per_dml_transaction` at its default: setting it to 0 removes the
 guard against a single statement filling the disk with decompressed rows [I]. See
 [The value of stopping at 2.21](#the-value-of-stopping-at-221) for what this does and does not
@@ -386,10 +412,10 @@ pandas 1.5.3[^arrow-api][^pandas-153] [V]; the workflow has not been run [I].
 | 3. Read in pieces, with explicit types | bounded memory; a column that starts empty would otherwise get the wrong type | `pyarrow.csv.open_csv(f, read_options=ReadOptions(skip_rows=n), convert_options=ConvertOptions(column_types=…))` | `pd.read_csv(f, skiprows=n, chunksize=…, dtype=…)` |
 | 4. Shift timestamps to UTC, as stored | stored `valuedatetime` is local time minus the header's UTC offset; without the same shift, nothing matches in step 9 and every value is sent | subtract the offset, as a duration, from the timestamp column | `df["ts"] - pd.Timedelta(hours=offset)` |
 | 5. Take each sensor's series | the file is wide: one column per sensor (result UUID), so grouping by sensor is choosing a column | the timestamp column and one value column; `drop_null` removes empty cells | `df[["ts", col]].dropna()` |
-| 6. Sort by time | usually already in order; one sort reorders all columns | `pc.sort_indices` on the timestamps, then `Table.take` | `sort_values("ts")` |
+| 6. Sort by time | usually already in order; one sort reorders all columns; the sort must be stable so step 7 keeps the file's first row | `pc.sort_indices` on the timestamps (stable), then `Table.take` | `sort_values("ts", kind="stable")` (the default sort is not stable) |
 | 7. Drop repeats within the file | concatenated or restarted logger files repeat timestamps; keep the first, matching `DO NOTHING` | there is no `drop_duplicates`: compare each sorted timestamp with the one before it and filter; `group_by(...).aggregate([(col, "first")])` also works but needs `use_threads=False`, since `first` depends on input order | `drop_duplicates(subset="ts", keep="first")` |
-| 8. Split by chunk | one read query and one insert per (sensor, chunk) | chunk ranges from `SELECT range_start, range_end FROM timescaledb_information.chunks WHERE hypertable_schema = 'odm2' AND hypertable_name = 'timeseriesresultvalues'`; filter each series to each range | same query; boolean masks on `ts` |
-| 9. Read what is stored, and keep only new values | the database check, once per window; skip the window when nothing is left | `SELECT valuedatetime FROM odm2.timeseriesresultvalues WHERE resultid = :r AND valuedatetime >= :start AND valuedatetime < :end`; build `stored = pa.array(rows, type=ts.type)` (same unit, no time zone) and `Table.filter(pc.invert(pc.is_in(ts, value_set=stored)))` | the same query; `s[~s["ts"].isin(stored)]` |
+| 8. Split by chunk | one read query and one insert per (sensor, chunk). Values outside every existing chunk (before the first, in a gap, after the last) have nothing stored to compare with: send them as they are, or the recipe drops them | chunk ranges from `SELECT range_start, range_end FROM timescaledb_information.chunks WHERE hypertable_schema = 'odm2' AND hypertable_name = 'timeseriesresultvalues'`; filter each series to each range, and collect the rest separately | same query; boolean masks on `ts` |
+| 9. Read what is stored, and keep only new values | the database check, once per window that has a chunk; skip the window when nothing is left | `SELECT valuedatetime FROM odm2.timeseriesresultvalues WHERE resultid = :r AND valuedatetime >= :start AND valuedatetime < :end`; build `stored = pa.array(rows, type=ts.type)` (same unit, no time zone) and `Table.filter(pc.invert(pc.is_in(ts, value_set=stored)))` | the same query; `s[~s["ts"].isin(stored)]` |
 | 10. Send them | the existing temporary table and insert, with constants (UTC offset, censor code, quality code, interval and its unit) written as literals in the SQL rather than repeated on every row | `pyarrow.csv.write_csv(t, buf, WriteOptions(include_header=False))`, then psycopg2 `copy_expert("COPY upload (…) FROM STDIN WITH (FORMAT csv)", buf)` | `df.to_csv(buf, header=False, index=False)`, then the same `copy_expert` |
 
 Logger files are written in time order, so the work can run as the file streams in: hold record
@@ -442,7 +468,8 @@ keep today's "Unrecognized date format" warnings [I].
 | What `vm.overcommit_ratio` suits the server? | Its RAM, swap and `shared_buffers`; a staging test | MMW developers |
 | Does anything refer to the duplicate unique index by name? | A search of the code, jobs and SQL scripts | MMW developers |
 | Must the 2.21.4 package be installed to step through it? [U] | Timescale's package repository for the server's OS; a dry run on staging | MMW developers |
-| How long does the switch to heap take, and what does it lock, on this table? [U] | [Moving off the Hypercore TAM](#moving-off-the-hypercore-tam), step 5, on a staging copy | MMW developers |
+| How long does the switch to heap take, and what does it block, on this table? [U] | [Moving off the Hypercore TAM](#moving-off-the-hypercore-tam), steps 3–6, on staging | MMW developers |
+| Should the hypertable be switched before or after its chunks? [U] | Timescale's support, or a trial on staging | MMW developers |
 | Does step 6's read query cost less than the conflict checks it replaces? | A timed staging upload of a mostly repeated file, with and without step 6 | MMW developers |
 | Does Django 3.2 run on Python 3.11 in this stack (pyarrow ships Python 3.11 wheels)? [U] | A test environment build | MMW developers |
 | Is a job queue acceptable on the web server? | Team decision | Anthony Aufdenkampe, Paul Tomasula |
@@ -452,7 +479,7 @@ keep today's "Unrecognized date format" warnings [I].
 | Revision | Date | Changes |
 | --- | --- | --- |
 | 1 | 2026-10-25 | First version. |
-| 2 | 2026-10-25 | After review by Anthony Aufdenkampe. **Added:** a third question (return on effort; the value of stopping at 2.21); a Terms section distinguishing the columnstore ("Hypercore engine") from the Hypercore table access method, with all statements about "Hypercore" made specific to one or the other; a section on moving off the TAM (timeline, why Timescale dropped it, what the switch keeps, steps and checks on staging); a table on stopping at 2.21, and a plan for 8–16 hours of work, including upgrading to 2.21.4 while keeping the TAM; the finding that the 2.20–2.21 conflict-check speedups apply only after the switch; Recommendations reordered by return on effort, with new steps for the crash-log checklist, strict memory overcommit and the duplicate unique index; detailed steps, in pyarrow and pandas 1.x, for checking stored values before inserting, including the UTC-offset shift and mid-file header rows. **Changed:** #8074 (2.20.0) is now identified as a memory-leak fix on the path that recompresses chunks after an upload, where Revision 1 treated its relevance as uncertain; the Summary now answers Question 1 directly; `move_to_columnstore()` (2.31.0) is described as an operator tool for recompressing backfilled chunks; in-memory recompression (2.24+) is flagged as on by default with undocumented memory use; `batch_memory.py` results are marked [I], as a synthetic measurement. **Removed:** Revision 1's recommendation to backfill with Timescale's `convert_to_rowstore`/insert/`convert_to_columnstore` procedure, its cautions and the issue #8775 citation, and the open question on that procedure, because the docs page is tagged "Old API" and converting a whole 30-day chunk is costly, while the cheaper steps now come first; the separate staging-replay recommendation, now folded into step 1; the pandas IO-guide reference, no longer cited. |
+| 2 | 2026-10-25 | After review by Anthony Aufdenkampe. **Added:** a third question (return on effort; the value of stopping at 2.21); a Terms section distinguishing the Hypercore engine (Timescale's hybrid row-columnar storage, the rowstore plus the columnstore) from the Hypercore table access method, with all statements about "Hypercore" made specific to one or the other, and defining the OOM killer and staging; a section on moving off the TAM (timeline, why Timescale dropped it, what the switch keeps, the locks it takes, steps on staging switching one chunk per transaction, and checks); a table on stopping at 2.21, and a plan for 8–16 hours of work, including upgrading to 2.21.4 while keeping the TAM; the finding that the 2.20–2.21 conflict-check speedups apply only after the switch; the fact that staging is a recent full copy of production; Recommendations reordered by return on effort, with new steps for the crash-log checklist, strict memory overcommit and the duplicate unique index; detailed steps, in pyarrow and pandas 1.x, for checking stored values before inserting, including the UTC-offset shift and mid-file header rows. **Changed:** #8074 (2.20.0) is now identified as a memory-leak fix on the path that recompresses chunks after an upload, where Revision 1 treated its relevance as uncertain; the Summary now answers Question 1 directly; `move_to_columnstore()` (2.31.0) is described as an operator tool for recompressing backfilled chunks; in-memory recompression (2.24+) is flagged as on by default with undocumented memory use; `batch_memory.py` results are marked [I], as a synthetic measurement. Running uploads off the web request in a job queue, Revision 1's lead lever, moved to "Later": an advisory lock achieves one upload at a time sooner and more cheaply. **Removed:** Revision 1's recommendation to backfill with Timescale's `convert_to_rowstore`/insert/`convert_to_columnstore` procedure, its cautions and the issue #8775 citation, and the open question on that procedure, because the docs page is tagged "Old API" and converting a whole 30-day chunk is costly, while the cheaper steps now come first; the separate staging-replay recommendation, now folded into step 1; the pandas IO-guide reference, no longer cited. |
 
 ## References
 
@@ -477,6 +504,10 @@ keep today's "Unrecognized date format" warnings [I].
 [^pg17-overcommit]: PostgreSQL Global Development Group. *PostgreSQL 17 documentation, 18.4.4
     Linux Memory Overcommit*. https://www.postgresql.org/docs/17/kernel-resources.html#LINUX-MEMORY-OVERCOMMIT ;
     read as `doc/src/sgml/runtime.sgml` on `REL_17_STABLE`. Accessed 2026-10-25.
+[^pg17-alter-table]: PostgreSQL Global Development Group. *PostgreSQL 17 documentation, ALTER
+    TABLE* ("An ACCESS EXCLUSIVE lock is acquired unless explicitly noted"; `SET ACCESS METHOD`).
+    https://www.postgresql.org/docs/17/sql-altertable.html ; read as
+    `doc/src/sgml/ref/alter_table.sgml` on `REL_17_STABLE`. Accessed 2026-10-25.
 [^pg17-source]: PostgreSQL Global Development Group. `src/backend/postmaster/postmaster.c`
     (lines 2879, 3088, 3360) and `src/backend/utils/mmgr/mcxt.c` (lines 353, 1160–1161) on
     `REL_17_STABLE`. https://github.com/postgres/postgres/tree/REL_17_STABLE Accessed 2026-10-25.
@@ -526,6 +557,12 @@ keep today's "Unrecognized date format" warnings [I].
 [^tsdb-update-script]: Timescale. TimescaleDB 2.22.0, `sql/updates/2.21.3--2.22.0.sql`, lines
     2–9. https://github.com/timescale/timescaledb/blob/2.22.0/sql/updates/2.21.3--2.22.0.sql
     Accessed 2026-10-25.
+[^tsdb-update-2200]: Timescale. TimescaleDB 2.20.0, `sql/updates/2.19.3--2.20.0.sql`, line 61
+    (renames "Compression Policy" jobs to "Columnstore Policy"); the job's `proc_name` is
+    `policy_compression` (`tsl/src/bgw_policy/policies_v2.h` line 26 at 2.19.3;
+    `sql/policy_internal.sql` line 182 at 2.21.4).
+    https://github.com/timescale/timescaledb/blob/2.20.0/sql/updates/2.19.3--2.20.0.sql
+    Accessed 2026-10-25.
 [^tsdb-pr8341]: Timescale. PR #8341, "Allow quick migration from hypercore TAM to (columnstore)
     heap", merged 2025-07-07, with review comments.
     https://github.com/timescale/timescaledb/pull/8341 Accessed 2026-10-25.
@@ -533,6 +570,10 @@ keep today's "Unrecognized date format" warnings [I].
     `_partials/_migrate_self_postgres_implement_migration_path.md`, `_partials/_plan_upgrade.md`.
     https://github.com/timescale/docs (archived; live site https://docs.tigerdata.com).
     Accessed 2026-10-25.
+[^tsdb-docs-hypercore]: Timescale. Docs source at commit `a28536b`, `_partials/_hypercore-intro.md`
+    ("a hybrid row-columnar storage engine"; "new data is initially written to the rowstore").
+    https://github.com/timescale/docs/blob/a28536b21937249fbe2b9bbf642a51039369153a/_partials/_hypercore-intro.md
+    (archived). Accessed 2026-10-25.
 [^tsdb-docs-troubleshooting]: Timescale. Docs source at commit `a28536b`:
     `_troubleshooting/columnstore-backlog-ooms.md` and
     `_troubleshooting/compression-dml-tuple-limit.md`.
