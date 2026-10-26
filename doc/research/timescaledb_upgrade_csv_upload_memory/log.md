@@ -107,3 +107,112 @@ fresh review subagent. **Document:**
   #740 opened 2025-03-18, #744 2025-03-25 (`gh issue view --json createdAt`). Issue #8775 body
   (a user, not a maintainer) says converting to rowstore "could bloat the disk size and memory".
 - Review 3 (fresh Opus, scoped): 0C/0I/2M; both are citation fixes, reviewed by controller (compression.c 2.31.0 line 3781 reads move_to_columnstore_tuple_sort_limit; guc.c 2.19.3 lines 591-596 define enable_dml_decompression_tuple_filtering, default true); footnote set check and batch_memory.py rerun pass.
+
+## 2026-10-25 (after hand-back of Revision 1)
+
+- Anthony Aufdenkampe, reviewing Revision 1, asked whether #8074 and #10632 are relevant memory
+  improvements after 2.19. Controller checked:
+  - PR #8074 "Use correct memory context during flush", merged 2025-05-08 (`gh api
+    repos/timescale/timescaledb/pulls/8074`): "row_compressor_flush was called without switching
+    to per-row memory context causing memory leaks in the ExprContext memory context. This in
+    turn would cause problems with recompression when there were a lot of small batches."
+  - 2.19.3 source tarball: `row_compressor_flush` is called from `compression.c` lines 485, 875,
+    902; reached via `row_compressor_append_sorted_rows` from `recompress.c` line 694 and
+    `hypercore/hypercore_handler.c` lines 2202 and 3797. Recompression of a Hypercore chunk goes
+    through `compression/api.c` `compress_hypercore` → `tsl_compress_chunk_wrapper` (lines
+    861–873). So the #8074 leak is on production's post-upload recompression path [V code; I for
+    relevance]. Leak size per flush not found.
+  - PR #10632 "Move chunk rows to columnstore as DML", merged 2026-09-25: an incremental,
+    interruptible alternative to `compress_chunk` holding ShareUpdateExclusiveLock (does not block
+    INSERT/UPDATE/DELETE); resumes from partial state. Lives in `_timescaledb_functions`
+    (internal); the 2.31.0 policy still calls `compress_chunk`.
+- Pending for Revision 2 (agreed with Anthony Aufdenkampe; held until all his feedback is in):
+  1. Summary bullet 1: keep "no release note claims lower memory for the insert itself"; add that
+     2.20.0 fixes a memory leak in the code that recompresses chunks after an upload, a plausible
+     cause if crashes come during the compression job.
+  2. Q1 table #8074 row: in 2.19.3 the leaking code also recompresses Hypercore chunks; cite the
+     call path above.
+  3. Q1 table #10632 row and Recommendation 6: `move_to_columnstore()` as a non-blocking,
+     memory-capped alternative to `compress_chunk` for operator-run backfills; internal-API
+     caveat.
+  4. Q1 Answer: one sentence that the upgrade does address a known memory leak, in the
+     compression step rather than the insert.
+  5. Open questions: the #8074 leak's memory cost per batch (staging measurement or crash logs).
+- Instruction for Revision 2 (Anthony Aufdenkampe): the body states only current understanding;
+  earlier states appear only in the revision history.
+- Anthony Aufdenkampe asked for more on using pyarrow to "sort, group and de-duplicate before
+  sending". Controller checked (apache-arrow-26.0.0 raw sources): `table.pxi` has
+  `Table.sort_by` (line 2112), `filter`, `take`, `drop_null`, `group_by` (line 5636; "When set
+  to True (the default), no stable ordering of the output is guaranteed"), `aggregate`; no
+  `drop_duplicates` (grep "duplicate" finds only to_pydict notes). `docs/source/cpp/compute.rst`:
+  `is_in`, `index_in`, `unique`, `drop_null`, `sort_indices`, `hash_first`/`hash_last`
+  ("(11) Result is based on ordering of the input data."). `_csv.pyx`: `WriteOptions
+  include_header` (default True). PyPI JSON: pyarrow 25.0.1 (2026-08-10) is the last release
+  with cp310 wheels; 26.0.0 (2026-10-09) has none.
+- Pending for Revision 2:
+  6. Question 2: add a short section on the workflow — wide CSV means grouping by sensor is
+     per column; sort via `sort_indices`/`take`; de-duplicate within file on sorted timestamps
+     (keep first, matching DO NOTHING); split by real chunk ranges
+     (`timescaledb_information.chunks`); de-duplicate against the database per (resultid, chunk)
+     with a read query and `pc.is_in`, skipping windows already stored; COPY only new rows
+     (`write_csv` include_header=False → `copy_expert` FORMAT csv) and keep ON CONFLICT DO
+     NOTHING as a safety net; streaming by chunk boundary when the file is time-ordered.
+     Caveats: pandas 1.x can do the same logic; Python 3.10 caps pyarrow at 25.0.1; mixed date
+     formats; the read-vs-conflict-check cost is unmeasured (add to the staging test and Open
+     questions).
+- Anthony Aufdenkampe asked for steps in order of return on effort (limited funds), and the value
+  of stopping at TimescaleDB 2.21. Controller checked:
+  - PostgreSQL 17 `doc/src/sgml/runtime.sgml` (REL_17_STABLE, "Linux Memory Overcommit"): "If a
+    child process is terminated, PostgreSQL will typically terminate all remaining connections
+    and either recover automatically, if restart_after_crash is enabled, or shut down";
+    `sysctl -w vm.overcommit_memory=2` "will lower the chances significantly"; postmaster
+    `oom_score_adj` -1000 with `PG_OOM_ADJUST_FILE`/`PG_OOM_ADJUST_VALUE`; more swap helps; too
+    many connections can be the cause.
+  - TimescaleDB 2.21.4 `chunk_dispatch.c` line 393 still has `if (!cis->use_tam)`, so #7972 and
+    #8182 (conflict-check path) do not apply to Hypercore tables on 2.21.4 [V code; I effect].
+  - CHANGELOG: 2.21.4 (2025-09-25) is the last 2.21.x; #8196 (2.21.0) deprecation warning for
+    TAM; #9455 ColumnarScan leak fix in 2.26.1. #10580 (2.30.1) concerns bloom indexes only
+    (PR body) — not relevant here.
+  - `views.py` line 54: `create_engine(..., pool_size=10, ...)`.
+  - #744 SQL: PRIMARY KEY (resultid, valuedatetime) plus a separate UNIQUE INDEX on the same
+    columns — redundant [V]; double conflict checks under untargeted ON CONFLICT [I].
+- Pending for Revision 2:
+  7. Restructure Recommendations in order of return on effort, with rough effort [I]:
+     (1) read crash evidence; (2) OOM-killer hardening per PG docs (overcommit=2, postmaster
+     oom_score_adj, swap; check max_connections × work_mem vs RAM); (3) drop the redundant unique
+     index; (4) advisory-lock one upload at a time, smaller ordered INSERT…SELECT, optional size
+     cap; (5) 2.21.4 + SET ACCESS METHOD heap, with a table contrasting "2.21 on Hypercore" vs
+     "2.21 + heap" and what stopping at 2.21 misses; (6) de-duplicate against the database
+     (pending item 6); (7) later: 2.31, a job queue, pandas/SQLAlchemy/Django.
+- Anthony Aufdenkampe: ptomasula has the crash logs and has started on them; a checklist of what
+  to look for is useful. Controller checked strings: PostgreSQL REL_17_STABLE `postmaster.c`
+  "%s (PID %d) was terminated by signal %d: %s" (procname e.g. "server process"), errdetail
+  "Failed process was running: %s", "terminating any other active server processes" (line
+  2879), "all server processes terminated; reinitializing" (line 3360); `mcxt.c` errmsg "out of
+  memory", errdetail "Failed on request of size %zu in memory context \"%s\"", "TopMemoryContext".
+  TimescaleDB 2.19.3: views `timescaledb_information.job_stats`, `job_errors` ("job crash
+  detected, see server logs"), `jobs`, `chunks`; compression job application_name "Compression
+  Policy" (`tsl/src/bgw_policy/compression_api.c` line 289). Log file locations [U] (data
+  directory is non-default per the private config wiki).
+- Pending for Revision 2:
+  8. Recommendation 1: add the log checklist (which process was killed and its SQL; OOM errors
+     with memory-context dump; job_errors/job_stats; correlate with upload POSTs; baseline
+     settings, PG minor, swap, overcommit).
+- Anthony Aufdenkampe liked the detailed steps for de-duplicating against the database before
+  inserting. Pending item 6 amended: give the steps in detail, each with its pyarrow and its
+  pandas 1.x form (pandas API names to be checked against pandas 1.5.3 docs when written).
+- Revision 2 written (pending items 1–8). Controller checks for new claims: pandas 1.5.3 is the
+  last 1.x (PyPI, 2023-01-19, requires_python >=3.8); v1.5.3 `read_csv` has `skiprows`,
+  `chunksize`; `DataFrame.drop_duplicates(subset, keep="first")`, `sort_values`, `dropna`,
+  `Series.isin`, `NDFrame.to_csv` exist. TimescaleDB 2.19.3 `sql/views.sql`
+  `timescaledb_information.chunks` has `hypertable_name`, `chunk_name`, `range_start`,
+  `range_end`, `is_compressed`.
+- Anthony Aufdenkampe asked about the Hypercore "experiment failing", given the effort in #744.
+  Controller checked CHANGELOG: 2.27.0 "The Hypercore engine now supports a vectorized
+  implementation of filters…" (engine name continues); 2.22.0 "we learned that btrees were not
+  the right architecture … close to or on par with TAM without needing to store an additional
+  index". Added a section "What the conversion changes, and what it keeps" to Revision 2: the
+  #744 columnstore settings (chunks, segmentby, orderby, policy, PK, de-duplicated data) are
+  kept [I; PR #8341 says data stays in the columnstore], only the TAM's B-tree coverage of
+  compressed rows goes; #744's reported gains followed the whole 2.7→2.19 + PG17 +
+  reconfiguration, with no measurement of the TAM's share.
