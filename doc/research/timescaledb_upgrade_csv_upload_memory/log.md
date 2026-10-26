@@ -106,3 +106,4 @@ fresh review subagent. **Document:**
   new sort limit does not bound the policy job; claim withdrawn from Summary and Answer.
   #740 opened 2025-03-18, #744 2025-03-25 (`gh issue view --json createdAt`). Issue #8775 body
   (a user, not a maintainer) says converting to rowstore "could bloat the disk size and memory".
+- Review 3 (fresh Opus, scoped): 0C/0I/2M; both are citation fixes, reviewed by controller (compression.c 2.31.0 line 3781 reads move_to_columnstore_tuple_sort_limit; guc.c 2.19.3 lines 591-596 define enable_dml_decompression_tuple_filtering, default true); footnote set check and batch_memory.py rerun pass.

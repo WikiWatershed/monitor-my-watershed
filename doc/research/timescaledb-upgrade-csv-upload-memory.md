@@ -135,7 +135,7 @@ billion-row table are not documented [U].
 | Vectorised constraint checks on backfill (#7972) | 2.20.0 | "up to 10x faster" upserts; the blog's test is 3,000 rows, all conflicting, 17 s → 1.7 s | CHANGELOG; 2.20 blog[^tsdb-changelog][^blog-220] [V]; no memory claim |
 | Cached scan keys for repeated upserts into one compressed chunk (#8182) | 2.21.0 | 1.7 s → 0.7 s on the same test | CHANGELOG; 2.21 blog[^tsdb-changelog][^blog-221] [V]; no memory claim |
 | "Fix memory leak in row compressor flush" (#8074) | 2.20.0 | the row compressor serves the compression job that runs after an upload | CHANGELOG[^tsdb-changelog] [V]; relevance [I] |
-| `move_to_columnstore()` (#10632) and `timescaledb.move_to_columnstore_tuple_sort_limit`, which "limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage" (default 0, no limit) | 2.31.0 | none for the 7-day policy, which still calls `compress_chunk`; the limit applies only to the internal `_timescaledb_functions.move_to_columnstore()`, so only to a custom job built on it | CHANGELOG 2.31.0[^tsdb-changelog]; `sql/policy_internal.sql` line 211 and `sql/maintenance_utils.sql` line 67 at 2.31.0[^tsdb-policy] [V] |
+| `move_to_columnstore()` (#10632) and `timescaledb.move_to_columnstore_tuple_sort_limit`, which "limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage" (default 0, no limit) | 2.31.0 | none for the 7-day policy, which still calls `compress_chunk`; the limit applies only to the internal `_timescaledb_functions.move_to_columnstore()`, so only to a custom job built on it | CHANGELOG 2.31.0[^tsdb-changelog]; `sql/policy_internal.sql` line 211, `sql/maintenance_utils.sql` line 67 and `tsl/src/compression/compression.c` line 3781 at 2.31.0[^tsdb-policy] [V]; custom-job reach [I] |
 | Bloom filters prune upsert decompression (#9374) | 2.26.0/2.27.0 | probably none: the defaults build no bloom filter for a key of a `segmentby` column plus a timestamp `orderby` column | CHANGELOG; `tsl/src/compression/create.c` at 2.31.0, `create_default_composite_bloom` and `should_create_bloom_sparse_index` (line 420)[^tsdb-create] [V for the code]; effect [I] |
 | "Direct compress" for inserts, with its own memory fixes (#10119) | 2.21–2.29 | none: disabled for tables with a primary key or unique index | `src/copy.c` at 2.31.0 lines 843–846[^tsdb-copy] [V] |
 | In-memory recompression, compaction policies | 2.24–2.31 | possibly a cheaper backfill procedure (below) | CHANGELOG[^tsdb-changelog] [V]; usefulness [I] |
@@ -264,13 +264,15 @@ In order of cost [I for all]:
 [^tsdb-changelog]: Timescale. *TimescaleDB CHANGELOG*, `main` (top entry 2.31.0, 2026-10-20).
     https://github.com/timescale/timescaledb/blob/main/CHANGELOG.md Accessed 2026-10-25.
 [^tsdb-guc]: Timescale. TimescaleDB 2.19.3 source: `src/guc.c`
-    (`max_tuples_decompressed_per_dml_transaction`, `hypercore_arrow_cache_max_entries`),
+    (`max_tuples_decompressed_per_dml_transaction`, `hypercore_arrow_cache_max_entries`,
+    `enable_dml_decompression_tuple_filtering` at lines 591–596),
     `tsl/src/hypercore/arrow_cache.c`, `tsl/src/hypercore/arrow_tts.c`,
     `tsl/src/compression/compression.c` (line 578), `tsl/src/compression/recompress.c`
     (lines 285, 300). https://github.com/timescale/timescaledb/tree/2.19.3 Accessed 2026-10-25.
 [^tsdb-dml]: Timescale. TimescaleDB 2.19.3, `tsl/src/compression/compression_dml.c`,
     `decompress_batches_scan` (lines 504–548) and `batch_matches` (lines 590–621); and
-    `tsl/src/compression/compression_scankey.c` (lines 56–90).
+    `tsl/src/compression/compression_scankey.c` (lines 56–90),
+    https://github.com/timescale/timescaledb/blob/2.19.3/tsl/src/compression/compression_scankey.c
     https://github.com/timescale/timescaledb/blob/2.19.3/tsl/src/compression/compression_dml.c
     Accessed 2026-10-25.
 [^tsdb-dispatch]: Timescale. TimescaleDB 2.19.3, `src/nodes/chunk_dispatch/chunk_dispatch.c`,
@@ -292,8 +294,10 @@ In order of cost [I for all]:
     heap", merged 2025-07-07, with review comments.
     https://github.com/timescale/timescaledb/pull/8341 Accessed 2026-10-25.
 [^tsdb-policy]: Timescale. TimescaleDB 2.31.0, `sql/policy_internal.sql` (line 211,
-    `compress_chunk`) and `sql/maintenance_utils.sql` (line 67, `move_to_columnstore`).
-    https://github.com/timescale/timescaledb/tree/2.31.0/sql Accessed 2026-10-25.
+    `compress_chunk`), `sql/maintenance_utils.sql` (line 67, `move_to_columnstore`) and
+    `tsl/src/compression/compression.c` (line 3781, the only read of
+    `move_to_columnstore_tuple_sort_limit`). https://github.com/timescale/timescaledb/tree/2.31.0
+    Accessed 2026-10-25.
 [^tsdb-issue-8775]: Timescale. timescaledb issue #8775, "Can't automatically re-compress data
     inserted into a columnstore chunk" (opened 2025-10-14, closed).
     https://github.com/timescale/timescaledb/issues/8775 Accessed 2026-10-25.
