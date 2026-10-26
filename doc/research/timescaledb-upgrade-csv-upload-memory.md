@@ -1,8 +1,8 @@
 # TimescaleDB upgrade and memory exhaustion during large CSV uploads
 
 **Revision 2, 2026-10-25.** Anthony Aufdenkampe, LimnoTech (requested the work); drafted with
-Claude (Claude Code). Revision 1 was reviewed by Anthony Aufdenkampe; Revision 2 is not yet
-reviewed by a person. Markers: [V] checked against a cited source opened for this work or a
+Claude (Claude Code); reviewed by Anthony Aufdenkampe on 2026-10-26 (and Revision 1 on
+2026-10-25). Markers: [V] checked against a cited source opened for this work or a
 probe run for it; [I] derived or inferred, including results of the scripts in the working
 record; [U] not checked. Sources accessed 2026-10-25. Marker density: reference.
 Working record: [log, scripts](timescaledb_upgrade_csv_upload_memory/).

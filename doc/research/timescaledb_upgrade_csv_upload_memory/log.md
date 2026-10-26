@@ -290,3 +290,4 @@ fresh review subagent. **Document:**
   `\timing on`; fallback spends the remaining hours on the advisory lock; direct-compress row
   cites the CHANGELOG; "each relation"; history wording). Footnote and anchor checks pass;
   `batch_memory.py` rerun matches. Revision 2 complete for hand-back.
+- 2026-10-26: Anthony Aufdenkampe reviewed Revision 2; revision line updated (status only).
