@@ -6,7 +6,9 @@ Guidance for AI coding agents working in this repo. This file covers **how to wo
 runs is in the
 [shared workflow guide](https://github.com/LimnoTech/limno-agent-skills/blob/main/agent-workflow.md);
 where it and this file disagree, this file wins on anything local to this repo and the guide wins
-on process.
+on process. **That guide and the other `LimnoTech/limno-agent-skills` links below are in a private
+LimnoTech repository**; contributors outside LimnoTech can't open them, so the guardrails,
+branching, ledger and verification rules for this repo are stated in this file.
 
 ## What kind of repo this is
 
@@ -72,7 +74,9 @@ and raw SQL into `odm2.timeseriesresultvalues`, a TimescaleDB hypertable with co
   — task-groups, gates, worktrees, review, the ledger. Read it before a multi-step plan.
 - **Branches:** feature and fix branches merge into `develop`, which merges into `main` for
   release; hotfixes branch off `main`. A round's branch starts from `main` unless `develop` has
-  diverged from it, in which case start from `develop` and say so.
+  diverged from it, in which case start from `develop` and say so. A person merges it, by PR,
+  into `develop`, not `main`; this overrides the shared guide's "the integration branch merges
+  to `main`".
 - **The ledger** goes in `.superpowers/sdd/progress.md` (git-ignored).
 - **Specs and plans** from the superpowers cycle go in `doc/superpowers/specs/` and
   `doc/superpowers/plans/`. This repo uses `doc/`, not `docs/`.

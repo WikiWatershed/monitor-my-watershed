@@ -90,3 +90,12 @@ fresh review subagent. **Document:**
   root cause cannot be settled at desk depth; recommend a measurement (memory-context dump) on
   a staging copy. Hypothesis "Arrow cache fills" dropped from the document.
 - Decision: marker density = reference (this is an assessment), facts in tables.
+- Review 1 (fresh Opus subagent): 1 Critical, 5 Important, 11 Minor; all accepted and fixed in
+  Revision 1 before hand-back. C1 re-checked by the controller: `compression_dml.c` at 2.19.3
+  increments `stats.tuples_decompressed` only at line 548 (rows moved into the rowstore);
+  `batch_matches` (line 504) resets non-matching batches and returns early on DO NOTHING
+  (lines 515–520). So the 100,000 cap does not bound this insert; the "memory guard" claim was
+  removed. I1 "Old API" tag re-checked: `modify-data-in-hypercore.md` at `a28536b` imports
+  `Deprecated2200` ("Old API since TimescaleDB v2.20.0"); `gh api repos/timescale/docs` →
+  `archived: true`. M6 re-checked: `grep -rn read_sql src` → 4 call sites in 3 files.
+  I5: `gh repo view LimnoTech/limno-agent-skills` → PRIVATE (AGENTS.md now says so).
