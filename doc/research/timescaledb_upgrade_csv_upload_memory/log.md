@@ -284,3 +284,9 @@ fresh review subagent. **Document:**
   lock wording per chunk, plan totals and the logs condition and fallback; ACCESS EXCLUSIVE
   blocks reads too; `[^upload-code]` lists base.py and ajax.py; direct compress "COPY from 2.21,
   INSERT from 2.23" (CHANGELOG 2.21.0 #8209, 2.23.0 #8637, per return A and the reviewer).
+- Scoped re-review (fresh Opus): 0C/0I/6M; all 9 previous findings resolved. Minors fixed and
+  reviewed by the controller (word diff: no new factual claims; "no device posts on staging"
+  now [U] and in Open questions; step 4 records total time and longest single ALTER TABLE via
+  `\timing on`; fallback spends the remaining hours on the advisory lock; direct-compress row
+  cites the CHANGELOG; "each relation"; history wording). Footnote and anchor checks pass;
+  `batch_memory.py` rerun matches. Revision 2 complete for hand-back.
