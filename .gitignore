@@ -127,3 +127,8 @@ settings.json
 settings.*.json
 src/odm2/modelcache.pkl
 local_media/*
+
+# AI agents: commit the shared Claude Code setting (the settings.json pattern above
+# ignores it); keep per-developer settings and the agent ledger local
+!.claude/settings.json
+.superpowers/
