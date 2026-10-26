@@ -99,3 +99,10 @@ fresh review subagent. **Document:**
   `Deprecated2200` ("Old API since TimescaleDB v2.20.0"); `gh api repos/timescale/docs` →
   `archived: true`. M6 re-checked: `grep -rn read_sql src` → 4 call sites in 3 files.
   I5: `gh repo view LimnoTech/limno-agent-skills` → PRIVATE (AGENTS.md now says so).
+- Review 2 (fresh Opus, scoped to the fix diff): 0 Critical, 1 Important, 5 Minor; all fixed.
+  Important re-checked by controller: at 2.31.0 the policy job calls `compress_chunk`
+  (`sql/policy_internal.sql` line 211); `move_to_columnstore` is the internal
+  `_timescaledb_functions.move_to_columnstore()` (`sql/maintenance_utils.sql` line 67). So the
+  new sort limit does not bound the policy job; claim withdrawn from Summary and Answer.
+  #740 opened 2025-03-18, #744 2025-03-25 (`gh issue view --json createdAt`). Issue #8775 body
+  (a user, not a maintainer) says converting to rowstore "could bloat the disk size and memory".

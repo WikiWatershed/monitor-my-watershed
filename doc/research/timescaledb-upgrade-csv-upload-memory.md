@@ -18,22 +18,21 @@ against a database.
 
 - **Upgrade, but don't expect it alone to stop the crashes.** No TimescaleDB release note from
   2.20 to 2.31 claims lower memory for the insert itself that an upload makes [V]. The
-  advertised gains are about speed, measured on a 3,000-row test [V]. One 2.31.0 setting can
-  bound memory in the compression job that runs after an upload, if that is where the crash is
-  [I].
+  advertised gains are about speed, measured on a 3,000-row test [V].
 - **The upgrade is a migration, not a version bump.** Production stores its main data table in
   the Hypercore table access method, which TimescaleDB removed in 2.22.0. Upgrades past 2.21 are
-  refused until every table is converted back to standard (heap) storage [V]. That conversion
-  avoids rewriting the data only from 2.21 onward [V], so the path is 2.19 → 2.21 → convert →
-  2.31 [I].
+  refused until every table is converted back to standard (heap) storage [V]. From 2.21 the
+  conversion avoids rewriting the data [V], and before 2.21 it appears not to [I], so the path
+  is 2.19 → 2.21 → convert → 2.31 [I].
 - **The bigger lever is how uploads reach the database** [I]. Run uploads one at a time off the
   web request, send rows sorted and grouped by sensor and month, and load very large historical
   files the way Timescale documents for backfills, after the migration.
 - **pandas or pyarrow on its own does not help the database** [I]. The web app holds about
   30 MiB per 100,000-value batch [V], and the same SQL reaches the database whatever parses the
   file. Their value is cheap sorting, de-duplication and streaming. pyarrow's streaming reader
-  does this without a pandas upgrade [I]. Moving to pandas 2.2 or later would force SQLAlchemy 2,
-  and pandas 3 also needs Python 3.11 [V].
+  does this without a pandas upgrade [I]. pandas 2.2 or later requires SQLAlchemy 2 for
+  `read_sql` [V], which the app uses, so it would force SQLAlchemy 2 [I]; pandas 3 also needs
+  Python 3.11 [V].
 
 The tightest margin is the cause itself: no upstream bug report matches this setup, so the
 mechanism behind the crash is unknown [V for the search; I for the conclusion]. The cheapest
@@ -65,7 +64,7 @@ of the new upload path, which belongs in a later spec.
 | Hypertable chunks | 30 days on `valuedatetime` | #744 [V] |
 | Storage | `SET ACCESS METHOD hypercore`; columnstore `segmentby = 'resultid'`, `orderby = 'valuedatetime'` | #744 [V] |
 | Columnstore policy | chunks move to the columnstore after 7 days | #744 [V] |
-| Size | more than 1 billion values; 10–15 million added a month (#740), more than 15 million (#744, a month later); this document needs only the order of magnitude | #740, #744[^mmw-issues] [V] |
+| Size | more than 1 billion values; 10–15 million added a month (#740, opened 2025-03-18), more than 15 million (#744, opened a week later); this document needs only the order of magnitude | #740, #744[^mmw-issues] [V] |
 | Upload parse | Python `csv.reader`, row by row; values held as Python objects | `views.py` lines 419–456[^upload-code] [V] |
 | Upload write | every >100,000 values, one transaction: `CREATE TEMPORARY TABLE upload`, `copy_from`, then `INSERT INTO odm2.timeseriesresultvalues … (SELECT * FROM upload) ON CONFLICT DO NOTHING` | `views.py` lines 458–466, 1116–1153[^upload-code] [V] |
 | Upload execution | synchronously, inside the web request | `views.py` lines 364–503[^upload-code] [V] |
@@ -83,7 +82,7 @@ streamed, so many rows conflict and are dropped by `ON CONFLICT DO NOTHING` [I].
 | Web server | the same batch as typed columns | 2.7 MiB (28 B/value) | `batch_memory.py`, calculated [I] |
 | Database | the temporary table `upload` | session-local buffers up to `temp_buffers` (default 8 MB) [V]; beyond that, local buffers are evicted to temporary files [I] | PostgreSQL 17 docs[^pg17-resource] |
 | Database | conflict checks on standard (heap) columnstore chunks | each candidate compressed batch is decompressed in memory, tested, and reset before the next; with `DO NOTHING` nothing is moved into the rowstore | `compression_dml.c` lines 504–548 at 2.19.3[^tsdb-dml] [V]; "transient, one batch at a time" [I] |
-| Database | the decompression cap `timescaledb.max_tuples_decompressed_per_dml_transaction` (default 100,000) | counts only rows moved into the rowstore (line 548), so it never fires for this `DO NOTHING` insert; Timescale says it exists to protect storage | `guc.c`, `compression_dml.c` at 2.19.3[^tsdb-guc][^tsdb-dml] [V]; troubleshooting page[^tsdb-docs-backfill] [V] |
+| Database | the decompression cap `timescaledb.max_tuples_decompressed_per_dml_transaction` (default 100,000) | counts only rows moved into the rowstore (line 548), so it never fires for this `DO NOTHING` insert, given `enable_dml_decompression_tuple_filtering` at its default (on) and `valuedatetime` as a key column outside `segmentby` (`compression_scankey.c` lines 56–90); Timescale says it exists to protect storage | `guc.c`, `compression_dml.c` at 2.19.3[^tsdb-guc][^tsdb-dml] [V]; troubleshooting page[^tsdb-docs-backfill] [V] |
 | Database | conflict checks on Hypercore chunks (production today) | the compressed-batch step is skipped (`if (!cis->use_tam)`); the check probes the unique index instead | `chunk_dispatch.c` line 442 at 2.19.3[^tsdb-dispatch] [V]; consequence [I] |
 | Database | compressing chunks that the upload touched | the 7-day policy job; its sorts are bounded by `maintenance_work_mem` | `compression.c` line 578 and `recompress.c` lines 285, 300 at 2.19.3[^tsdb-guc] [V] |
 | Database | the settings people usually tune | `work_mem` (per sort or hash, default 4 MB), `shared_buffers`, `temp_buffers` [V] do not bound TimescaleDB's decompression allocations [I] | PostgreSQL 17 docs[^pg17-resource] |
@@ -136,16 +135,14 @@ billion-row table are not documented [U].
 | Vectorised constraint checks on backfill (#7972) | 2.20.0 | "up to 10x faster" upserts; the blog's test is 3,000 rows, all conflicting, 17 s → 1.7 s | CHANGELOG; 2.20 blog[^tsdb-changelog][^blog-220] [V]; no memory claim |
 | Cached scan keys for repeated upserts into one compressed chunk (#8182) | 2.21.0 | 1.7 s → 0.7 s on the same test | CHANGELOG; 2.21 blog[^tsdb-changelog][^blog-221] [V]; no memory claim |
 | "Fix memory leak in row compressor flush" (#8074) | 2.20.0 | the row compressor serves the compression job that runs after an upload | CHANGELOG[^tsdb-changelog] [V]; relevance [I] |
-| `move_to_columnstore()` (#10632) and `timescaledb.move_to_columnstore_tuple_sort_limit`, which "limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage" (default 0, no limit) | 2.31.0 | may bound the post-upload compression, if that is where the crash is | CHANGELOG 2.31.0[^tsdb-changelog] [V]; effect [I] |
+| `move_to_columnstore()` (#10632) and `timescaledb.move_to_columnstore_tuple_sort_limit`, which "limits how many tuples `move_to_columnstore()` sorts at once to bound memory usage" (default 0, no limit) | 2.31.0 | none for the 7-day policy, which still calls `compress_chunk`; the limit applies only to the internal `_timescaledb_functions.move_to_columnstore()`, so only to a custom job built on it | CHANGELOG 2.31.0[^tsdb-changelog]; `sql/policy_internal.sql` line 211 and `sql/maintenance_utils.sql` line 67 at 2.31.0[^tsdb-policy] [V] |
 | Bloom filters prune upsert decompression (#9374) | 2.26.0/2.27.0 | probably none: the defaults build no bloom filter for a key of a `segmentby` column plus a timestamp `orderby` column | CHANGELOG; `tsl/src/compression/create.c` at 2.31.0, `create_default_composite_bloom` and `should_create_bloom_sparse_index` (line 420)[^tsdb-create] [V for the code]; effect [I] |
 | "Direct compress" for inserts, with its own memory fixes (#10119) | 2.21–2.29 | none: disabled for tables with a primary key or unique index | `src/copy.c` at 2.31.0 lines 843–846[^tsdb-copy] [V] |
 | In-memory recompression, compaction policies | 2.24–2.31 | possibly a cheaper backfill procedure (below) | CHANGELOG[^tsdb-changelog] [V]; usefulness [I] |
 
 **Answer:** the upgrade is worth doing [I]. Staying on 2.19 leaves production on a storage method
 TimescaleDB has removed, and later releases make conflict checks on old data faster [V]. The
-evidence does not support saying it will stop the memory crashes [I]. If the crash turns out to
-come from the compression job rather than the insert, 2.31.0's sort limit is a lever worth
-testing [I].
+evidence does not support saying it will stop the memory crashes [I].
 
 ## Question 2: what pandas 2/3 and pyarrow can add
 
@@ -204,11 +201,14 @@ In order of cost [I for all]:
    procedure.** Pause the columnstore job (`alter_job(…, scheduled => false)`),
    `convert_to_rowstore` the affected chunks, insert, `convert_to_columnstore`, and resume; with
    a large backlog, limit the job with `maxchunks_to_compress`.[^tsdb-docs-backfill] [V for the
-   procedure] Three cautions: on Hypercore (before the migration) `convert_to_rowstore` also
-   switches the chunk to heap storage, leaving a mix [V, PR #8341[^tsdb-pr8341]]; the docs page
-   is tagged "Old API since TimescaleDB v2.20.0" and its repository is archived [V]; and a 30-day
-   chunk holds every sensor's data, so converting it is large in disk and memory. This is an
-   operator task, not a web request.
+   procedure] Three cautions. On a Hypercore chunk, `convert_to_rowstore` "fully decompresses
+   the data and sets 'heap' TAM" [V, PR #8341 on 2.21[^tsdb-pr8341]]; run on production today,
+   it would likely leave a mix of Hypercore and heap chunks [I]. The docs page is tagged "Old
+   API since TimescaleDB v2.20.0" and its repository is archived [V]. And a 30-day chunk holds
+   every sensor's data, so converting it is large; a user reported that converting a
+   columnstore chunk to rowstore "could bloat the disk size and memory" [V that the user said
+   so, issue #8775[^tsdb-issue-8775]; the size here is I]. This is an operator task, not a web
+   request.
 7. **Parse with `pyarrow.csv.open_csv`, or pandas `chunksize`,** to make steps 3, 4 and 6 cheap.
    Leave the pandas 2/3 upgrade to a separate SQLAlchemy 2 and Django round.
 
@@ -269,7 +269,8 @@ In order of cost [I for all]:
     `tsl/src/compression/compression.c` (line 578), `tsl/src/compression/recompress.c`
     (lines 285, 300). https://github.com/timescale/timescaledb/tree/2.19.3 Accessed 2026-10-25.
 [^tsdb-dml]: Timescale. TimescaleDB 2.19.3, `tsl/src/compression/compression_dml.c`,
-    `decompress_batches_scan` (lines 504–548) and `batch_matches` (lines 590–621).
+    `decompress_batches_scan` (lines 504–548) and `batch_matches` (lines 590–621); and
+    `tsl/src/compression/compression_scankey.c` (lines 56–90).
     https://github.com/timescale/timescaledb/blob/2.19.3/tsl/src/compression/compression_dml.c
     Accessed 2026-10-25.
 [^tsdb-dispatch]: Timescale. TimescaleDB 2.19.3, `src/nodes/chunk_dispatch/chunk_dispatch.c`,
@@ -290,6 +291,12 @@ In order of cost [I for all]:
 [^tsdb-pr8341]: Timescale. PR #8341, "Allow quick migration from hypercore TAM to (columnstore)
     heap", merged 2025-07-07, with review comments.
     https://github.com/timescale/timescaledb/pull/8341 Accessed 2026-10-25.
+[^tsdb-policy]: Timescale. TimescaleDB 2.31.0, `sql/policy_internal.sql` (line 211,
+    `compress_chunk`) and `sql/maintenance_utils.sql` (line 67, `move_to_columnstore`).
+    https://github.com/timescale/timescaledb/tree/2.31.0/sql Accessed 2026-10-25.
+[^tsdb-issue-8775]: Timescale. timescaledb issue #8775, "Can't automatically re-compress data
+    inserted into a columnstore chunk" (opened 2025-10-14, closed).
+    https://github.com/timescale/timescaledb/issues/8775 Accessed 2026-10-25.
 [^tsdb-create]: Timescale. TimescaleDB 2.31.0, `tsl/src/compression/create.c`
     (`create_default_composite_bloom`; `should_create_bloom_sparse_index`, line 420).
     https://github.com/timescale/timescaledb/blob/2.31.0/tsl/src/compression/create.c
