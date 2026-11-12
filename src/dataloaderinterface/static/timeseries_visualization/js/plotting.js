@@ -22,6 +22,10 @@ function createChart(renderTo) {
             },
             panKey: 'shift',
         },
+        // Line colours that stay distinguishable with colour vision deficiencies and
+        // have at least 4.5:1 contrast on white, so the lines and the coloured
+        // axis titles are readable (#699). Highcharts' defaults don't meet either.
+        colors: ['#4477AA', '#CC3311', '#882255', '#004488', '#DC267F', '#228833'],
         credits: {
             enabled: false
         },
