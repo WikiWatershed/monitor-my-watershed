@@ -378,11 +378,11 @@ div.registration-field span.control-label {
 }
 
 svg.stale {
-    background-color: #ffefef;
+    background-color: #f8e5d6;
 }
 
 svg.not-stale {
-    background-color: #ebffe8;
+    background-color: #d6e8f3;
 }
 
 .last-observation {

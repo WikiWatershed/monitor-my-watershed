@@ -66,10 +66,10 @@ def data_age(value):
     val = datetime.utcnow() - value
 
     if val < timedelta(hours=6):
-        return "darkgreen"
+        return "darkblue"
     elif val < timedelta(hours=72):
-        return "lightgreen"
+        return "lightblue"
     elif val < timedelta(hours=336):
         return "yellow"
     else:
-        return "red"
+        return "vermillion"
