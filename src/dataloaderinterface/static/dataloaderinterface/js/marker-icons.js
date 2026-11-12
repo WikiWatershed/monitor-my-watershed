@@ -18,7 +18,7 @@ function createInfoWindowContent(site) {
 function getMarkerIcon(type, color, dataTypes) {
     type = type != "affiliated" ? "fat" : "skinny";
     if (dataTypes[0] == "Leaf Pack") {
-        color = "blue";
+        color = "wine";
     }
     var icon = {
         skinny: {
@@ -67,12 +67,12 @@ function appendMarkersLegend(map) {
                 <table class="legend-table">
                     <tbody>
                         <tr>
-                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png" 
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkblue-fat-bright.png" 
                             alt="Marker for data within last 6 hours"></td>
                             <td>Has data within the last 6 hours</td>
                         </tr>
                         <tr>
-                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-lightgreen-fat-bright.png" 
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-lightblue-fat-bright.png" 
                             alt="Marker for data within last 72 hours"></td>
                             <td>Has data within the last 72 hours</td>
                         </tr>
@@ -86,7 +86,7 @@ function appendMarkersLegend(map) {
                 <table class="legend-table">
                     <tbody>
                         <tr>
-                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-red-fat-bright.png" 
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-vermillion-fat-bright.png" 
                             alt="Marker for data out of date"></td>
                             <td>Sensor data out of date</td>
                         </tr>
@@ -96,7 +96,7 @@ function appendMarkersLegend(map) {
                             <td>Sensors have no data</td>
                         </tr>
                         <tr>
-                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-blue-fat-bright.png" 
+                            <td><img class="legend-marker" src="/static/dataloaderinterface/images/marker-wine-fat-bright.png" 
                             alt="Marker for sites with only Leaf Pack data"></td>
                             <td>Only Leaf Pack data</td>
                         </tr>
@@ -108,14 +108,14 @@ function appendMarkersLegend(map) {
             <table class="legend-table">
                 <tr>
                     <td>
-                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-skinny-bright.png" 
+                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkblue-skinny-bright.png" 
                         alt="Marker for sites you own">
                     </td>
                     <td>Sites you are affiliated with</td>
                 </tr>
                 <tr>
                     <td>
-                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkgreen-fat-bright.png" 
+                        <img class="legend-marker" src="/static/dataloaderinterface/images/marker-darkblue-fat-bright.png" 
                         alt="Marker for sites you do not own">
                     </td>
                     <td>Sites you are not affiliated with</td>
